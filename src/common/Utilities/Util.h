@@ -344,6 +344,8 @@ TC_COMMON_API bool WriteWinConsole(std::string_view str, bool error = false);
 
 TC_COMMON_API Optional<std::size_t> RemoveCRLF(std::string& str);
 
+TC_COMMON_API bool IsIPAddress(char const* ipaddress);
+
 uint32 CreatePIDFile(const std::string& filename);
 
 namespace Trinity::Impl

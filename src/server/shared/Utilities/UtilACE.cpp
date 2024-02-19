@@ -24,17 +24,6 @@
 #include <ace/Guard_T.h>
 #include <ace/INET_Addr.h>
 
-/// Check if the string is a valid ip address representation
-bool IsIPAddress(char const* ipaddress)
-{
-    if (!ipaddress)
-        return false;
-
-    // Let the big boys do it.
-    // Drawback: all valid ip address formats are recognized e.g.: 12.23, 121234, 0xABCD)
-    return inet_addr(ipaddress) != INADDR_NONE;
-}
-
 std::string GetAddressString(ACE_INET_Addr const& addr)
 {
     char buf[ACE_MAX_FULLY_QUALIFIED_NAME_LEN + 16];

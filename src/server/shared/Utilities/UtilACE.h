@@ -32,8 +32,6 @@
 
 class ACE_INET_Addr;
 
-bool IsIPAddress(char const* ipaddress);
-
 /// Checks if address belongs to the a network with specified submask
 bool IsIPAddrInNetwork(ACE_INET_Addr const& net, ACE_INET_Addr const& addr, ACE_INET_Addr const& subnetMask);
 
