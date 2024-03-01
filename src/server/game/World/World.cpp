@@ -312,14 +312,11 @@ void World::AddSession_(WorldSession* s)
         return;
     }
 
+    s->InitializeSession();
     s->SendDanceStudioCreateResult();
-    s->SendAuthResponse(AUTH_OK, false);
     s->SendFeatureSystemStatusGlueScreen();
-    s->SendAddonsInfo();
-    s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
     sBattlePayMgr->SendBattlePayDistributionList(s);
     s->SendDispalyPromotionOpcode();
-    s->SendTutorialsData();
     s->SendTimezoneInformation();
 
     UpdateMaxSessionCounters();
@@ -410,14 +407,10 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     if ((!m_playerLimit || sessions < m_playerLimit) && !m_QueuedPlayer.empty())
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
+        pop_sess->InitializeSession();
         pop_sess->SetInQueue(false);
         pop_sess->ResetTimeOutTime(false);
-        pop_sess->SendAuthWaitQue(0);
-        pop_sess->SendAddonsInfo();
-
-        pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
         pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
-        pop_sess->SendTutorialsData();
         pop_sess->SendTimezoneInformation();
 
         m_QueuedPlayer.pop_front();
@@ -3253,9 +3246,9 @@ void World::SendServerMessage(ServerMessageType type, const char *text, Player* 
 void World::UpdateSessions(uint32 diff)
 {
     ///- Add new sessions
-    WorldSession* sess = NULL;
+    WorldSession* sess = nullptr;
     while (addSessQueue.next(sess))
-        AddSession_ (sess);
+        AddSession_(sess);
 
     ///- Then send an update signal to remaining ones
     for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)

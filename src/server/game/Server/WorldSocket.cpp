@@ -486,8 +486,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
                 try
                 {
                     HandleAuthSession(packet);
-                    return ReadDataHandlerResult::Ok;
-                    //return ReadDataHandlerResult::WaitingForQuery;
+                    return ReadDataHandlerResult::WaitingForQuery;
                 }
                 catch (ByteBufferException const&)
                 {
@@ -512,7 +511,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
                 //     TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_CONTINUED_SESSION", GetRemoteIpAddress().to_string().c_str());
                 //     return ReadDataHandlerResult::Error;
                 // }
-                // HandleAuthContinuedSession(authSession);
+                HandleAuthContinuedSession(packet);
                 return ReadDataHandlerResult::WaitingForQuery;
             }            
             case CMSG_KEEP_ALIVE: // todo: handle this packet in the same way of CMSG_TIME_SYNC_RESP
@@ -527,8 +526,8 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
                 return ReadDataHandlerResult::Error;
 
             case CMSG_LOG_DISCONNECT:
+                LogOpcodeText(opcode, sessionGuard);
                 packet.rfinish(); // contains uint32 disconnectReason;
-                DelayedCloseSocket();
                 return ReadDataHandlerResult::Ok;
 
             case CMSG_ENABLE_NAGLE:
@@ -640,11 +639,6 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // recvPacket.read(authSession->AddonInfo.contents(), authSession->AddonInfo.size()); // .contents will throw if empty, thats what we want
 
-    // // Get the account information from the auth database
-    // LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
-    // stmt->setInt32(0, int32(realm.Id.Realm));
-    // stmt->setString(1, authSession->Account);
-
     uint32 addonSize;
 
     recvPacket.read_skip<uint32>();
@@ -695,9 +689,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     stmt->setInt32(1, int32(realm.Id.Realm));
     stmt->setString(2, authSession->Account);
 
-    //_queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::HandleAuthSessionCallback, this, authSession, std::placeholders::_1)));
-    PreparedQueryResult result = LoginDatabase.Query(stmt);
-    HandleAuthSessionCallback(authSession,result);
+    _queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::HandleAuthSessionCallback, this, authSession, std::placeholders::_1)));
 
 }
 
@@ -976,9 +968,6 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     _worldSession->ReadAddonsInfo(authSession->addonsData);
     sWorld->AddSession(_worldSession);
 
-    _worldSession->LoadGlobalAccountData();
-    _worldSession->LoadTutorialsData();
-    
     // Initialize Warden system only if it is enabled by config
     if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
         _worldSession->InitWarden(&k, account.OS);
@@ -990,7 +979,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 
     //_queryProcessor.AddCallback(_worldSession->LoadPermissionsAsync().WithPreparedCallback(std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1)));
     
-    //AsyncRead();
+    AsyncRead();
 }
 
 void WorldSocket::LoadSessionPermissionsCallback(PreparedQueryResult result)
@@ -999,6 +988,113 @@ void WorldSocket::LoadSessionPermissionsCallback(PreparedQueryResult result)
     //_worldSession->GetRBACData()->LoadFromDBCallback(result);
 
     //sWorld->AddSession(_worldSession);
+}
+
+void WorldSocket::HandleAuthContinuedSession(WorldPacket& recvPacket)
+{
+
+    uint64 DosResponse = 0;
+    uint64 Key = 0;
+    std::array<uint8, 20> Digest;
+
+    recvPacket >> Key;
+    recvPacket >> DosResponse;
+
+    recvPacket >> Digest[1];
+    recvPacket >> Digest[14];
+    recvPacket >> Digest[9];
+    recvPacket >> Digest[18];
+    recvPacket >> Digest[17];
+    recvPacket >> Digest[8];
+    recvPacket >> Digest[6];
+    recvPacket >> Digest[10];
+    recvPacket >> Digest[3];
+    recvPacket >> Digest[16];
+    recvPacket >> Digest[4];
+    recvPacket >> Digest[0];
+    recvPacket >> Digest[15];
+    recvPacket >> Digest[2];
+    recvPacket >> Digest[19];
+    recvPacket >> Digest[12];
+    recvPacket >> Digest[13];
+    recvPacket >> Digest[5];
+    recvPacket >> Digest[11];
+    recvPacket >> Digest[7];
+
+    WorldSession::ConnectToKey key;
+    key.Raw = Key;
+
+    // _type = ConnectionType(key.Fields.ConnectionType);
+    // if (_type != CONNECTION_TYPE_INSTANCE)
+    // {
+    //     SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT);
+    //     DelayedCloseSocket();
+    //     return;
+    // }
+
+    // Client switches packet headers after sending CMSG_AUTH_CONTINUED_SESSION
+    _headerBuffer.Resize(sizeof(ClientPktHeader));
+
+    TC_LOG_DEBUG("network", "WorldSocket::HandleAuthContinuedSession: AccountId (%u).", uint32(key.Fields.AccountId));
+
+    // uint32 accountId = uint32(key.Fields.AccountId);
+    // LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_CONTINUED_SESSION);
+    // stmt->setUInt32(0, accountId);
+
+    //_queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::HandleAuthContinuedSessionCallback, this, authSession, std::placeholders::_1)));
+}
+
+void WorldSocket::HandleAuthContinuedSessionCallback(WorldSession::ConnectToKey key, PreparedQueryResult result) // std::shared_ptr<WorldPackets::Auth::AuthContinuedSession> authSession
+{
+    if (!result)
+    {
+        SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT);
+        DelayedCloseSocket();
+        return;
+    }
+
+    // WorldSession::ConnectToKey key;
+    // key.Raw = authSession->Key;
+
+    uint32 accountId = uint32(key.Fields.AccountId);
+    Field* fields = result->Fetch();
+    std::string login = fields[0].GetString();
+
+    ::SessionKey SessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[1].GetString())); 
+    _authCrypt.Init(SessionKey);
+
+    uint8 t[4] = { 0x00,0x00,0x00,0x00 };
+
+    // Trinity::Crypto::SHA1 sha;
+    // sha.UpdateData(authSession->Account);
+    // sha.UpdateData(t);
+    // //sha.UpdateData(authSession->clientSeed);
+    // sha.UpdateData((uint8*)&authSession->clientSeed, 4);
+    // sha.UpdateData(_authSeed);
+    // sha.UpdateData(account.SessionKey);
+    // sha.Finalize();
+
+    // BigNumber k;
+    // k.SetHexStr(fields[1].GetCString());
+
+    // _authCrypt.Init(&k, _encryptSeed.AsByteArray().get(), _decryptSeed.AsByteArray().get());
+
+    // SHA1Hash sha;
+    // sha.UpdateData(login);
+    // sha.UpdateBigNumbers(&k, nullptr);
+    // sha.UpdateData((uint8*)&_authSeed, 4);
+    // sha.Finalize();
+
+    // if (memcmp(sha.GetDigest(), authSession->Digest.data(), sha.GetLength()))
+    // {
+    //     SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT);
+    //     TC_LOG_ERROR("network", "WorldSocket::HandleAuthContinuedSession: Authentication failed for account: %u ('%s') address: %s", accountId, login.c_str(), GetRemoteIpAddress().to_string().c_str());
+    //     DelayedCloseSocket();
+    //     return;
+    // }
+
+    // sWorld->AddInstanceSocket(shared_from_this(), authSession->Key);
+    // AsyncRead();
 }
 
 void WorldSocket::SendAuthResponseError(uint8 code)

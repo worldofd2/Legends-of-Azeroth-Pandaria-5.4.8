@@ -101,6 +101,7 @@ public:
 
     void SendPacket(WorldPacket const& packet);
 
+    void SetWorldSession(WorldSession* session);
     void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
 
 protected:
@@ -134,6 +135,8 @@ private:
     void HandleAuthSession(WorldPacket& recvPacket);
     void HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSession, PreparedQueryResult result);
     void LoadSessionPermissionsCallback(PreparedQueryResult result);
+    void HandleAuthContinuedSession(WorldPacket& recvPacket);
+    void HandleAuthContinuedSessionCallback(WorldSession::ConnectToKey key, PreparedQueryResult result);
     void SendAuthResponseError(uint8 code);
 
     bool HandlePing(WorldPacket& recvPacket);

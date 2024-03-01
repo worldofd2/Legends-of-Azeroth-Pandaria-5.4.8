@@ -151,14 +151,14 @@ WorldSession::~WorldSession()
     if (m_Socket)
     {
         m_Socket->CloseSocket();
-        m_Socket = nullptr;
+        m_Socket.reset();
     }
 
     delete _warden;
     delete m_charBooster;
 
     ///- empty incoming packet queue
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     while (_recvQueue.next(packet))
         delete packet;
 
@@ -906,17 +906,18 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
     SendPacket(&data);
 }
 
-void WorldSession::LoadTutorialsData()
+void WorldSession::LoadTutorialsData(PreparedQueryResult result)
 {
     memset(m_Tutorials, 0, sizeof(uint32) * MAX_ACCOUNT_TUTORIAL_VALUES);
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
-    stmt->setUInt32(0, GetAccountId());
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+    if (result)
+    {
         for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
             m_Tutorials[i] = (*result)[i].GetUInt32();
+        m_TutorialsChanged |= TUTORIALS_FLAG_LOADED_FROM_DB;
+    }
 
-    m_TutorialsChanged = false;
+    m_TutorialsChanged &= ~TUTORIALS_FLAG_CHANGED;
 }
 
 void WorldSession::SendTutorialsData()
@@ -1221,6 +1222,69 @@ void WorldSession::InitWarden(BigNumber* k, std::string const& os)
         // _warden->Init(this, k);
     }
 }
+
+class AccountInfoQueryHolderPerRealm : public CharacterDatabaseQueryHolder
+{
+public:
+    enum
+    {
+        GLOBAL_ACCOUNT_DATA = 0,
+        TUTORIALS,
+
+        MAX_QUERIES
+    };
+
+    AccountInfoQueryHolderPerRealm() { SetSize(MAX_QUERIES); }
+
+    bool Initialize(uint32 accountId)
+    {
+        bool ok = true;
+
+        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_DATA);
+        stmt->setUInt32(0, accountId);
+        ok = SetPreparedQuery(GLOBAL_ACCOUNT_DATA, stmt) && ok;
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
+        stmt->setUInt32(0, accountId);
+        ok = SetPreparedQuery(TUTORIALS, stmt) && ok;
+
+        return ok;
+    }
+};
+
+void WorldSession::InitializeSession()
+{
+    std::shared_ptr<AccountInfoQueryHolderPerRealm> realmHolder = std::make_shared<AccountInfoQueryHolderPerRealm>();
+    if (!realmHolder->Initialize(GetAccountId()))
+    {
+        SendAuthResponse(AUTH_SYSTEM_ERROR, false);
+        return;
+    }
+
+    AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(realmHolder)).AfterComplete([this](SQLQueryHolderBase const& holder)
+    {
+            InitializeSessionCallback(static_cast<AccountInfoQueryHolderPerRealm const&>(holder));
+    });
+}
+
+void WorldSession::InitializeSessionCallback(CharacterDatabaseQueryHolder const& realmHolder)
+{
+    LoadAccountData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
+    LoadTutorialsData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
+
+    if (!m_inQueue)
+        SendAuthResponse(AUTH_OK, false);
+    else
+        SendAuthWaitQue(0);
+
+    SetInQueue(false);
+    ResetTimeOutTime(false);
+
+    SendAddonsInfo();
+    SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+    SendTutorialsData();
+}
+
 
 bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) const
 {
