@@ -410,11 +410,15 @@ struct AccountInfo
     uint32 Flags;
     AccountTypes Security;
     bool HasBoost;
+    std::string MutedBy;
+    std::string MuteReason;
+    bool MutedInPublicChannelsOnly;
+    uint32 OnlineMuteTimer;
 
     explicit AccountInfo(Field* fields)
     {
-        //         0          1       2            3         4                5           6         7          8           9        10         11      12                                                            13     14 
-        // SELECT a.id, a.sessionkey, a.last_ip, a.locked, a.lock_country, a.expansion, a.mutetime, a.locale, a.recruiter, a.os, a.flags, aa.gmlevel, ab.unbandate > UNIX_TIMESTAMP() OR ab.unbandate = ab.bandate, r.id, abo.id FROM account a LEFT JOIN account r ON a.id = r.recruiter LEFT JOIN account_access aa ON a.id = aa.id AND aa.RealmID IN (-1, ?) LEFT JOIN account_banned ab ON a.id = ab.id AND ab.active = 1 LEFT JOIN account_boost abo ON a.id=abo.id AND abo.realmid IN (-1, ?) WHERE a.username = ?
+        //         0          1       2            3         4                5           6         7          8           9        10         11      12                                                            13     14        15          16                   17                     18               
+        // SELECT a.id, a.sessionkey, a.last_ip, a.locked, a.lock_country, a.expansion, a.mutetime, a.locale, a.recruiter, a.os, a.flags, aa.gmlevel, ab.unbandate > UNIX_TIMESTAMP() OR ab.unbandate = ab.bandate, r.id, abo.id, am.muted_by, am.mute_reason, am.public_channels_only, m.mute_timer FROM account a LEFT JOIN account r ON a.id = r.recruiter LEFT JOIN account_access aa ON a.id = aa.id AND aa.RealmID IN (-1, ?) LEFT JOIN account_banned ab ON a.id = ab.id AND ab.active = 1 LEFT JOIN account_boost abo ON a.id=abo.id AND abo.realmid IN (-1, ?) LEFT JOIN mute_active m ON m.realmid = ? AND m.account = a.id LEFT JOIN account_muted am ON m.mute_id = am.id AND m.realmid = am.realmid WHERE a.username = ?
         Id = fields[0].GetUInt32();
         SessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[1].GetString())); 
         LastIP = fields[2].GetString();
@@ -430,6 +434,10 @@ struct AccountInfo
         IsBanned = fields[12].GetUInt64() != 0;
         IsRecruiter = fields[13].GetUInt32() != 0;
         HasBoost = fields[14].GetUInt32() != 0;
+        MutedBy = fields[15].GetString();
+        MuteReason = fields[16].GetString();
+        MutedInPublicChannelsOnly = fields[17].GetBool();
+        OnlineMuteTimer = fields[18].GetUInt32();
 
         uint32 world_expansion = sWorld->getIntConfig(CONFIG_EXPANSION);
         if (Expansion > world_expansion)
@@ -682,12 +690,13 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Get the account information from the realmd database
     //         0           1        2         3          4              5              6          7        8            9       10       11        12                                                            13    14
-    // SELECT a.id, a.sessionkey, a.last_ip, a.locked, a.lock_country, a.expansion, a.mutetime, a.locale, a.recruiter, a.os, a.flags, aa.gmlevel, ab.unbandate > UNIX_TIMESTAMP() OR ab.unbandate = ab.bandate, r.id, abo.id FROM account a LEFT JOIN account r ON a.id = r.recruiter LEFT JOIN account_access aa ON a.id = aa.id AND aa.RealmID IN (-1, ?) LEFT JOIN account_banned ab ON a.id = ab.id AND ab.active = 1 LEFT JOIN account_boost abo ON a.id=abo.id AND abo.realmid IN (-1, ?) WHERE a.username = ?
+    // SELECT a.id, a.sessionkey, a.last_ip, a.locked, a.lock_country, a.expansion, a.mutetime, a.locale, a.recruiter, a.os, a.flags, aa.gmlevel, ab.unbandate > UNIX_TIMESTAMP() OR ab.unbandate = ab.bandate, r.id, abo.id, am.muted_by, am.mute_reason, am.public_channels_only, m.mute_timer FROM account a LEFT JOIN account r ON a.id = r.recruiter LEFT JOIN account_access aa ON a.id = aa.id AND aa.RealmID IN (-1, ?) LEFT JOIN account_banned ab ON a.id = ab.id AND ab.active = 1 LEFT JOIN account_boost abo ON a.id=abo.id AND abo.realmid IN (-1, ?) LEFT JOIN mute_active m ON m.realmid = ? AND m.account = a.id LEFT JOIN account_muted am ON m.mute_id = am.id AND m.realmid = am.realmid WHERE a.username = ?
     // size_t hashPos = authSession->account.find_last_of('#');
     LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
     stmt->setInt32(0, int32(realm.Id.Realm));
     stmt->setInt32(1, int32(realm.Id.Realm));
-    stmt->setString(2, authSession->Account);
+    stmt->setInt32(2, int32(realm.Id.Realm));
+    stmt->setString(3, authSession->Account);
 
     _queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::HandleAuthSessionCallback, this, authSession, std::placeholders::_1)));
 
@@ -793,15 +802,6 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     //     LoginDatabase.Execute(stmt);
     // }
 
-    // if (account.IsBanned)
-    // {
-    //     SendAuthResponseError(AUTH_BANNED);
-    //     TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Sent Auth Response (Account banned).");
-    //     sScriptMgr->OnFailedAccountLogin(account.Id);
-    //     DelayedCloseSocket();
-    //     return;
-    // }
-
     // // Check locked state for server
     // AccountTypes allowedAccountType = sWorld->GetPlayerSecurityLimit();
     // TC_LOG_DEBUG("network", "Allowed Level: %u Player Level %u", allowedAccountType, account.Security);
@@ -878,22 +878,6 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
         return;
     }
 
-    // Get mute info
-    std::string mutedBy = "";
-    std::string muteReason = "";
-    bool mutedInPublicChannelsOnly = false;
-    uint32 onlineMuteTimer = 0;
-
-    Field* fields;// = result->Fetch();
-    if (auto muteRes = LoginDatabase.PQuery("SELECT am.muted_by, am.mute_reason, am.public_channels_only, m.mute_timer FROM mute_active AS m, account_muted AS am WHERE m.realmid = '%u' AND m.account = '%u' AND m.mute_id = am.id AND m.realmid = am.realmid", realm.Id.Realm, account.Id))
-    {
-        fields = muteRes->Fetch();
-        mutedBy = fields[0].GetString();
-        muteReason = fields[1].GetString();
-        mutedInPublicChannelsOnly = fields[2].GetBool();
-        onlineMuteTimer = fields[3].GetUInt32();
-    }
-
     if (account.IsBanned) // if account banned
     {
         SendAuthResponseError(AUTH_BANNED);
@@ -964,7 +948,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 
     _authed = true;
     _worldSession = new WorldSession(account.Id, shared_from_this(), account.Security, account.Expansion, account.MuteTime, account.Locale, account.Recruiter, account.Flags, account.IsRecruiter, account.HasBoost);
-    _worldSession->SetMute({ onlineMuteTimer, mutedBy, muteReason, mutedInPublicChannelsOnly });
+    _worldSession->SetMute({ account.OnlineMuteTimer, account.MutedBy, account.MuteReason, account.MutedInPublicChannelsOnly });
     _worldSession->ReadAddonsInfo(authSession->addonsData);
     sWorld->AddSession(_worldSession);
 
