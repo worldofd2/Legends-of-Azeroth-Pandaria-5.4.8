@@ -643,6 +643,9 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
 
 void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 {
+    // Client switches packet headers after sending CMSG_AUTH_SESSION
+    _headerBuffer.Resize(sizeof(WorldClientPktHeader));
+
     std::shared_ptr<AuthSession> authSession = std::make_shared<AuthSession>();
 
     // recvPacket.read(authSession->AddonInfo.contents(), authSession->AddonInfo.size()); // .contents will throw if empty, thats what we want
@@ -935,7 +938,6 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     LoginDatabase.Execute(stmt);
 
     _authCrypt.Init(account.SessionKey);
-    _headerBuffer.Resize(sizeof(WorldClientPktHeader));
 
     // First reject the connection if packet contains invalid data or realm state doesn't allow logging in
     if (sWorld->IsClosed())
