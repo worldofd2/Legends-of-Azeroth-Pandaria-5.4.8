@@ -11,9 +11,7 @@
 
 # Set build-directive (used in core to tell which buildtype we used)
 add_definitions(-D_BUILD_DIRECTIVE='"${CMAKE_BUILD_TYPE}"')
-add_definitions(-fno-delete-null-pointer-checks)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+#add_definitions(-fno-delete-null-pointer-checks)
 
 set(COMPILER_FLAGS "")
 
@@ -23,7 +21,7 @@ endif()
 
 if (BUILD_DEPLOY)
   set(COMPILER_FLAGS "${COMPILER_FLAGS} -march=native -fno-strict-aliasing -ffunction-sections -fdata-sections")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -s -w" CACHE INTERNAL "EXE_LINKER_FLAGS" FORCE)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections " CACHE INTERNAL "EXE_LINKER_FLAGS" FORCE) #-s -w
   if (NOT INSTALL_PREFIX)
     set(INSTALL_PREFIX "/server/wow/horizon")
   endif()
