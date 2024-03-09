@@ -2023,14 +2023,6 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 */
 void LFGMgr::FinishDungeon(uint64 gguid, uint32 dungeonId, Map* map)
 {
-    // Map can't disappear, right? rigth?
-    // if (std::this_thread::get_id() != sWorld->GetThreadId())
-    // {
-    //     TaskMgr::Default()->ScheduleInvocation([=] { sLFGMgr->FinishDungeon(gguid, dungeonId, map); });
-    //     return;
-    // }
-    sLFGMgr->FinishDungeon(gguid, dungeonId, map);
-
     uint32 queueId = GetActiveQueueId(gguid);
     if (!queueId)
     {
