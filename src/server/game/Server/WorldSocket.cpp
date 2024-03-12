@@ -52,13 +52,13 @@ uint32 const SizeOfHeader = sizeof(uint16) + sizeof(uint16);
 
 struct ServerPktHeader
 {
-    ServerPktHeader(uint32 size, uint32 cmd, bool encrypt, AuthCrypt* _authCrypt) : size(size)
+    ServerPktHeader(uint32 size, uint32 cmd, bool encrypt) : size(size)
     {
-        if (encrypt && _authCrypt->IsInitialized())
+        if (encrypt)
         {
             uint32 data = (size << 13) | (cmd & MAX_OPCODE);
             memcpy(&header[0], &data, 4);
-            _authCrypt->EncryptSend(reinterpret_cast<uint8*>(&header[0]), getHeaderLength());
+            //_authCrypt->EncryptSend(reinterpret_cast<uint8*>(&header[0]), getHeaderLength());
         }
         else
         {
@@ -130,7 +130,7 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
     AsyncRead();
 
     MessageBuffer initializer;
-    ServerPktHeader header(ServerConnectionInitialize.size(), 0, false, &_authCrypt);
+    ServerPktHeader header(ServerConnectionInitialize.size(), 0, false);
     initializer.Write(header.header, header.getHeaderLength() - 2);
     initializer.Write(ServerConnectionInitialize.c_str(), ServerConnectionInitialize.length());
 
@@ -347,8 +347,9 @@ void WorldSocket::WritePacketToBuffer(EncryptablePacket const& packet, MessageBu
 
     // packetSize += 2 /*opcode*/;
 
-    ServerPktHeader header(!packet.NeedsEncryption() ? packetSize + 2 : packetSize, opcode, packet.NeedsEncryption(), &_authCrypt);
-    //_authCrypt.EncryptSend(reinterpret_cast<uint8*>(&header), 4);
+    ServerPktHeader header(!packet.NeedsEncryption() ? packetSize + 2 : packetSize, opcode, packet.NeedsEncryption());
+    if (packet.NeedsEncryption())
+        _authCrypt.EncryptSend(reinterpret_cast<uint8*>(&header.header), 4);
 
     memcpy(headerPos, &header.header, SizeOfHeader);
 }
