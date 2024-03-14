@@ -1,5 +1,4 @@
-# Copyright (C) 2011-2016 Project SkyFire <http://www.projectskyfire.org/
-# Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+# This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,15 +8,10 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-add_subdirectory(genrev)
-add_subdirectory(server)
-add_subdirectory(common)
+find_package(MySQL REQUIRED COMPONENTS lib)
 
-if(TOOLS)
-    add_subdirectory(tools)
-endif(TOOLS)
+add_library(mysql INTERFACE)
 
-if (UPDATER)
-  add_subdirectory(updater)
-endif()
-
+target_link_libraries(mysql
+  INTERFACE
+    MySQL::MySQL)

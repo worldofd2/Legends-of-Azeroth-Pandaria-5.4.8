@@ -1,5 +1,4 @@
-# Copyright (C) 2011-2016 Project SkyFire <http://www.projectskyfire.org/
-# Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+# This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -9,15 +8,14 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-add_subdirectory(genrev)
-add_subdirectory(server)
-add_subdirectory(common)
 
-if(TOOLS)
-    add_subdirectory(tools)
-endif(TOOLS)
+# basic packagesearching and setup
+# (further support will be needed, this is a preliminary release!)
+find_package(OpenSSL 1.1 REQUIRED COMPONENTS Crypto SSL)
 
-if (UPDATER)
-  add_subdirectory(updater)
-endif()
+add_library(openssl INTERFACE)
 
+target_link_libraries(openssl
+  INTERFACE
+    OpenSSL::Crypto
+    OpenSSL::SSL)
