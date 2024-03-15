@@ -83,7 +83,7 @@ WorldSocket::WorldSocket(tcp::socket&& socket)
     : Socket(std::move(socket)), _OverSpeedPings(0), _worldSession(nullptr), _authed(false), _sendBufferSize(4096), _compressionStream(nullptr)
 {
     Trinity::Crypto::GetRandomBytes(_authSeed);
-    _headerBuffer.Resize(2);
+    _headerBuffer.Resize(sizeof(ClientPktHeader));
 }
 
 WorldSocket::~WorldSocket()
@@ -127,7 +127,9 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
         }
     }
 
-    AsyncRead();
+    _packetBuffer.Resize(2 + ClientConnectionInitialize.length() + 1);
+
+    AsyncReadWithCallback(&WorldSocket::InitializeHandler);    
 
     MessageBuffer initializer;
     ServerPktHeader header(ServerConnectionInitialize.size(), 0, false);
@@ -137,6 +139,66 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
     // - io_service.run thread, safe.
     QueuePacket(std::move(initializer));
 
+}
+
+void WorldSocket::InitializeHandler(boost::system::error_code error, std::size_t transferedBytes)
+{
+    if (error)
+    {
+        CloseSocket();
+        return;
+    }
+
+    GetReadBuffer().WriteCompleted(transferedBytes);
+
+    MessageBuffer& packet = GetReadBuffer();
+    if (packet.GetActiveSize() > 0)
+    {
+        if (_packetBuffer.GetRemainingSpace() > 0)
+        {
+            // need to receive the header
+            std::size_t readHeaderSize = std::min(packet.GetActiveSize(), _packetBuffer.GetRemainingSpace());
+            _packetBuffer.Write(packet.GetReadPointer(), readHeaderSize);
+            packet.ReadCompleted(readHeaderSize);
+
+            if (_packetBuffer.GetRemainingSpace() > 0)
+            {
+                // Couldn't receive the whole header this time.
+                ASSERT(packet.GetActiveSize() == 0);
+                AsyncReadWithCallback(&WorldSocket::InitializeHandler);
+                return;
+            }
+
+            std::string initializer(reinterpret_cast<char const*>(_packetBuffer.GetReadPointer() + 2), std::min(_packetBuffer.GetActiveSize() - 2, ClientConnectionInitialize.length()));
+
+            if (initializer != ClientConnectionInitialize)
+            {
+                CloseSocket();
+                return;
+            }
+
+            _compressionStream = new z_stream();
+            _compressionStream->zalloc = (alloc_func)nullptr;
+            _compressionStream->zfree = (free_func)nullptr;
+            _compressionStream->opaque = (voidpf)nullptr;
+            _compressionStream->avail_in = 0;
+            _compressionStream->next_in = nullptr;
+            int32 z_res = deflateInit2(_compressionStream, sWorld->getIntConfig(CONFIG_COMPRESSION), Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
+            if (z_res != Z_OK)
+            {
+                CloseSocket();
+                TC_LOG_ERROR("network", "Can't initialize packet compression (zlib: deflateInit) Error code: %i (%s)", z_res, zError(z_res));
+                return;
+            }
+
+            _packetBuffer.Reset();
+            HandleSendAuthSession();
+            AsyncRead();
+            return;
+        }
+    }
+
+    AsyncReadWithCallback(&WorldSocket::InitializeHandler);
 }
 
 bool WorldSocket::Update()
@@ -286,7 +348,7 @@ bool WorldSocket::ReadHeaderHandler()
         // }
         //OpcodeClient opcode = static_cast<OpcodeClient>(PacketFilter::DropHighBytes(header->cmd));
         _packetBuffer.Resize(header->size);
-
+        
     }
     else
     {
@@ -301,8 +363,7 @@ bool WorldSocket::ReadHeaderHandler()
         //     return false;
         // }
 
-        if (_initialized)
-            header->size -= sizeof(header->cmd);
+        header->size -= sizeof(header->cmd);
 
         if (header->IsValidSize() && header->IsValidOpcode()) // header->size > 0
         {
@@ -452,162 +513,131 @@ struct AccountInfo
 WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
 {
 
-    if (_initialized)
+    ClientPktHeader* header = reinterpret_cast<ClientPktHeader*>(_headerBuffer.GetReadPointer());
+    OpcodeClient opcode = static_cast<OpcodeClient>(header->cmd);
+
+    WorldPacket packet(opcode, std::move(_packetBuffer));
+    WorldPacket* packetToQueue;
+
+    if (sPacketLog->CanLogPacket())
+        sPacketLog->LogPacket(packet, CLIENT_TO_SERVER, GetRemoteIpAddress(), GetRemotePort());
+
+    std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
+
+    switch (opcode)
     {
-
-        ClientPktHeader* header = reinterpret_cast<ClientPktHeader*>(_headerBuffer.GetReadPointer());
-        OpcodeClient opcode = static_cast<OpcodeClient>(header->cmd);
-
-        WorldPacket packet(opcode, std::move(_packetBuffer));
-        WorldPacket* packetToQueue;
-
-        if (sPacketLog->CanLogPacket())
-            sPacketLog->LogPacket(packet, CLIENT_TO_SERVER, GetRemoteIpAddress(), GetRemotePort());
-
-        std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
-
-        switch (opcode)
+        case CMSG_PING:
         {
-            case CMSG_PING:
+            LogOpcodeText(opcode, sessionGuard);
+            try
             {
-                LogOpcodeText(opcode, sessionGuard);
-                try
-                {
-                    return HandlePing(packet) ? ReadDataHandlerResult::Ok : ReadDataHandlerResult::Error;
-                }
-                catch (ByteBufferException const&)
-                {
-                }
-                TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
+                return HandlePing(packet) ? ReadDataHandlerResult::Ok : ReadDataHandlerResult::Error;
+            }
+            catch (ByteBufferException const&)
+            {
+            }
+            TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
+            return ReadDataHandlerResult::Error;
+        }
+        case CMSG_AUTH_SESSION:
+        {
+            LogOpcodeText(opcode, sessionGuard);
+            if (_authed)
+            {
+                // locking just to safely log offending user is probably overkill but we are disconnecting him anyway
+                if (sessionGuard.try_lock())
+                    TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
                 return ReadDataHandlerResult::Error;
             }
-            case CMSG_AUTH_SESSION:
-            {
-                LogOpcodeText(opcode, sessionGuard);
-                if (_authed)
-                {
-                    // locking just to safely log offending user is probably overkill but we are disconnecting him anyway
-                    if (sessionGuard.try_lock())
-                        TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
-                    return ReadDataHandlerResult::Error;
-                }
 
-                try
-                {
-                    HandleAuthSession(packet);
-                    return ReadDataHandlerResult::WaitingForQuery;
-                }
-                catch (ByteBufferException const&)
-                {
-                }
-                TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_SESSION", GetRemoteIpAddress().to_string().c_str());
-                return ReadDataHandlerResult::Error;
-            }
-            case CMSG_AUTH_CONTINUED_SESSION:
+            try
             {
-                LogOpcodeText(opcode, sessionGuard);
-                if (_authed)
-                {
-                    // locking just to safely log offending user is probably overkill but we are disconnecting him anyway
-                    if (sessionGuard.try_lock())
-                        TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_CONTINUED_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
-                    return ReadDataHandlerResult::Error;
-                }
-
-                // std::shared_ptr<WorldPackets::Auth::AuthContinuedSession> authSession = std::make_shared<WorldPackets::Auth::AuthContinuedSession>(std::move(packet));
-                // if (!authSession->ReadNoThrow())
-                // {
-                //     TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_CONTINUED_SESSION", GetRemoteIpAddress().to_string().c_str());
-                //     return ReadDataHandlerResult::Error;
-                // }
-                HandleAuthContinuedSession(packet);
+                HandleAuthSession(packet);
                 return ReadDataHandlerResult::WaitingForQuery;
-            }            
-            case CMSG_KEEP_ALIVE: // todo: handle this packet in the same way of CMSG_TIME_SYNC_RESP
-                sessionGuard.lock();
-                LogOpcodeText(opcode, sessionGuard);
-                if (_worldSession)
-                {
-                    _worldSession->ResetTimeOutTime(true);
-                    return ReadDataHandlerResult::Ok;
-                }
-                TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler: client %s sent CMSG_KEEP_ALIVE without being authenticated", GetRemoteIpAddress().to_string().c_str());
+            }
+            catch (ByteBufferException const&)
+            {
+            }
+            TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_SESSION", GetRemoteIpAddress().to_string().c_str());
+            return ReadDataHandlerResult::Error;
+        }
+        case CMSG_AUTH_CONTINUED_SESSION:
+        {
+            LogOpcodeText(opcode, sessionGuard);
+            if (_authed)
+            {
+                // locking just to safely log offending user is probably overkill but we are disconnecting him anyway
+                if (sessionGuard.try_lock())
+                    TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_CONTINUED_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
                 return ReadDataHandlerResult::Error;
+            }
 
-            case CMSG_LOG_DISCONNECT:
-                LogOpcodeText(opcode, sessionGuard);
-                packet.rfinish(); // contains uint32 disconnectReason;
+            // std::shared_ptr<WorldPackets::Auth::AuthContinuedSession> authSession = std::make_shared<WorldPackets::Auth::AuthContinuedSession>(std::move(packet));
+            // if (!authSession->ReadNoThrow())
+            // {
+            //     TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_CONTINUED_SESSION", GetRemoteIpAddress().to_string().c_str());
+            //     return ReadDataHandlerResult::Error;
+            // }
+            HandleAuthContinuedSession(packet);
+            return ReadDataHandlerResult::WaitingForQuery;
+        }            
+        case CMSG_KEEP_ALIVE: // todo: handle this packet in the same way of CMSG_TIME_SYNC_RESP
+            sessionGuard.lock();
+            LogOpcodeText(opcode, sessionGuard);
+            if (_worldSession)
+            {
+                _worldSession->ResetTimeOutTime(true);
                 return ReadDataHandlerResult::Ok;
-
-            case CMSG_ENABLE_NAGLE:
-                LogOpcodeText(opcode, sessionGuard);
-                SetNoDelay(false);
-                return ReadDataHandlerResult::Ok;
-
-            case CMSG_TIME_SYNC_RESP:
-                packetToQueue = new WorldPacket(std::move(packet), std::chrono::steady_clock::now());
-                break;
-
-            default:
-                packetToQueue = new WorldPacket(std::move(packet));
-                break;
-        }
-
-        sessionGuard.lock();
-
-        LogOpcodeText(opcode, sessionGuard);
-
-        if (!_worldSession)
-        {
-            TC_LOG_ERROR("network.opcode", "ProcessIncoming: Client not authed opcode = %u", uint32(opcode));
-            delete packetToQueue;
+            }
+            TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler: client %s sent CMSG_KEEP_ALIVE without being authenticated", GetRemoteIpAddress().to_string().c_str());
             return ReadDataHandlerResult::Error;
-        }
 
-        OpcodeHandler const* handler = clientOpcodeTable[opcode];
-        //if (!handler)
-        if (!handler || handler->Status == STATUS_UNHANDLED)
-        {
-            TC_LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode()),false).c_str(), _worldSession->GetPlayerInfo().c_str());
-            delete packetToQueue;
-            //return ReadDataHandlerResult::Error;
+        case CMSG_LOG_DISCONNECT:
+            LogOpcodeText(opcode, sessionGuard);
+            packet.rfinish(); // contains uint32 disconnectReason;
             return ReadDataHandlerResult::Ok;
-        }
 
-        // Our Idle timer will reset on any non PING opcodes on login screen, allowing us to catch people idling.
-        _worldSession->ResetTimeOutTime(false);
+        case CMSG_ENABLE_NAGLE:
+            LogOpcodeText(opcode, sessionGuard);
+            SetNoDelay(false);
+            return ReadDataHandlerResult::Ok;
 
-        // Copy the packet to the heap before enqueuing
-        _worldSession->QueuePacket(packetToQueue);
+        case CMSG_TIME_SYNC_RESP:
+            packetToQueue = new WorldPacket(std::move(packet), std::chrono::steady_clock::now());
+            break;
+
+        default:
+            packetToQueue = new WorldPacket(std::move(packet));
+            break;
     }
-    else
+
+    sessionGuard.lock();
+
+    LogOpcodeText(opcode, sessionGuard);
+
+    if (!_worldSession)
     {
-        std::string initializer(reinterpret_cast<char const*>(_packetBuffer.GetReadPointer()), std::min(_packetBuffer.GetActiveSize(), ClientConnectionInitialize.length()));
-        if (initializer != ClientConnectionInitialize)
-        {
-            CloseSocket();
-            return ReadDataHandlerResult::Error;
-        }
+        TC_LOG_ERROR("network.opcode", "ProcessIncoming: Client not authed opcode = %u", uint32(opcode));
+        delete packetToQueue;
+        return ReadDataHandlerResult::Error;
+    }
 
-        _compressionStream = new z_stream();
-        _compressionStream->zalloc = (alloc_func)nullptr;
-        _compressionStream->zfree = (free_func)nullptr;
-        _compressionStream->opaque = (voidpf)nullptr;
-        _compressionStream->avail_in = 0;
-        _compressionStream->next_in = nullptr;
-        int32 z_res = deflateInit2(_compressionStream, sWorld->getIntConfig(CONFIG_COMPRESSION), Z_DEFLATED, -15, 8, Z_DEFAULT_STRATEGY);
-        if (z_res != Z_OK)
-        {
-            TC_LOG_ERROR("network", "Can't initialize packet compression (zlib: deflateInit) Error code: %i (%s)", z_res, zError(z_res));
-            CloseSocket();
-            return ReadDataHandlerResult::Error;
-        }
+    OpcodeHandler const* handler = clientOpcodeTable[opcode];
+    //if (!handler)
+    if (!handler || handler->Status == STATUS_UNHANDLED)
+    {
+        TC_LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode()),false).c_str(), _worldSession->GetPlayerInfo().c_str());
+        delete packetToQueue;
+        //return ReadDataHandlerResult::Error;
+        return ReadDataHandlerResult::Ok;
+    }
 
-        _initialized = true;
-        _headerBuffer.Resize(sizeof(ClientPktHeader));
-        _packetBuffer.Reset();
-        HandleSendAuthSession();        
-    }    
+    // Our Idle timer will reset on any non PING opcodes on login screen, allowing us to catch people idling.
+    _worldSession->ResetTimeOutTime(false);
+
+    // Copy the packet to the heap before enqueuing
+    _worldSession->QueuePacket(packetToQueue);
+   
     return ReadDataHandlerResult::Ok;
 
 }

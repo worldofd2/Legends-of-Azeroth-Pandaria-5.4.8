@@ -120,6 +120,7 @@ protected:
 
 private:
     void CheckIpCallback(PreparedQueryResult result);
+    void InitializeHandler(boost::system::error_code error, std::size_t transferedBytes);
 
     /// writes network.opcode log
     /// accessing WorldSession is not threadsafe, only do it when holding _worldSessionLock
@@ -155,8 +156,6 @@ private:
     MessageBuffer _packetBuffer;
     MPSCQueue<EncryptablePacket, &EncryptablePacket::SocketQueueLink> _bufferQueue;
     std::size_t _sendBufferSize;
-
-    bool _initialized;
 
     z_stream* _compressionStream;
 
