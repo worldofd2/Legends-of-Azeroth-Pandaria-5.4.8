@@ -1402,7 +1402,7 @@ class npc_mantid_tar_keg : public CreatureScript
                 DoCast(me, SPELL_KEG_INACTIVE, true);
             }
 
-            bool CanRespawn()
+            bool CanRespawn() override
             {
                 return instance->GetBossState(BOSS_VOJAK) == NOT_STARTED;
             }

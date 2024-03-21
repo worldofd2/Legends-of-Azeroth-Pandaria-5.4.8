@@ -1221,99 +1221,87 @@ enum ActionBarIndex
 
 #define MAX_UNIT_ACTION_BAR_INDEX (ACTION_BAR_INDEX_END-ACTION_BAR_INDEX_START)
 
-struct CharmInfo
+struct TC_GAME_API CharmInfo
 {
     public:
-    explicit CharmInfo(Unit* unit);
-    ~CharmInfo();
-    void RestoreState();
-    uint32 GetPetNumber() const
-    {
-        return _petnumber;
-    }
-    void SetPetNumber(uint32 petnumber, bool statwindow);
+        explicit CharmInfo(Unit* unit);
+        ~CharmInfo();
+        void RestoreState();
+        uint32 GetPetNumber() const { return _petnumber; }
+        void SetPetNumber(uint32 petnumber, bool statwindow);
 
-    void SetCommandState(CommandStates st)
-    {
-        _CommandState = st;
-    }
-    CommandStates GetCommandState() const
-    {
-        return _CommandState;
-    }
-    bool HasCommandState(CommandStates state) const
-    {
-        return (_CommandState == state);
-    }
+        void SetCommandState(CommandStates st) { _CommandState = st; }
+        CommandStates GetCommandState() const { return _CommandState; }
+        bool HasCommandState(CommandStates state) const { return (_CommandState == state); }
 
-    void InitPossessCreateSpells();
-    void InitCharmCreateSpells();
-    void InitPetActionBar();
-    void InitEmptyActionBar(bool withAttack = true);
+        void InitPossessCreateSpells();
+        void InitCharmCreateSpells();
+        void InitPetActionBar();
+        void InitEmptyActionBar(bool withAttack = true);
 
-    //return true if successful
-    bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE, uint8 preferredSlot = 0);
-    bool RemoveSpellFromActionBar(uint32 spell_id);
-    void LoadPetActionBar(const std::string& data);
-    void BuildActionBar(WorldPacket* data);
-    void SetSpellAutocast(SpellInfo const* spellInfo, bool state);
-    void SetActionBar(uint8 index, uint32 spellOrAction, ActiveStates type)
-    {
-        PetActionBar [index].SetActionAndType(spellOrAction, type);
-    }
-    UnitActionBarEntry const* GetActionBarEntry(uint8 index) const
-    {
-        return &(PetActionBar [index]);
-    }
+        //return true if successful
+        bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE, uint8 preferredSlot = 0);
+        bool RemoveSpellFromActionBar(uint32 spell_id);
+        void LoadPetActionBar(const std::string& data);
+        void BuildActionBar(WorldPacket* data);
+        void SetSpellAutocast(SpellInfo const* spellInfo, bool state);
+        void SetActionBar(uint8 index, uint32 spellOrAction, ActiveStates type)
+        {
+            PetActionBar [index].SetActionAndType(spellOrAction, type);
+        }
+        UnitActionBarEntry const* GetActionBarEntry(uint8 index) const
+        {
+            return &(PetActionBar [index]);
+        }
 
-    void ToggleCreatureAutocast(SpellInfo const* spellInfo, bool apply);
+        void ToggleCreatureAutocast(SpellInfo const* spellInfo, bool apply);
 
-    CharmSpellInfo* GetCharmSpell(uint8 index)
-    {
-        return &(_charmspells [index]);
-    }
+        CharmSpellInfo* GetCharmSpell(uint8 index)
+        {
+            return &(_charmspells [index]);
+        }
 
-    GlobalCooldownMgr& GetGlobalCooldownMgr()
-    {
-        return m_GlobalCooldownMgr;
-    }
+        GlobalCooldownMgr& GetGlobalCooldownMgr()
+        {
+            return m_GlobalCooldownMgr;
+        }
 
-    void SetIsCommandAttack(bool val);
-    bool IsCommandAttack();
-    void SetIsCommandFollow(bool val);
-    bool IsCommandFollow();
-    void SetIsAtStay(bool val);
-    bool IsAtStay();
-    void SetIsFollowing(bool val);
-    bool IsFollowing();
-    void SetIsReturning(bool val);
-    bool IsReturning();
-    void SaveStayPosition();
-    void SaveStayPosition(float x, float y, float z);
-    void GetStayPosition(float &x, float &y, float &z);
+        void SetIsCommandAttack(bool val);
+        bool IsCommandAttack();
+        void SetIsCommandFollow(bool val);
+        bool IsCommandFollow();
+        void SetIsAtStay(bool val);
+        bool IsAtStay();
+        void SetIsFollowing(bool val);
+        bool IsFollowing();
+        void SetIsReturning(bool val);
+        bool IsReturning();
+        void SaveStayPosition();
+        void SaveStayPosition(float x, float y, float z);
+        void GetStayPosition(float &x, float &y, float &z);
 
     private:
 
-    Unit* _unit;
-    UnitActionBarEntry PetActionBar [MAX_UNIT_ACTION_BAR_INDEX];
-    CharmSpellInfo _charmspells [4];
-    CommandStates _CommandState;
-    uint32 _petnumber;
-    bool _barInit;
+        Unit* _unit;
+        UnitActionBarEntry PetActionBar [MAX_UNIT_ACTION_BAR_INDEX];
+        CharmSpellInfo _charmspells [4];
+        CommandStates _CommandState;
+        uint32 _petnumber;
+        bool _barInit;
 
-    //for restoration after charmed
-    ReactStates     _oldReactState;
+        //for restoration after charmed
+        ReactStates     _oldReactState;
 
-    bool _isCommandAttack;
-    bool _isCommandFollow;
-    bool _isAtStay;
-    bool _isFollowing;
-    bool _isReturning;
-    float _stayX;
-    float _stayY;
-    float _stayZ;
+        bool _isCommandAttack;
+        bool _isCommandFollow;
+        bool _isAtStay;
+        bool _isFollowing;
+        bool _isReturning;
+        float _stayX;
+        float _stayY;
+        float _stayZ;
 
-    GlobalCooldownMgr m_GlobalCooldownMgr;
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
 // for clearing special attacks
@@ -2134,10 +2122,7 @@ public:
     bool isPossessing() const;
     bool isPossessing(Unit* u) const;
 
-    CharmInfo* GetCharmInfo()
-    {
-        return m_charmInfo;
-    }
+    CharmInfo* GetCharmInfo() { return m_charmInfo; }
     CharmInfo* InitCharmInfo();
     void DeleteCharmInfo();
     void UpdateCharmAI();
