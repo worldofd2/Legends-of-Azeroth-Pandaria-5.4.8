@@ -3723,12 +3723,12 @@ void WorldObject::AddToUpdate()
         return;
     }
 
-    if (m_currMap != CurrentMap && CurrentMap)
-    {
-        TC_LOG_ERROR("shitlog", "WorldObject::AddToUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, InWorld: %u, position: { %f, %f, %f }.\nStack trace:\n",
-            m_currMap->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), IsInWorld(), GetPositionX(), GetPositionY(), GetPositionZ());
-        return;
-    }
+    // if (m_currMap != CurrentMap && CurrentMap)
+    // {
+    //     TC_LOG_ERROR("shitlog", "WorldObject::AddToUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, InWorld: %u, position: { %f, %f, %f }.\nStack trace:\n",
+    //         m_currMap->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), IsInWorld(), GetPositionX(), GetPositionY(), GetPositionZ());
+    //     return;
+    // }
 
     m_currMap->AddUpdateObject(this);
     m_objectUpdated = true;
@@ -3743,12 +3743,12 @@ void WorldObject::RemoveFromUpdate()
         return;
     }
 
-    if (m_currMap != CurrentMap && CurrentMap)
-    {
-        TC_LOG_ERROR("shitlog", "WorldObject::RemoveFromUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, InWorld: %u, position: { %f, %f, %f }.\nStack trace:\n",
-            m_currMap->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), IsInWorld(), GetPositionX(), GetPositionY(), GetPositionZ());
-        return;
-    }
+    // if (m_currMap != CurrentMap && CurrentMap)
+    // {
+    //     TC_LOG_ERROR("shitlog", "WorldObject::RemoveFromUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, InWorld: %u, position: { %f, %f, %f }.\nStack trace:\n",
+    //         m_currMap->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), IsInWorld(), GetPositionX(), GetPositionY(), GetPositionZ());
+    //     return;
+    // }
 
     m_currMap->RemoveUpdateObject(this);
     m_objectUpdated = false;
