@@ -1880,9 +1880,6 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
 
 SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* target, bool implicit) const
 {
-    if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_project_NPC)
-        return SPELL_FAILED_BAD_TARGETS;
-
     if (AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF && caster == target)
         return SPELL_FAILED_BAD_TARGETS;
 

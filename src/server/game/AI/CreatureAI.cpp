@@ -503,7 +503,6 @@ Creature* SummonablePremiumNpcAI::FindOrSpawn(PlayerOrChatHandler player, uint32
 {
     ASSERT(entry >= 190000);
     ASSERT(sObjectMgr->GetCreatureTemplate(entry));
-    ASSERT(sObjectMgr->GetCreatureTemplate(entry)->flags_extra & CREATURE_FLAG_EXTRA_project_NPC);
 
     SummonablePremiumNpcSearcher searcher { entry, player->GetGUID() };
     player->GetMap()->LoadGrid(0, 0);
