@@ -53,19 +53,14 @@ target_include_directories(database
     ${CMAKE_CURRENT_SOURCE_DIR}/Updater
   PRIVATE
     common
-    ${CMAKE_SOURCE_DIR}/dep/SFMT
-    ${CMAKE_SOURCE_DIR}/dep/fmt/include
-    ${CMAKE_SOURCE_DIR}/src/server
+    shared
     ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
     mysql
     boost
-    openssl 
 )
 
 target_link_libraries(database
   PRIVATE
-    fmt
     common
     mysql
     boost

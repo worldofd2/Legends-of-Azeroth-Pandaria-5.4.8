@@ -352,7 +352,7 @@ struct SpellResearchData
     uint32 FragmentCount;
 };
 
-class Spell
+class TC_GAME_API Spell
 {
     friend void Unit::SetCurrentCastedSpell(Spell* pSpell);
     friend class SpellScript;

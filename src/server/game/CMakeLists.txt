@@ -1,4 +1,4 @@
-# This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+# This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -175,6 +175,15 @@ set(game_STAT_SRCS
   ${sources_Cfbg}
 )
 
+if (ELUNA)
+  file(GLOB_RECURSE sources_LuaEngine LuaEngine/*.cpp LuaEngine/*.h)
+  source_group(LuaEngine FILES ${sources_LuaEngine})
+  set(game_STAT_SRCS
+    ${game_STAT_SRCS}
+    ${sources_LuaEngine}
+  )
+endif()
+
 add_library(game STATIC
   ${game_STAT_SRCS}
 )
@@ -182,31 +191,6 @@ add_library(game STATIC
 target_include_directories(game
   PUBLIC
     ${CMAKE_BINARY_DIR}
-    openssl
-    boost
-    zlib
-    common
-  PRIVATE
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
-    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_SOURCE_DIR}/dep/SFMT
-    ${MYSQL_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
-    ${CMAKE_SOURCE_DIR}/src/server/database/Database
-    ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Networking
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Accounts
     ${CMAKE_CURRENT_SOURCE_DIR}/Achievements
@@ -263,6 +247,7 @@ target_include_directories(game
     ${CMAKE_CURRENT_SOURCE_DIR}/Mails
     ${CMAKE_CURRENT_SOURCE_DIR}/Maps
     ${CMAKE_CURRENT_SOURCE_DIR}/Miscellaneous
+    ${CMAKE_CURRENT_SOURCE_DIR}/Motd
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement/Spline
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement/MovementGenerators
@@ -288,24 +273,33 @@ target_include_directories(game
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/Weather
-    ${CMAKE_CURRENT_SOURCE_DIR}/World
+    ${CMAKE_CURRENT_SOURCE_DIR}/World    
+    openssl
+    boost
+    common
+  PRIVATE
+    zlib
+    database
+    shared
+    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
+    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
+    ${CMAKE_SOURCE_DIR}/dep/SFMT
+    ${CMAKE_SOURCE_DIR}/src/server/collision
+    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
+    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
+    ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
 
 if (ELUNA)
-  file(GLOB_RECURSE sources_LuaEngine LuaEngine/*.cpp LuaEngine/*.h)
-  source_group(LuaEngine FILES ${sources_LuaEngine})
-  set(game_STAT_SRCS
-    ${game_STAT_SRCS}
-    ${sources_LuaEngine}
-    #${lua_STAT_SRCS}
-  )
-  include_directories(
-    PRIVATE
-      ${CMAKE_SOURCE_DIR}/dep/lualib
+  target_include_directories(game
+    PUBLIC
       ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine
-      ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
+    PRIVATE
+      lua
   )
+
 endif()
 
 target_link_libraries(game
