@@ -814,7 +814,7 @@ class GameObjectModel;
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
 
-class GameObject : public WorldObject, public GridObject<GameObject>, public MapObject
+class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>, public MapObject
 {
     public:
         explicit GameObject();
@@ -822,12 +822,12 @@ class GameObject : public WorldObject, public GridObject<GameObject>, public Map
 
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
         bool Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit = 0);
-        void Update(uint32 p_time);
+        void Update(uint32 p_time) override;
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const { return m_goInfo; }
         GameObjectTemplateAddon const* GetTemplateAddon() const { return m_goTemplateAddon; }

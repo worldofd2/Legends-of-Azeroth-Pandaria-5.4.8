@@ -53,53 +53,9 @@ typedef std::unordered_map<uint32, CreatureTemplate> CreatureTemplateContainer;
 #pragma pack(push, 1)
 #endif
 
-// Defines base stats for creatures (used to calculate HP/mana/armor).
-struct CreatureBaseStats
-{
-    uint32 BaseHealth[MAX_CREATURE_BASE_HP];
-    uint32 BaseMana;
-    uint32 BaseArmor;
-    uint32 AttackPower;
-    uint32 RangedAttackPower;
-    float BaseDamage[MAX_CREATURE_BASE_DAMAGE];
 
-    // Helpers
-
-    uint32 GenerateHealth(CreatureTemplate const* info) const
-    {
-        return uint32(ceil(BaseHealth[info->expansion] * info->ModHealth));
-    }
-
-    uint32 GenerateMana(CreatureTemplate const* info) const
-    {
-        // Mana can be 0.
-        if (!BaseMana)
-            return 0;
-
-        return uint32(ceil(BaseMana * info->ModMana * info->ModManaExtra));
-    }
-
-    uint32 GenerateArmor(CreatureTemplate const* info) const
-    {
-        return uint32(ceil(BaseArmor * info->ModArmor));
-    }
-
-    float GenerateBaseDamage(CreatureTemplate const* info) const
-    {
-        return BaseDamage[info->expansion];
-    }
-
-    static CreatureBaseStats const* GetBaseStats(uint8 level, uint8 unitClass);
-};
 
 typedef std::unordered_map<uint16, CreatureBaseStats> CreatureBaseStatsContainer;
-
-struct CreatureLocale
-{
-    StringVector Name;
-    StringVector FemaleName;
-    StringVector Title;
-};
 
 struct PointOfInterestLocale
 {

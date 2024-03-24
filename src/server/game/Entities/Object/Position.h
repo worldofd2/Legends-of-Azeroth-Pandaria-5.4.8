@@ -25,7 +25,7 @@
 class ByteBuffer;
 class WorldObject;
 
-struct Position
+struct TC_GAME_API Position
 {
     struct PositionXYZStreamer
     {

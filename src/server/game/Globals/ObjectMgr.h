@@ -479,7 +479,7 @@ typedef std::unordered_map<uint32/*(mapid, spawnMode) pair*/, CellObjectGuidsMap
 
 struct TrinityStringLocale
 {
-    StringVector Content;
+    std::vector<std::string> Content;
 };
 
 typedef std::map<uint64, uint64> LinkedRespawnContainer;
