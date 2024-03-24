@@ -91,13 +91,13 @@ namespace LuaWorldObject
 
     int GetNearestPlayer(lua_State* L, WorldObject* obj)
     {
-        float range = luaL_optnumber(L, 1, SIZE_OF_GRIDS);
+        // float range = luaL_optnumber(L, 1, SIZE_OF_GRIDS);
 
-        Player* target = nullptr;
-        Eluna::WorldObjectInRangeCheck checker(true, obj, range, TYPEID_PLAYER);
-        Trinity::PlayerLastSearcher<Eluna::WorldObjectInRangeCheck> searcher(obj, target, checker);
+        // Player* target = nullptr;
+        // Eluna::WorldObjectInRangeCheck checker(true, obj, range, TYPEID_PLAYER);
+        // Trinity::PlayerLastSearcher<Eluna::WorldObjectInRangeCheck> searcher(obj, target, checker);
 
-        sEluna->Push(L, target);
+        // sEluna->Push(L, target);
         return 1;
     }
 
