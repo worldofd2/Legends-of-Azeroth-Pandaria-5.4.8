@@ -666,7 +666,7 @@ class Eluna
         };
 
         // Doesn't get self
-        struct WorldObjectInRangeCheck
+        class WorldObjectInRangeCheck
         {
             WorldObjectInRangeCheck(bool nearest, WorldObject const* obj, float range,
                                     TypeID typeId = TYPEID_OBJECT, uint32 entry = 0) : i_nearest(nearest),

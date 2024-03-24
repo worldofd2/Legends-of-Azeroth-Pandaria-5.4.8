@@ -274,13 +274,13 @@ target_include_directories(game
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/Weather
     ${CMAKE_CURRENT_SOURCE_DIR}/World    
-    openssl
     boost
     common
   PRIVATE
     zlib
     database
     shared
+    collision
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
@@ -309,6 +309,7 @@ target_link_libraries(game
     common
     database
     shared
+    collision
 )
 
 if (ELUNA)
