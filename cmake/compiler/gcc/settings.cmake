@@ -24,7 +24,7 @@ if (WITH_SANITIZER)
   set(COMPILER_FLAGS "${COMPILER_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize-recover=address -fsanitize-address-use-after-scope")
 endif()
 
-if (BUILD_DEPLOY)
+if (BUILD_DEPLOY AND NOT WITH_COREDEBUG)
   set(COMPILER_FLAGS "${COMPILER_FLAGS} -march=native -fno-strict-aliasing -ffunction-sections -fdata-sections")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections " CACHE INTERNAL "EXE_LINKER_FLAGS" FORCE) #-s -w
   if (NOT INSTALL_PREFIX)

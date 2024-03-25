@@ -16,55 +16,20 @@
 */
 
 #include "MMapFactory.h"
-#include "World.h"
 #include "Config.h"
-#include "DisableMgr.h"
 
 namespace MMAP
 {
     // ######################## MMapFactory ########################
     // our global singleton copy
-    MMapManager* g_MMapManager = NULL;
+    MMapManager* g_MMapManager = nullptr;
 
     MMapManager* MMapFactory::createOrGetMMapManager()
     {
-        if (g_MMapManager == NULL)
+        if (g_MMapManager == nullptr)
             g_MMapManager = new MMapManager();
 
         return g_MMapManager;
-    }
-
-    bool MMapFactory::IsPathfindingEnabled()
-    {
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS);
-    }
-    bool MMapFactory::IsPathfindingEnabledInMap(uint32 mapId)
-    {
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_MAP, mapId, NULL);
-    }
-    bool MMapFactory::IsPathfindingEnabledInZone(uint32 zoneId)
-    {
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_ZONE, zoneId, NULL);
-    }
-    bool MMapFactory::IsPathfindingEnabledInArea(uint32 areaId)
-    {
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_AREA, areaId, NULL);
-    }
-    bool MMapFactory::IsPathfindingEnabledForCreature(uint32 entry)
-    {
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_CREATURE, entry, NULL);
-    }
-    bool MMapFactory::IsPathfindingEnabled(uint32 mapId, uint32 zoneId, uint32 areaId, uint32 entry)
-    {
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_MAP, mapId, NULL)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_ZONE, zoneId, NULL)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_AREA, areaId, NULL)
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_CREATURE, entry, NULL);
     }
 
     void MMapFactory::clear()

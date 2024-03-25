@@ -16,11 +16,15 @@
 */
 
 #include "MMapManager.h"
+#include "Errors.h"
 #include "Log.h"
-#include "World.h"
+#include "MapDefines.h"
 
 namespace MMAP
 {
+    constexpr char MAP_FILE_NAME_FORMAT[] = "{}mmaps/{:03}.mmap";
+    constexpr char TILE_FILE_NAME_FORMAT[] = "{}mmaps/{:03}{:02}{:02}.mmtile";
+
     // ######################## MMapManager ########################
     MMapManager::~MMapManager()
     {
@@ -31,22 +35,19 @@ namespace MMAP
         // if we had, tiles in MMapData->mmapLoadedTiles, their actual data is lost!
     }
 
-    bool MMapManager::loadMapData(uint32 mapId)
+    bool MMapManager::loadMapData(std::string const& basePath, uint32 mapId)
     {
         // we already have this map loaded?
         if (loadedMMaps.find(mapId) != loadedMMaps.end())
             return true;
 
         // load and init dtNavMesh - read parameters from file
-        uint32 pathLen = sWorld->GetDataPath().length() + strlen("mmaps/%04i.mmap")+1;
-        char *fileName = new char[pathLen];
-        snprintf(fileName, pathLen, (sWorld->GetDataPath()+"mmaps/%04i.mmap").c_str(), mapId);
+        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, basePath, mapId);
 
-        FILE* file = fopen(fileName, "rb");
+        FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
-            TC_LOG_DEBUG("maps", "MMAP:loadMapData: Error: Could not open mmap file '%s'", fileName);
-            delete [] fileName;
+            TC_LOG_DEBUG("maps", "MMAP:loadMapData: Error: Could not open mmap file '%s'", fileName.c_str());
             return false;
         }
 
@@ -55,8 +56,7 @@ namespace MMAP
         fclose(file);
         if (count != 1)
         {
-            TC_LOG_DEBUG("maps", "MMAP:loadMapData: Error: Could not read params from file '%s'", fileName);
-            delete [] fileName;
+            TC_LOG_DEBUG("maps", "MMAP:loadMapData: Error: Could not read params from file '%s'", fileName.c_str());
             return false;
         }
 
@@ -65,12 +65,9 @@ namespace MMAP
         if (dtStatusFailed(mesh->init(&params)))
         {
             dtFreeNavMesh(mesh);
-            TC_LOG_ERROR("maps", "MMAP:loadMapData: Failed to initialize dtNavMesh for mmap %04u from file %s", mapId, fileName);
-            delete [] fileName;
+            TC_LOG_ERROR("maps", "MMAP:loadMapData: Failed to initialize dtNavMesh for mmap %04u from file %s", mapId, fileName.c_str());
             return false;
         }
-
-        delete [] fileName;
 
         TC_LOG_DEBUG("maps", "MMAP:loadMapData: Loaded %04i.mmap", mapId);
 
@@ -87,10 +84,10 @@ namespace MMAP
         return uint32(x << 16 | y);
     }
 
-    bool MMapManager::loadMap(std::string const& /*basePath*/, uint32 mapId, int32 x, int32 y, bool dontReportErrorIfFileNotFound)
+    bool MMapManager::loadMap(std::string const& basePath, uint32 mapId, int32 x, int32 y, bool dontReportErrorIfFileNotFound)
     {
         // make sure the mmap is loaded and ready to load tiles
-        if (!loadMapData(mapId))
+        if (!loadMapData(basePath, mapId))
             return false;
 
         // get this mmap data
@@ -103,20 +100,15 @@ namespace MMAP
             return false;
 
         // load this tile :: mmaps/MMMXXYY.mmtile
-        uint32 pathLen = sWorld->GetDataPath().length() + strlen("mmaps/%04i_%02i_%02i.mmtile")+1;
-        char *fileName = new char[pathLen];
+        std::string fileName = Trinity::StringFormat(TILE_FILE_NAME_FORMAT, basePath, mapId, x, y);
 
-        snprintf(fileName, pathLen, (sWorld->GetDataPath()+"mmaps/%04i_%02i_%02i.mmtile").c_str(), mapId, x, y);
-
-        FILE* file = fopen(fileName, "rb");
+        FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
             if (!dontReportErrorIfFileNotFound)
-                TC_LOG_ERROR("maps", "MMAP:loadMap: Could not open mmtile file '%s'", fileName);
-            delete [] fileName;
+                TC_LOG_ERROR("maps", "MMAP:loadMap: Could not open mmtile file '%s'", fileName.c_str());
             return false;
         }
-        delete [] fileName;
 
         // read header
         MmapTileHeader fileHeader;
@@ -167,6 +159,32 @@ namespace MMAP
         }
 
         return false;
+    }
+
+    bool MMapManager::loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId)
+    {
+        if (!loadMapData(basePath, mapId))
+            return false;
+
+        MMapData* mmap = loadedMMaps[mapId];
+        auto [queryItr, inserted] = mmap->navMeshQueries.try_emplace(instanceId, nullptr);
+        if (!inserted)
+            return true;
+
+        // allocate mesh query
+        dtNavMeshQuery* query = dtAllocNavMeshQuery();
+        ASSERT(query);
+        if (dtStatusFailed(query->init(mmap->navMesh, 1024)))
+        {
+            dtFreeNavMeshQuery(query);
+            mmap->navMeshQueries.erase(queryItr);
+            TC_LOG_ERROR("maps", "MMAP:GetNavMeshQuery: Failed to initialize dtNavMeshQuery for mapId {:03} instanceId {}", mapId, instanceId);
+            return false;
+        }
+
+        TC_LOG_DEBUG("maps", "MMAP:GetNavMeshQuery: created dtNavMeshQuery for mapId {:03} instanceId {}", mapId, instanceId);
+        queryItr->second = query;
+        return true;
     }
 
     bool MMapManager::unloadMap(uint32 mapId, int32 x, int32 y)

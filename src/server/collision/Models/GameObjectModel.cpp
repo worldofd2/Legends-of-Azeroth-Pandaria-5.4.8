@@ -27,7 +27,6 @@
 #include "TemporarySummon.h"
 #include "Object.h"
 #include "DBCStores.h"
-#include "World.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -45,13 +44,11 @@ struct GameobjectModelData
 typedef std::unordered_map<uint32, GameobjectModelData> ModelList;
 ModelList model_list;
 
-void LoadGameObjectModelList()
+void LoadGameObjectModelList(std::string const& dataPath)
 {
-#ifndef NO_CORE_FUNCS
     uint32 oldMSTime = getMSTime();
-#endif
 
-    FILE* model_list_file = fopen((sWorld->GetDataPath() + "vmaps/" + VMAP::GAMEOBJECT_MODELS).c_str(), "rb");
+    FILE* model_list_file = fopen((dataPath + "vmaps/" + VMAP::GAMEOBJECT_MODELS).c_str(), "rb");
     if (!model_list_file)
     {
         VMAP_ERROR_LOG("misc", "Unable to open '%s' file.", VMAP::GAMEOBJECT_MODELS);
@@ -93,7 +90,7 @@ GameObjectModel::~GameObjectModel()
         ((VMAP::VMapManager2*)VMAP::VMapFactory::createOrGetVMapManager())->releaseModelInstance(name);
 }
 
-bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info)
+bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info, std::string const& dataPath)
 {
     ModelList::const_iterator it = model_list.find(info.Displayid);
     if (it == model_list.end())
@@ -107,15 +104,12 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
         return false;
     }
 
-    iModel = ((VMAP::VMapManager2*)VMAP::VMapFactory::createOrGetVMapManager())->acquireModelInstance(sWorld->GetDataPath() + "vmaps/", it->second.name);
+    iModel = ((VMAP::VMapManager2*)VMAP::VMapFactory::createOrGetVMapManager())->acquireModelInstance(dataPath + "vmaps/", it->second.name);
 
     if (!iModel)
         return false;
 
     name = it->second.name;
-    //flags = VMAP::MOD_M2;
-    //adtId = 0;
-    //ID = 0;
     iPos = Vector3(go.GetPositionX(), go.GetPositionY(), go.GetPositionZ());
     phasemask = go.GetPhaseMask();
     iScale = go.GetObjectScale();
@@ -149,14 +143,14 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
     return true;
 }
 
-GameObjectModel* GameObjectModel::Create(const GameObject& go)
+GameObjectModel* GameObjectModel::Create(const GameObject& go, std::string const& dataPath)
 {
     const GameObjectDisplayInfoEntry* info = sGameObjectDisplayInfoStore.LookupEntry(go.GetDisplayId());
     if (!info)
         return NULL;
 
     GameObjectModel* mdl = new GameObjectModel();
-    if (!mdl->initialize(go, *info))
+    if (!mdl->initialize(go, *info, dataPath))
     {
         delete mdl;
         return NULL;

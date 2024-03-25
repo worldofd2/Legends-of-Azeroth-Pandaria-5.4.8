@@ -62,7 +62,9 @@ add_library(common STATIC
 target_include_directories(common
   PUBLIC
     openssl
-    boost  
+    boost
+    fmt
+    utf8cpp
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Asio
     ${CMAKE_CURRENT_SOURCE_DIR}/Configuration
@@ -75,9 +77,8 @@ target_include_directories(common
     ${CMAKE_CURRENT_SOURCE_DIR}/Threading
     ${CMAKE_CURRENT_SOURCE_DIR}/Utilities
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/dep/fmt/include 
   PRIVATE
-    ${CMAKE_SOURCE_DIR}/dep/SFMT
+    sfmt
     ${CMAKE_SOURCE_DIR}/dep/utf8cpp
 )
 
@@ -87,6 +88,10 @@ target_link_libraries(common
     fmt
     openssl
     boost
+    g3dlib
+    Detour
+    utf8cpp
+    jemalloc    
 )
 
 add_dependencies(common revision.h)

@@ -281,15 +281,9 @@ target_include_directories(game
     database
     shared
     collision
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
-    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_SOURCE_DIR}/dep/SFMT
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
-    ${CMAKE_SOURCE_DIR}/dep/fmt/include
+    g3dlite
+    Detour
+    Recast
 )
 
 if (ELUNA)
@@ -305,11 +299,12 @@ endif()
 target_link_libraries(game
   PUBLIC
     Detour
-    zlib
     common
     database
     shared
     collision
+  PRIVATE
+    zlib
 )
 
 if (ELUNA)

@@ -35,17 +35,11 @@ namespace MMAP
     // static class
     // holds all mmap global data
     // access point to MMapManager singleton
-    class MMapFactory
+    class TC_COMMON_API MMapFactory
     {
         public:
             static MMapManager* createOrGetMMapManager();
             static void clear();
-            static bool IsPathfindingEnabled();
-            static bool IsPathfindingEnabledInMap(uint32 mapId);
-            static bool IsPathfindingEnabledInZone(uint32 zoneId);
-            static bool IsPathfindingEnabledInArea(uint32 areaId);
-            static bool IsPathfindingEnabledForCreature(uint32 entry);
-            static bool IsPathfindingEnabled(uint32 mapId, uint32 zoneId, uint32 areaId, uint32 entry);
     };
 }
 

@@ -45,8 +45,8 @@ class GameObjectModel /*, public Intersectable*/
     VMAP::WorldModel* iModel;
     GameObject const* owner;
 
-    GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(NULL), owner(NULL) { }
-    bool initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info);
+    GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(nullptr), owner(nullptr) { }
+    bool initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info, std::string const& dataPath);
 
 public:
     std::string name;
@@ -65,9 +65,11 @@ public:
 
     bool intersectRay(const G3D::Ray& Ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask) const;
 
-    static GameObjectModel* Create(const GameObject& go);
+    static GameObjectModel* Create(const GameObject& go, std::string const& dataPath);
 
     bool UpdatePosition();
 };
+
+TC_COMMON_API void LoadGameObjectModelList(std::string const& dataPath);
 
 #endif // _GAMEOBJECT_MODEL_H

@@ -31,6 +31,7 @@ if(SERVERS)
   add_subdirectory(gsoap)
   add_subdirectory(readline)
   add_subdirectory(mysql)  
+  add_subdirectory(utf8cpp)  
 endif()
 
 if(TOOLS)

@@ -18,8 +18,10 @@
 #include "PathGenerator.h"
 #include "Map.h"
 #include "Creature.h"
+#include "DisableMgr.h"
 #include "GameObject.h"
 #include "Transport.h"
+#include "MapDefines.h"
 #include "MMapFactory.h"
 #include "MMapManager.h"
 #include "Log.h"
@@ -1068,7 +1070,13 @@ void PathGenerator::UpdateNavMesh()
 
     uint32 zoneId, areaId;
     _sourceUnit->GetZoneAndAreaId(zoneId, areaId);
-    if (MMAP::MMapFactory::IsPathfindingEnabled(mapId, zoneId, areaId, _sourceUnit->GetEntry()))
+
+
+    if (sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS) 
+             && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_MAP, mapId, nullptr)
+             && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_ZONE, zoneId, nullptr)
+             && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_AREA, areaId, nullptr)
+             && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_CREATURE,  _sourceUnit->GetEntry(), nullptr)) // MMAP::MMapFactory::IsPathfindingEnabled(mapId, zoneId, areaId, _sourceUnit->GetEntry())
     {
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
         _navMesh = mmap->GetNavMesh(mapId);

@@ -71,7 +71,6 @@ target_include_directories(shared
   PRIVATE
     common
     database
-    ${CMAKE_SOURCE_DIR}/dep/utf8cpp
     ${CMAKE_SOURCE_DIR}/src/server/database
     ${CMAKE_SOURCE_DIR}/src/server/database/Database
 )
@@ -79,6 +78,8 @@ target_include_directories(shared
 target_link_libraries(shared
   PRIVATE
     common
+  PUBLIC
+    database
 )
 
 

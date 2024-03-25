@@ -66,7 +66,6 @@ target_include_directories(worldserver
     ${CMAKE_SOURCE_DIR}/src/server/collision
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
-    ${CMAKE_SOURCE_DIR}/src/server/shared
     ${CMAKE_SOURCE_DIR}/src/server/database/Database
     ${CMAKE_SOURCE_DIR}/src/server/scripts/ScriptLoader
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -93,13 +92,10 @@ set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAG
 
 target_link_libraries(worldserver
   PRIVATE
-    common
     database
     scripts
     game
-    shared
     collision
-    g3dlib
     gsoap
     jemalloc
     readline

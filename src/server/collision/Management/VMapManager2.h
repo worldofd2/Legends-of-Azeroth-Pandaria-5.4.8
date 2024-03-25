@@ -49,7 +49,7 @@ namespace VMAP
     class StaticMapTree;
     class WorldModel;
 
-    class ManagedModel
+    class TC_COMMON_API ManagedModel
     {
         public:
             ManagedModel() : iModel(0), iRefCount(0) { }

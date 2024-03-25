@@ -17,16 +17,13 @@
 
 #include "PathCommon.h"
 #include "MapBuilder.h"
-
+#include "MapDefines.h"
 #include "MapTree.h"
 #include "ModelInstance.h"
-
 #include "DetourNavMeshBuilder.h"
 #include "DetourNavMesh.h"
 #include "DetourCommon.h"
-
 #include "DisableMgr.h"
-
 #include "SharedDefines.h"
 
 bool DisableMgr::IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags) { return false; }

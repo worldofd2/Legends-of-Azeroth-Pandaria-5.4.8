@@ -21,6 +21,7 @@
 #include "SharedDefines.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
+#include "MapDefines.h"
 #include "MoveSplineInitArgs.h"
 
 class Unit;

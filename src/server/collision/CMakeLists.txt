@@ -29,31 +29,23 @@ set(collision_STAT_SRCS
   ${sources_localdir}
 )
 
-include_directories(
+add_library(collision STATIC
+  ${collision_STAT_SRCS}
+)
+
+target_include_directories(collision
   PUBLIC
+    common
+    game
+    shared
+    Detour
+    g3dlite
     ${CMAKE_BINARY_DIR}
-    ${Boost_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Management
+    ${CMAKE_CURRENT_SOURCE_DIR}/Maps
+    ${CMAKE_CURRENT_SOURCE_DIR}/Models 
   PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/common
-    ${CMAKE_SOURCE_DIR}/src/common/Asio
-    ${CMAKE_SOURCE_DIR}/src/common/Configuration
-    ${CMAKE_SOURCE_DIR}/src/common/Debugging
-    ${CMAKE_SOURCE_DIR}/src/common/Logging
-    ${CMAKE_SOURCE_DIR}/src/common/Threading
-    ${CMAKE_SOURCE_DIR}/src/common/Utilities
-    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-    ${CMAKE_SOURCE_DIR}/src/server/database/Database    
-    ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
-    ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
     ${CMAKE_SOURCE_DIR}/src/server/game/Addons
     ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
     ${CMAKE_SOURCE_DIR}/src/server/game/Entities/AreaTrigger
@@ -78,17 +70,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/game/Server/Protocol
     ${CMAKE_SOURCE_DIR}/src/server/game/World
     ${CMAKE_SOURCE_DIR}/src/server/game/Spells
-    ${CMAKE_SOURCE_DIR}/src/server/game/Spells/Auras
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Management
-    ${CMAKE_CURRENT_SOURCE_DIR}/Maps
-    ${CMAKE_CURRENT_SOURCE_DIR}/Models
-    ${MYSQL_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/dep/fmt/include
-)
-
-add_library(collision STATIC
-  ${collision_STAT_SRCS}
+    ${CMAKE_SOURCE_DIR}/src/server/game/Spells/Auras         
 )
 
 target_link_libraries(collision

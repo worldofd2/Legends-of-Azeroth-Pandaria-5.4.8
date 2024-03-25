@@ -106,7 +106,8 @@ target_include_directories(scripts
     boost
     common
   PRIVATE   
-    game 
+    game
+    fmt 
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
@@ -116,7 +117,6 @@ target_include_directories(scripts
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
     ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
-    ${CMAKE_SOURCE_DIR}/dep/fmt/include   
 )
 
 target_link_libraries(scripts
