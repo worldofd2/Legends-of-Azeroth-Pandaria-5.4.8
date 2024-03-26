@@ -45,11 +45,11 @@ namespace MMAP
                 dtFreeNavMesh(navMesh);
         }
 
-        dtNavMesh* navMesh;
-
         // we have to use single dtNavMeshQuery for every instance, since those are not thread safe
         NavMeshQuerySet navMeshQueries;     // instanceId to query
-        MMapTileSet mmapLoadedTiles;        // maps [map grid coords] to [dtTile]
+
+        dtNavMesh* navMesh;
+        MMapTileSet loadedTileRefs;        // maps [map grid coords] to [dtTile]
     };
 
 
@@ -60,10 +60,11 @@ namespace MMAP
     class TC_COMMON_API MMapManager
     {
         public:
-            MMapManager() : loadedTiles(0) { }
+            MMapManager() : loadedTiles(0), thread_safe_environment(true) { }
             ~MMapManager();
 
-            bool loadMap(std::string const& basePath, uint32 mapId, int32 x, int32 y, bool dontReportErrorIfFileNotFound = false);
+            void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
+            bool loadMap(std::string const& basePath, uint32 mapId, int32 x, int32 y);
             bool loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId);
             bool unloadMap(uint32 mapId, int32 x, int32 y);
             bool unloadMap(uint32 mapId);
@@ -79,8 +80,10 @@ namespace MMAP
             bool loadMapData(std::string const& basePath, uint32 mapId);
             uint32 packTileID(int32 x, int32 y);
 
+            MMapDataSet::const_iterator GetMMapData(uint32 mapId) const;
             MMapDataSet loadedMMaps;
             uint32 loadedTiles;
+            bool thread_safe_environment;
     };
 }
 

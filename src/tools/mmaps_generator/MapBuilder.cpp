@@ -47,6 +47,7 @@ namespace MMAP
         m_skipTransports     (skipTransports),
         m_maxWalkableAngle   (maxWalkableAngle),
         m_bigBaseUnit        (bigBaseUnit),
+        //m_mapid              (mapid),
         m_rcContext          (nullptr),
         _cancelationToken (false)
     {
@@ -909,24 +910,18 @@ namespace MMAP
     }
 
     /**************************************************************************/
-    bool MapBuilder::shouldSkipMap(uint32 mapID)
+    bool MapBuilder::shouldSkipMap(uint32 mapID) const
     {
-        if (m_skipContinents || m_skipJunkMaps || m_skipBattlegrounds || m_skipArenas || m_skipDungeons || m_skipTransports)
-        {
+        // if (m_mapid >= 0)
+        //     return static_cast<uint32>(m_mapid) != mapID;        
+
+        if (m_skipContinents)
+            if (isContinentMap(mapID))
+                return true;
+
+        if (m_skipJunkMaps)
             switch (mapID)
             {
-                case 0:
-                case 1:
-                case 530:
-                case 571:
-                case 870:
-                case 1116:
-                    // Open world but not continents:
-                case 369: // Deeprun Tram
-                case 449: // Alliance PVP Barracks
-                case 450: // Horde PVP Barracks
-                case 609: // Ebon Hold
-                    return m_skipContinents;
                 case 13:    // test.wdt
                 case 25:    // ScottTest.wdt
                 case 29:    // Test.wdt
@@ -938,8 +933,17 @@ namespace MMAP
                 case 605:   // development_nonweighted.wdt
                 case 606:   // QA_DVD.wdt
                 case 651:   // ElevatorSpawnTest.wdt
-                case 1060:  // LevelDesignLand-DevOnly.wdt
-                    return m_skipJunkMaps;
+                case 1060:  // LevelDesignLand-DevOnly.wdt                    
+                    return true;
+                default:
+                    if (isTransportMap(mapID))
+                        return true;
+                    break;
+            }
+
+        if (m_skipBattlegrounds)
+            switch (mapID)
+            {
                 case 30:    // AV
                 case 37:    // ?
                 case 489:   // WSG
@@ -953,24 +957,84 @@ namespace MMAP
                 case 968:   // Rated Eye of the Storm
                 case 998:   // Temple of Kotmogu
                 case 1010:  // CTF3
-                case 1105:  // Deepwind Gorge
-                    return m_skipBattlegrounds;
+                case 1105:  // Deepwind Gorge                    
+                    return true;
+                default:
+                    break;
+            }
+
+        if (m_skipArenas)
+            switch (mapID)
+            {
                 case 559:   // Nagrand Arena
                 case 562:   // Blade's Edge Arena
                 case 572:   // Ruins of Lordaeron
                 case 617:   // Dalaran Sewers
-                case 618:   // The Ring of Valor
-                    return m_skipArenas;
+                case 618:   // The Ring of Valor                  
+                    return true;
                 default:
-                    return isTransportMap(mapID) ? m_skipTransports : m_skipDungeons;
+                    break;
             }
-        }
 
         return false;
     }
+    /**************************************************************************/
+    // bool MapBuilder::isTransportMap(uint32 mapID) const
+    // {
+    //     switch (mapID)
+    //     {
+    //         // transport maps
+    //         case 582:
+    //         case 584:
+    //         case 586:
+    //         case 587:
+    //         case 588:
+    //         case 589:
+    //         case 590:
+    //         case 591:
+    //         case 592:
+    //         case 593:
+    //         case 594:
+    //         case 596:
+    //         case 610:
+    //         case 612:
+    //         case 613:
+    //         case 614:
+    //         case 620:
+    //         case 621:
+    //         case 622:
+    //         case 623:
+    //         case 641:
+    //         case 642:
+    //         case 647:
+    //         case 672:
+    //         case 673:
+    //         case 712:
+    //         case 713:
+    //         case 718:
+    //         case 738:
+    //             return true;
+    //         default:
+    //             return false;
+    //     }
+    // }
+
+    bool MapBuilder::isContinentMap(uint32 mapID) const
+    {
+        switch (mapID)
+        {
+            case 0:
+            case 1:
+            case 530:
+            case 571:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     /**************************************************************************/
-    bool MapBuilder::isTransportMap(uint32 mapID)
+    bool MapBuilder::isTransportMap(uint32 mapID) const
     {
         return transportMaps.find(mapID) != transportMaps.end();
     }

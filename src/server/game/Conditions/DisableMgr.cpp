@@ -447,4 +447,15 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
     return false;
 }
 
+bool IsVMAPDisabledFor(uint32 entry, uint8 flags)
+{
+    return IsDisabledFor(DISABLE_TYPE_VMAP, entry, nullptr, flags);
+}
+
+bool IsPathfindingEnabled(uint32 mapId)
+{
+    return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS)
+        && !IsDisabledFor(DISABLE_TYPE_MMAP_MAP, mapId, nullptr, MMAP_DISABLE_PATHFINDING);
+}
+
 } // Namespace

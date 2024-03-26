@@ -123,8 +123,9 @@ namespace MMAP
                 float* bmin, float* bmax);
             void getGridBounds(uint32 mapID, uint32 &minX, uint32 &minY, uint32 &maxX, uint32 &maxY);
 
-            bool shouldSkipMap(uint32 mapID);
-            bool isTransportMap(uint32 mapID);
+            bool shouldSkipMap(uint32 mapID) const;
+            bool isTransportMap(uint32 mapID) const;
+            bool isContinentMap(uint32 mapID) const;
             bool shouldSkipTile(uint32 mapID, uint32 tileX, uint32 tileY);
 
             TerrainBuilder* m_terrainBuilder;
@@ -142,6 +143,8 @@ namespace MMAP
 
             float m_maxWalkableAngle;
             bool m_bigBaseUnit;
+
+            int32 m_mapid;
 
             // percentageDone - variables to calculate percentage
             std::atomic<uint32> m_totalTiles;
