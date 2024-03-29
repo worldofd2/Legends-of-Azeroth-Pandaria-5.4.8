@@ -441,7 +441,7 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
         case DISABLE_TYPE_LFG_DUNGEON:
             return true;
         case DISABLE_TYPE_VMAP:
-           return flags & itr->second.flags;
+           return (flags & itr->second.flags) != 0;
     }
 
     return false;

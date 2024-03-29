@@ -2132,7 +2132,7 @@ bool Aura::IsProcTriggeredOnEvent(AuraApplication* aurApp, ProcEventInfo& eventI
         return false;
 
     // do checks using conditions table
-    ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, GetId());
+    ConditionContainer conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, GetId());
     ConditionSourceInfo condInfo = ConditionSourceInfo(eventInfo.GetActor(), eventInfo.GetActionTarget());
     if (!sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
         return false;
@@ -2746,7 +2746,7 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
         if (!HasEffect(effIndex))
             continue;
 
-        ConditionList* conditions = nullptr;
+        ConditionContainer* conditions = nullptr;
         bool area = false;
 
         UnitList targetList;
@@ -2870,7 +2870,7 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
         if (!HasEffect(effIndex))
             continue;
 
-        ConditionList* conditions = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
+        ConditionContainer* conditions = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
         if (conditions && conditions->empty())
             conditions = nullptr;
 

@@ -271,7 +271,7 @@ class VehicleAIBase
 
         void LoadConditions();
         void CheckConditions(uint32 const diff);
-        ConditionList conditions;
+        ConditionContainer conditions;
         bool m_registered = false;
         uint32 m_ConditionsTimer = VEHICLE_CONDITION_CHECK_TIME;
 
