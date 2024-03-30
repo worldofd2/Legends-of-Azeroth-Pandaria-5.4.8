@@ -83,45 +83,47 @@ struct map_liquidHeader
 #define MAP_LIQUID_TYPE_DARK_WATER  0x10
 #define MAP_LIQUID_TYPE_WMO_WATER   0x20
 
-uint32 GetLiquidFlags(uint32 liquidType)
-{
-    // LiquidType.dbc
-    // Hardcoded for laziness' sake
-    static std::map<uint32, uint32> liquidEntryToLiquidType =
-    {
-        {   1, MAP_LIQUID_TYPE_WATER },
-        {   2, MAP_LIQUID_TYPE_OCEAN },
-        {   3, MAP_LIQUID_TYPE_MAGMA },
-        {   4, MAP_LIQUID_TYPE_SLIME },
-        {   5, MAP_LIQUID_TYPE_WATER },
-        {   6, MAP_LIQUID_TYPE_OCEAN },
-        {   7, MAP_LIQUID_TYPE_MAGMA },
-        {   8, MAP_LIQUID_TYPE_SLIME },
-        {   9, MAP_LIQUID_TYPE_WATER },
-        {  10, MAP_LIQUID_TYPE_OCEAN },
-        {  11, MAP_LIQUID_TYPE_MAGMA },
-        {  12, MAP_LIQUID_TYPE_SLIME },
-        {  13, MAP_LIQUID_TYPE_WATER },
-        {  14, MAP_LIQUID_TYPE_OCEAN },
-        {  15, MAP_LIQUID_TYPE_MAGMA },
-        {  17, MAP_LIQUID_TYPE_WATER },
-      //{  18, MAP_LIQUID_TYPE_OCEAN },
-        {  19, MAP_LIQUID_TYPE_MAGMA },
-        {  20, MAP_LIQUID_TYPE_SLIME },
-        {  21, MAP_LIQUID_TYPE_SLIME },
-        {  41, MAP_LIQUID_TYPE_WATER },
-        {  61, MAP_LIQUID_TYPE_WATER },
-        {  81, MAP_LIQUID_TYPE_WATER },
-        { 100, MAP_LIQUID_TYPE_OCEAN },
-        { 121, MAP_LIQUID_TYPE_MAGMA },
-        { 141, MAP_LIQUID_TYPE_MAGMA },
-        { 181, MAP_LIQUID_TYPE_WATER },
-    };
-    auto itr = liquidEntryToLiquidType.find(liquidType);
-    if (itr == liquidEntryToLiquidType.end())
-        std::abort();
-    return itr->second;
-}
+// uint32 GetLiquidFlags(uint32 liquidType)
+// {
+//     // LiquidType.dbc
+//     // Hardcoded for laziness' sake
+//     static std::map<uint32, uint32> liquidEntryToLiquidType =
+//     {
+//         {   1, MAP_LIQUID_TYPE_WATER },
+//         {   2, MAP_LIQUID_TYPE_OCEAN },
+//         {   3, MAP_LIQUID_TYPE_MAGMA },
+//         {   4, MAP_LIQUID_TYPE_SLIME },
+//         {   5, MAP_LIQUID_TYPE_WATER },
+//         {   6, MAP_LIQUID_TYPE_OCEAN },
+//         {   7, MAP_LIQUID_TYPE_MAGMA },
+//         {   8, MAP_LIQUID_TYPE_SLIME },
+//         {   9, MAP_LIQUID_TYPE_WATER },
+//         {  10, MAP_LIQUID_TYPE_OCEAN },
+//         {  11, MAP_LIQUID_TYPE_MAGMA },
+//         {  12, MAP_LIQUID_TYPE_SLIME },
+//         {  13, MAP_LIQUID_TYPE_WATER },
+//         {  14, MAP_LIQUID_TYPE_OCEAN },
+//         {  15, MAP_LIQUID_TYPE_MAGMA },
+//         {  17, MAP_LIQUID_TYPE_WATER },
+//       //{  18, MAP_LIQUID_TYPE_OCEAN },
+//         {  19, MAP_LIQUID_TYPE_MAGMA },
+//         {  20, MAP_LIQUID_TYPE_SLIME },
+//         {  21, MAP_LIQUID_TYPE_SLIME },
+//         {  41, MAP_LIQUID_TYPE_WATER },
+//         {  61, MAP_LIQUID_TYPE_WATER },
+//         {  81, MAP_LIQUID_TYPE_WATER },
+//         { 100, MAP_LIQUID_TYPE_OCEAN },
+//         { 121, MAP_LIQUID_TYPE_MAGMA },
+//         { 141, MAP_LIQUID_TYPE_MAGMA },
+//         { 181, MAP_LIQUID_TYPE_WATER },
+//     };
+//     auto itr = liquidEntryToLiquidType.find(liquidType);
+//     if (itr == liquidEntryToLiquidType.end())
+//         std::abort();
+//     return itr->second;
+// }
+
+uint32 GetLiquidFlags(uint32 liquidId);
 
 namespace MMAP
 {
@@ -326,7 +328,7 @@ namespace MMAP
                 printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
 
 
-            float* liquid_map = NULL;
+            float* liquid_map = nullptr;
 
             if (!(lheader.flags & MAP_LIQUID_NO_TYPE))
                 if (fread(liquid_type, sizeof(liquid_type), 1, mapFile) != 1)
@@ -419,7 +421,7 @@ namespace MMAP
 
         // make a copy of liquid vertices
         // used to pad right-bottom frame due to lost vertex data at extraction
-        float* lverts_copy = NULL;
+        float* lverts_copy = nullptr;
         if (meshData.liquidVerts.size())
         {
             lverts_copy = new float[meshData.liquidVerts.size()];
@@ -718,7 +720,7 @@ namespace MMAP
 
         do
         {
-            ModelInstance* models = NULL;
+            ModelInstance* models = nullptr;
             uint32 count = 0;
             auto itr = transportMaps.find(mapID);
             if (itr == transportMaps.end())
@@ -792,7 +794,7 @@ namespace MMAP
                     std::vector<G3D::Vector3> tempVertices;
                     std::vector<G3D::Vector3> transformedVertices;
                     std::vector<MeshTriangle> tempTriangles;
-                    WmoLiquid* liquid = NULL;
+                    WmoLiquid* liquid = nullptr;
 
                     it->getMeshData(tempVertices, tempTriangles, liquid);
 
@@ -1001,7 +1003,7 @@ namespace MMAP
     void TerrainBuilder::loadOffMeshConnections(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, const char* offMeshFilePath)
     {
         // no meshfile input given?
-        if (offMeshFilePath == NULL)
+        if (offMeshFilePath == nullptr)
             return;
 
         FILE* fp = fopen(offMeshFilePath, "rb");

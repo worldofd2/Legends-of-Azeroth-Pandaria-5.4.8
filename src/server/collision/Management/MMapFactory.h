@@ -18,6 +18,7 @@
 #ifndef _MMAP_FACTORY_H
 #define _MMAP_FACTORY_H
 
+#include "Define.h"
 #include "MMapManager.h"
 #include "DetourAlloc.h"
 #include "DetourNavMesh.h"
