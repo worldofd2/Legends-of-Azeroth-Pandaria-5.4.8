@@ -6118,8 +6118,10 @@ WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveYard(WorldLocation const& lo
         if ((data.safeLocId == 1704 || data.safeLocId == 1705) && zoneId == 4720 && areaId == 4924)
             continue;
 
-        if (conditionObject && !sConditionMgr->IsObjectMeetToConditions(conditionSource, sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_GRAVEYARD, data.safeLocId)))
-            continue;
+        // not in skyfire,maybe hack
+        // if (conditionObject && !sConditionMgr->IsObjectMeetToConditions(conditionSource, sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_GRAVEYARD, data.safeLocId)))
+        // if (conditionObject && !sConditionMgr->IsObjectMeetToConditions(conditionSource, IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_GRAVEYARD, data.safeLocId, ConditionSourceInfo& sourceInfo)))
+        //     continue;
 
         // find now nearest graveyard at other map
         if (MapId != entry->map_id)

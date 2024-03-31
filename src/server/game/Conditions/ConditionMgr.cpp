@@ -31,6 +31,94 @@
 #include "SmartAI.h"
 #include "Guild.h"
 
+char const* const ConditionMgr::StaticSourceTypeData[CONDITION_SOURCE_TYPE_MAX] =
+{
+    "None",
+    "Creature Loot",
+    "Disenchant Loot",
+    "Fishing Loot",
+    "GameObject Loot",
+    "Item Loot",
+    "Mail Loot",
+    "Milling Loot",
+    "Pickpocketing Loot",
+    "Prospecting Loot",
+    "Reference Loot",
+    "Skinning Loot",
+    "Spell Loot",
+    "Spell Impl. Target",
+    "Gossip Menu",
+    "Gossip Menu Option",
+    "Creature Vehicle",
+    "Spell Expl. Target",
+    "Spell Click Event",
+    "Quest Accept",
+    "Quest Show Mark",
+    "Vehicle Spell",
+    "SmartScript",
+    "Npc Vendor",
+    "Spell Proc",
+    "Terrain Swap",
+    "Phase"
+};
+
+ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[CONDITION_MAX] =
+{
+    { "None",                     false, false, false },
+    { "Aura",                      true, true,  true  },
+    { "Item Stored",               true, true,  true  },
+    { "Item Equipped",             true, false, false },
+    { "Zone",                      true, false, false },
+    { "Reputation",                true, true,  false },
+    { "Team",                      true, false, false },
+    { "Skill",                     true, true,  false },
+    { "Quest Rewarded",            true, false, false },
+    { "Quest Taken",               true, false, false },
+    { "Drunken",                   true, false, false },
+    { "WorldState",                true, true,  false },
+    { "Active Event",              true, false, false },
+    { "Instance Info",             true, true,  true  },
+    { "Quest None",                true, false, false },
+    { "Class",                     true, false, false },
+    { "Race",                      true, false, false },
+    { "Achievement",               true, false, false },
+    { "Title",                     true, false, false },
+    { "SpawnMask",                 true, false, false },
+    { "Gender",                    true, false, false },
+    { "Unit State",                true, false, false },
+    { "Map",                       true, false, false },
+    { "Area",                      true, false, false },
+    { "CreatureType",              true, false, false },
+    { "Spell Known",               true, false, false },
+    { "PhaseMask",                 true, false, false },
+    { "Level",                     true, true,  false },
+    { "Quest Completed",           true, false, false },
+    { "Near Creature",             true, true,  true  },
+    { "Near GameObject",           true, true,  false },
+    { "Object Entry or Guid",      true, true,  true  },
+    { "Object TypeMask",           true, false, false },
+    { "Relation",                  true, true,  false },
+    { "Reaction",                  true, true,  false },
+    { "Distance",                  true, true,  true  },
+    { "Alive",                    false, false, false },
+    { "Health Value",              true, true,  false },
+    { "Health Pct",                true, true,  false },
+    { "Realm Achievement",         true, false, false },
+    { "In Water",                 false, false, false },
+    { "Terrain Swap",             false, false, false },
+    { "Sit/stand state",           true, true,  false },
+    { "Daily Quest Completed",     true, false, false },
+    { "Charmed",                  false, false, false },
+    { "Pet type",                  true, false, false },
+    { "On Taxi",                  false, false, false },
+    { "Quest state mask",          true, true,  false },
+    { "Quest objective progress",  true, true,   true },
+    { "Map difficulty",            true, false, false },
+    { "Is Gamemaster",             true, false, false },
+    { "Object Entry or Guid",      true, true,  true  },
+    { "Object TypeMask",           true, false, false }
+};
+
 // Checks if object meets the condition
 // Can have CONDITION_SOURCE_TYPE_NONE && !mReferenceId if called from a special event (ie: SmartAI)
 bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
@@ -758,6 +846,34 @@ uint32 Condition::GetMaxAvailableConditionTargets() const
     }
 }
 
+std::string Condition::ToString(bool ext /*= false*/) const
+{
+    std::ostringstream ss;
+    ss << "[Condition ";
+    ss << "SourceType: " << SourceType;
+    if (SourceType < CONDITION_SOURCE_TYPE_MAX)
+        ss << " (" << ConditionMgr::StaticSourceTypeData[SourceType] << ")";
+    else
+        ss << " (Unknown)";
+    if (ConditionMgr::CanHaveSourceGroupSet(SourceType))
+        ss << ", SourceGroup: " << SourceGroup;
+    ss << ", SourceEntry: " << SourceEntry;
+    if (ConditionMgr::CanHaveSourceIdSet(SourceType))
+        ss << ", SourceId: " << SourceId;
+
+    if (ext)
+    {
+        ss << ", ConditionType: " << ConditionType;
+        if (ConditionType < CONDITION_MAX)
+            ss << " (" << ConditionMgr::StaticConditionTypeData[ConditionType].Name << ")";
+        else
+            ss << " (Unknown)";
+    }
+
+    ss << "]";
+    return ss.str();
+}
+
 ConditionMgr::ConditionMgr() { }
 
 ConditionMgr::~ConditionMgr()
@@ -765,20 +881,20 @@ ConditionMgr::~ConditionMgr()
     Clean();
 }
 
-uint32 ConditionMgr::GetSearcherTypeMaskForConditionList(ConditionContainer const& conditions)
+uint32 ConditionMgr::GetSearcherTypeMaskForConditionList(ConditionContainer const& conditions) const
 {
     if (conditions.empty())
         return GRID_MAP_TYPE_MASK_ALL;
     //     groupId, typeMask
-    std::map<uint32, uint32> ElseGroupStore;
+    std::map<uint32, uint32> elseGroupSearcherTypeMasks;
     for (ConditionContainer::const_iterator i = conditions.begin(); i != conditions.end(); ++i)
     {
         // no point of having not loaded conditions in list
         ASSERT((*i)->isLoaded() && "ConditionMgr::GetSearcherTypeMaskForConditionList - not yet loaded condition found in list");
-        std::map<uint32, uint32>::const_iterator itr = ElseGroupStore.find((*i)->ElseGroup);
+        std::map<uint32, uint32>::const_iterator itr = elseGroupSearcherTypeMasks.find((*i)->ElseGroup);
         // group not filled yet, fill with widest mask possible
-        if (itr == ElseGroupStore.end())
-            ElseGroupStore[(*i)->ElseGroup] = GRID_MAP_TYPE_MASK_ALL;
+        if (itr == elseGroupSearcherTypeMasks.end())
+            elseGroupSearcherTypeMasks[(*i)->ElseGroup] = GRID_MAP_TYPE_MASK_ALL;
         // no point of checking anymore, empty mask
         else if (!(*itr).second)
             continue;
@@ -787,19 +903,19 @@ uint32 ConditionMgr::GetSearcherTypeMaskForConditionList(ConditionContainer cons
         {
             ConditionReferenceContainer::const_iterator ref = ConditionReferenceStore.find((*i)->ReferenceId);
             ASSERT(ref != ConditionReferenceStore.end() && "ConditionMgr::GetSearcherTypeMaskForConditionList - incorrect reference");
-            ElseGroupStore[(*i)->ElseGroup] &= GetSearcherTypeMaskForConditionList((*ref).second);
+            elseGroupSearcherTypeMasks[(*i)->ElseGroup] &= GetSearcherTypeMaskForConditionList((*ref).second);
         }
         else // handle normal condition
         {
             // object will match conditions in one ElseGroupStore only when it matches all of them
             // so, let's find a smallest possible mask which satisfies all conditions
-            ElseGroupStore[(*i)->ElseGroup] &= (*i)->GetSearcherTypeMaskForCondition();
+            elseGroupSearcherTypeMasks[(*i)->ElseGroup] &= (*i)->GetSearcherTypeMaskForCondition();
         }
     }
     // object will match condition when one of the checks in ElseGroupStore is matching
     // so, let's include all possible masks
     uint32 mask = 0;
-    for (std::map<uint32, uint32>::const_iterator i = ElseGroupStore.begin(); i != ElseGroupStore.end(); ++i)
+    for (std::map<uint32, uint32>::const_iterator i = elseGroupSearcherTypeMasks.begin(); i != elseGroupSearcherTypeMasks.end(); ++i)
         mask |= i->second;
 
     return mask;
@@ -808,43 +924,43 @@ uint32 ConditionMgr::GetSearcherTypeMaskForConditionList(ConditionContainer cons
 bool ConditionMgr::IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionContainer const& conditions) const
 {
     //     groupId, groupCheckPassed
-    std::map<uint32, bool> ElseGroupStore;
-    for (ConditionContainer::const_iterator i = conditions.begin(); i != conditions.end(); ++i)
+    std::map<uint32, bool> elseGroupStore;
+    for (Condition const* condition : conditions)
     {
-        TC_LOG_DEBUG("condition", "ConditionMgr::IsPlayerMeetToConditionList condType: %u val1: %u", (*i)->ConditionType, (*i)->ConditionValue1);
-        if ((*i)->isLoaded())
+        TC_LOG_DEBUG("condition", "ConditionMgr::IsPlayerMeetToConditionList %s val1: %u", condition->ToString().c_str(), condition->ConditionValue1);
+        if (condition->isLoaded())
         {
             //! Find ElseGroup in ElseGroupStore
-            std::map<uint32, bool>::const_iterator itr = ElseGroupStore.find((*i)->ElseGroup);
+            std::map<uint32, bool>::const_iterator itr = elseGroupStore.find(condition->ElseGroup);
             //! If not found, add an entry in the store and set to true (placeholder)
-            if (itr == ElseGroupStore.end())
-                ElseGroupStore[(*i)->ElseGroup] = true;
+            if (itr == elseGroupStore.end())
+                elseGroupStore[condition->ElseGroup] = true;
             else if (!(*itr).second)
                 continue;
 
-            if ((*i)->ReferenceId)//handle reference
+            if (condition->ReferenceId)//handle reference
             {
-                ConditionReferenceContainer::const_iterator ref = ConditionReferenceStore.find((*i)->ReferenceId);
+                ConditionReferenceContainer::const_iterator ref = ConditionReferenceStore.find(condition->ReferenceId);
                 if (ref != ConditionReferenceStore.end())
                 {
-                    if (!IsObjectMeetToConditionList(sourceInfo, (*ref).second))
-                        ElseGroupStore[(*i)->ElseGroup] = false;
+                    if (!IsObjectMeetToConditionList(sourceInfo, ref->second))
+                        elseGroupStore[condition->ElseGroup] = false;
                 }
                 else
                 {
                     TC_LOG_DEBUG("condition", "IsPlayerMeetToConditionList: Reference template -%u not found",
-                        (*i)->ReferenceId);//checked at loading, should never happen
+                        condition->ToString().c_str(), condition->ReferenceId);//checked at loading, should never happen
                 }
 
             }
             else //handle normal condition
             {
-                if (!(*i)->Meets(sourceInfo))
-                    ElseGroupStore[(*i)->ElseGroup] = false;
+                if (!condition->Meets(sourceInfo))
+                    elseGroupStore[condition->ElseGroup] = false;
             }
         }
     }
-    for (std::map<uint32, bool>::const_iterator i = ElseGroupStore.begin(); i != ElseGroupStore.end(); ++i)
+    for (std::map<uint32, bool>::const_iterator i = elseGroupStore.begin(); i != elseGroupStore.end(); ++i)
         if (i->second)
             return true;
 
@@ -872,7 +988,7 @@ bool ConditionMgr::IsObjectMeetToConditions(ConditionSourceInfo& sourceInfo, Con
     return IsObjectMeetToConditionList(sourceInfo, conditions);
 }
 
-bool ConditionMgr::CanHaveSourceGroupSet(ConditionSourceType sourceType) const
+bool ConditionMgr::CanHaveSourceGroupSet(ConditionSourceType sourceType)
 {
     return (sourceType == CONDITION_SOURCE_TYPE_CREATURE_LOOT_TEMPLATE ||
             sourceType == CONDITION_SOURCE_TYPE_DISENCHANT_LOOT_TEMPLATE ||
@@ -896,76 +1012,102 @@ bool ConditionMgr::CanHaveSourceGroupSet(ConditionSourceType sourceType) const
             sourceType == CONDITION_SOURCE_TYPE_NPC_VENDOR);
 }
 
-bool ConditionMgr::CanHaveSourceIdSet(ConditionSourceType sourceType) const
+bool ConditionMgr::CanHaveSourceIdSet(ConditionSourceType sourceType)
 {
     return (sourceType == CONDITION_SOURCE_TYPE_SMART_EVENT);
 }
 
-ConditionContainer ConditionMgr::GetConditionsForNotGroupedEntry(ConditionSourceType sourceType, uint32 entry) const
+bool ConditionMgr::IsObjectMeetingNotGroupedConditions(ConditionSourceType sourceType, uint32 entry, ConditionSourceInfo& sourceInfo) const
 {
-    ConditionContainer spellCond;
     if (sourceType > CONDITION_SOURCE_TYPE_NONE && sourceType < CONDITION_SOURCE_TYPE_MAX)
     {
-        ConditionEntriesByTypeMap::const_iterator itr = ConditionStore.find(sourceType);
-        if (itr != ConditionStore.end())
+        ConditionsByEntryMap::const_iterator i = ConditionStore[sourceType].find(entry);
+        if (i != ConditionStore[sourceType].end())
         {
-            ConditionsByEntryMap::const_iterator i = (*itr).second.find(entry);
-            if (i != (*itr).second.end())
-            {
-                spellCond = (*i).second;
-                TC_LOG_DEBUG("condition", "GetConditionsForNotGroupedEntry: found conditions for type %u and entry %u", uint32(sourceType), entry);
-            }
+            TC_LOG_DEBUG("condition", "GetConditionsForNotGroupedEntry: found conditions for type %u and entry %u", uint32(sourceType), entry);
+            return IsObjectMeetToConditions(sourceInfo, i->second);
         }
     }
-    return spellCond;
+    return true;
 }
 
-ConditionContainer ConditionMgr::GetConditionsForSpellClickEvent(uint32 creatureId, uint32 spellId) const
+bool ConditionMgr::IsObjectMeetingNotGroupedConditions(ConditionSourceType sourceType, uint32 entry, WorldObject* target0, WorldObject* target1 /*= nullptr*/, WorldObject* target2 /*= nullptr*/) const
 {
-    ConditionContainer cond;
+    ConditionSourceInfo conditionSource(target0, target1, target2);
+    return IsObjectMeetingNotGroupedConditions(sourceType, entry, conditionSource);
+}
+
+bool ConditionMgr::HasConditionsForNotGroupedEntry(ConditionSourceType sourceType, uint32 entry) const
+{
+    if (sourceType > CONDITION_SOURCE_TYPE_NONE && sourceType < CONDITION_SOURCE_TYPE_MAX)
+    {
+        if (ConditionStore[sourceType].find(entry) != ConditionStore[sourceType].end())
+            return true;
+    }
+    return false;
+}
+
+bool ConditionMgr::IsObjectMeetingSpellClickConditions(uint32 creatureId, uint32 spellId, WorldObject* clicker, WorldObject* target) const
+{
     ConditionEntriesByCreatureIdMap::const_iterator itr = SpellClickEventConditionStore.find(creatureId);
     if (itr != SpellClickEventConditionStore.end())
     {
-        ConditionsByEntryMap::const_iterator i = (*itr).second.find(spellId);
-        if (i != (*itr).second.end())
+        ConditionsByEntryMap::const_iterator i = itr->second.find(spellId);
+        if (i != itr->second.end())
         {
-            cond = (*i).second;
             TC_LOG_DEBUG("condition", "GetConditionsForSpellClickEvent: found conditions for Vehicle entry %u spell %u", creatureId, spellId);
+            ConditionSourceInfo sourceInfo(clicker, target);
+            return IsObjectMeetToConditions(sourceInfo, i->second);
         }
     }
-    return cond;
+    return true;
 }
 
-ConditionContainer ConditionMgr::GetConditionsForVehicleSpell(uint32 creatureId, uint32 spellId) const
+ConditionContainer const* ConditionMgr::GetConditionsForSpellClickEvent(uint32 creatureId, uint32 spellId) const
 {
-    ConditionContainer cond;
+    ConditionEntriesByCreatureIdMap::const_iterator itr = SpellClickEventConditionStore.find(creatureId);
+    if (itr != SpellClickEventConditionStore.end())
+    {
+        ConditionsByEntryMap::const_iterator i = itr->second.find(spellId);
+        if (i != itr->second.end())
+        {
+            TC_LOG_DEBUG("condition", "GetConditionsForSpellClickEvent: found conditions for SpellClickEvent entry %u spell %u", creatureId, spellId);
+            return &i->second;
+        }
+    }
+    return nullptr;
+}
+
+bool ConditionMgr::IsObjectMeetingVehicleSpellConditions(uint32 creatureId, uint32 spellId, Player* player, Unit* vehicle) const
+{
     ConditionEntriesByCreatureIdMap::const_iterator itr = VehicleSpellConditionStore.find(creatureId);
     if (itr != VehicleSpellConditionStore.end())
     {
-        ConditionsByEntryMap::const_iterator i = (*itr).second.find(spellId);
-        if (i != (*itr).second.end())
+        ConditionsByEntryMap::const_iterator i = itr->second.find(spellId);
+        if (i != itr->second.end())
         {
-            cond = (*i).second;
             TC_LOG_DEBUG("condition", "GetConditionsForVehicleSpell: found conditions for Vehicle entry %u spell %u", creatureId, spellId);
+            ConditionSourceInfo sourceInfo(player, vehicle);
+            return IsObjectMeetToConditions(sourceInfo, i->second);
         }
     }
-    return cond;
+    return true;
 }
 
-ConditionContainer ConditionMgr::GetConditionsForSmartEvent(int32 entryOrGuid, uint32 eventId, uint32 sourceType) const
+bool ConditionMgr::IsObjectMeetingSmartEventConditions(int32 entryOrGuid, uint32 eventId, uint32 sourceType, Unit* unit, WorldObject* baseObject) const
 {
-    ConditionContainer cond;
     SmartEventConditionContainer::const_iterator itr = SmartEventConditionStore.find(std::make_pair(entryOrGuid, sourceType));
     if (itr != SmartEventConditionStore.end())
     {
-        ConditionsByEntryMap::const_iterator i = (*itr).second.find(eventId + 1);
-        if (i != (*itr).second.end())
+        ConditionsByEntryMap::const_iterator i = itr->second.find(eventId + 1);
+        if (i != itr->second.end())
         {
-            cond = (*i).second;
             TC_LOG_DEBUG("condition", "GetConditionsForSmartEvent: found conditions for Smart Event entry or guid %d event_id %u", entryOrGuid, eventId);
+            ConditionSourceInfo sourceInfo(unit, baseObject);
+            return IsObjectMeetToConditions(sourceInfo, i->second);
         }
     }
-    return cond;
+    return true;
 }
 
 ConditionContainer const* ConditionMgr::GetConditionsForPhaseDefinition(uint32 zone, uint32 entry) const
@@ -984,7 +1126,7 @@ ConditionContainer const* ConditionMgr::GetConditionsForPhaseDefinition(uint32 z
     return NULL;
 }
 
-ConditionContainer ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureId, uint32 itemId) const
+bool ConditionMgr::IsObjectMeetingVendorItemConditions(uint32 creatureId, uint32 itemId, Player* player, Creature* vendor) const
 {
     ConditionContainer cond;
     ConditionEntriesByCreatureIdMap::const_iterator itr = NpcVendorConditionContainerStore.find(creatureId);
@@ -993,11 +1135,12 @@ ConditionContainer ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureI
         ConditionsByEntryMap::const_iterator i = (*itr).second.find(itemId);
         if (i != (*itr).second.end())
         {
-            cond = (*i).second;
             TC_LOG_DEBUG("condition", "GetConditionsForNpcVendorEvent: found conditions for creature entry %u item %u", creatureId, itemId);
+            ConditionSourceInfo sourceInfo(player, vendor);
+            return IsObjectMeetToConditions(sourceInfo, i->second);            
         }
     }
-    return cond;
+    return true;
 }
 
 ConditionMgr* ConditionMgr::instance()
@@ -1763,6 +1906,15 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
             }
             break;
         }
+        case CONDITION_SOURCE_TYPE_AREATRIGGER_CLIENT_TRIGGERED:
+        {
+            if (!sAreaTriggerStore.LookupEntry(cond->SourceEntry))
+            {
+                TC_LOG_ERROR("sql.sql", "%s SourceEntry in `condition` table, does not exists in AreaTrigger.dbc, ignoring.", cond->ToString().c_str());
+                return false;
+            }
+            break;
+        }        
         case CONDITION_SOURCE_TYPE_GRAVEYARD:
             if (!sWorldSafeLocsStore.LookupEntry(cond->SourceEntry))
             {
@@ -1781,7 +1933,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
     return true;
 }
 
-bool ConditionMgr::isConditionTypeValid(Condition* cond)
+bool ConditionMgr::isConditionTypeValid(Condition* cond) const
 {
     if (cond->ConditionType == CONDITION_NONE || cond->ConditionType >= CONDITION_MAX)
     {
@@ -2395,12 +2547,14 @@ void ConditionMgr::Clean()
 
     ConditionReferenceStore.clear();
 
-    for (ConditionEntriesByTypeMap::iterator itr = ConditionStore.begin(); itr != ConditionStore.end(); ++itr)
-        for (ConditionsByEntryMap::iterator it = itr->second.begin(); it != itr->second.end(); ++it)
-            for (ConditionContainer::const_iterator i = it->second.begin(); i != it->second.end(); ++i)
-                delete *i;
+    for (uint32 i = 0; i < CONDITION_SOURCE_TYPE_MAX; ++i)
+    {
+        for (ConditionsByEntryMap::iterator it = ConditionStore[i].begin(); it != ConditionStore[i].end(); ++it)
+            for (ConditionContainer::const_iterator itr = it->second.begin(); itr != it->second.end(); ++itr)
+                delete *itr;
 
-    ConditionStore.clear();
+        ConditionStore[i].clear();
+    }
 
     for (ConditionEntriesByCreatureIdMap::iterator itr = VehicleSpellConditionStore.begin(); itr != VehicleSpellConditionStore.end(); ++itr)
         for (ConditionsByEntryMap::iterator it = itr->second.begin(); it != itr->second.end(); ++it)
