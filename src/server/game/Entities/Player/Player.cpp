@@ -29275,7 +29275,7 @@ float Player::GetCollisionHeight(bool mounted) const
 
         float scaleMod = GetObjectScale(); // 99% sure about this
 
-        return displayInfo->scale * (mountDisplayInfo->scale * mountModelData->MountHeight + modelData->CollisionHeight * 0.5f);
+        return displayInfo->CreatureModelScale * (mountDisplayInfo->CreatureModelScale * mountModelData->MountHeight + modelData->CollisionHeight * 0.5f);
     }
     else
     {

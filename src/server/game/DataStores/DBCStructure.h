@@ -840,7 +840,7 @@ struct CinematicSequencesEntry
 {
     uint32      Id;                                         // 0 index
     //uint32      unk1;                                     // 1 always 0
-    //uint32      cinematicCamera;                          // 2 id in CinematicCamera.dbc
+    uint32      Camera[8];                                  // 2 id in CinematicCamera.dbc
                                                             // 3-9 always 0
 };
 
@@ -849,8 +849,8 @@ struct CreatureDisplayInfoEntry
     uint32      Displayid;                                  // 0        m_ID
     uint32      ModelId;                                    // 1        m_modelID
                                                             // 2        m_soundID
-                                                            // 3        m_extendedDisplayInfoID
-    float       scale;                                      // 4        m_creatureModelScale
+    uint32      ExtendedDisplayInfoID;                      // 3        m_extendedDisplayInfoID
+    float       CreatureModelScale;                         // 4        m_creatureModelScale
                                                             // 5        m_creatureModelAlpha
                                                             // 6-8      m_textureVariation[3]
                                                             // 9        m_portraitTextureName
@@ -897,10 +897,10 @@ struct CreatureImmunitiesEntry
 struct CreatureModelDataEntry
 {
     uint32 Id;
-    //uint32 Flags;
+    uint32 Flags;
     DbcStr ModelPath;
     //uint32 Unk1;
-    //float Scale;                                             // Used in calculation of unit collision data
+    float ModelScale;                                        // Used in calculation of unit collision data
     //int32 Unk2
     //int32 Unk3
     //uint32 Unk4
