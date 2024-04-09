@@ -190,7 +190,7 @@ namespace MMAP
 
         map_fileheader fheader;
         if (fread(&fheader, sizeof(map_fileheader), 1, mapFile) != 1 ||
-            fheader.versionMagic != *((uint32 const*)(MAP_VERSION_MAGIC)))
+            fheader.versionMagic != MAP_VERSION_MAGIC)
         {
             fclose(mapFile);
             printf("%s is the wrong version, please extract new .map files\n", mapFileName);
@@ -329,13 +329,10 @@ namespace MMAP
             if (fread(&lheader, sizeof(map_liquidHeader), 1, mapFile) != 1)
                 printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
 
-
             float* liquid_map = nullptr;
 
             if (!(lheader.flags & MAP_LIQUID_NO_TYPE))
             {
-                // if (fread(liquid_type, sizeof(liquid_type), 1, mapFile) != 1)
-                //     printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
                 if (fread(liquid_entry, sizeof(liquid_entry), 1, mapFile) != 1)
                     printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
                 if (fread(liquid_flags, sizeof(liquid_flags), 1, mapFile) != 1)
@@ -407,7 +404,7 @@ namespace MMAP
             getLoopVars(portion, loopStart, loopEnd, loopInc);
 
             // generate triangles
-            for (int i = loopStart; i < loopEnd; i+=loopInc)
+            for (int i = loopStart; i < loopEnd; i += loopInc)
             {
                 for (int j = TOP; j <= BOTTOM; j+= triInc)
                 {
@@ -729,54 +726,24 @@ namespace MMAP
     /**************************************************************************/
     bool TerrainBuilder::loadVMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData)
     {
-        IVMapManager* vmapManager = new VMapManager2();
-        vmapManager->setForMMapsGenerator(true);
+        VMapManager2* vmapManager = new VMapManager2();
         int result = vmapManager->loadMap("vmaps", mapID, tileX, tileY);
         bool retval = false;
 
         do
         {
             if (result == VMAP_LOAD_RESULT_ERROR)
-                break;            
+                break;
+
+            InstanceTreeMap instanceTrees;
+            ((VMapManager2*)vmapManager)->getInstanceMapTree(instanceTrees);
+
+            if (!instanceTrees[mapID])
+                break;
 
             ModelInstance* models = nullptr;
             uint32 count = 0;
-            auto itr = transportMaps.find(mapID);
-            if (itr == transportMaps.end())
-            {
-                if (result == VMAP_LOAD_RESULT_ERROR)
-                    break;
-
-                InstanceTreeMap instanceTrees;
-                ((VMapManager2*)vmapManager)->getInstanceMapTree(instanceTrees);
-
-                if (!instanceTrees[mapID])
-                    break;
-
-                instanceTrees[mapID]->getModelInstances(models, count);
-            }
-            // For transport maps just spawn one transport model at world origin coordinates
-            else if (*itr->second.second)
-            {
-                auto&& name = itr->second.second;
-
-                WorldModel* worldmodel = new WorldModel();
-                if (!worldmodel->readFile(std::string("vmaps\\") + name + ".vmo"))
-                {
-                    printf("VMapManager2: could not load '%s%s.vmo'", "vmaps\\", name);
-                    delete worldmodel;
-                }
-                else
-                {
-                    ModelSpawn spawn;
-                    spawn.iPos = G3D::Vector3{ 32 * GRID_SIZE, 32 * GRID_SIZE, 0.0f };
-                    spawn.iRot = G3D::Vector3{ 0.0f, 180.0f, 0.0f };
-                    spawn.iScale = 1.0f;
-                    count = 1;
-                    models = new ModelInstance[count];
-                    models[0] = ModelInstance{ spawn, worldmodel };
-                }
-            }
+            instanceTrees[mapID]->getModelInstances(models, count);
 
             if (!models)
                 break;
@@ -824,7 +791,7 @@ namespace MMAP
                     copyIndices(tempTriangles, meshData.solidTris, offset, isM2);
 
                     // now handle liquid data
-                    if (liquid && liquid->GetFlagsStorage()) // todo , Liquid pathfinding works absolutely abysmally, instead preventing all transitions between ground and water
+                    if (liquid && liquid->GetFlagsStorage())
                     {
                         std::vector<G3D::Vector3> liqVerts;
                         std::vector<int> liqTris;
@@ -835,25 +802,14 @@ namespace MMAP
                         vertsY = tilesY + 1;
                         uint8* flags = liquid->GetFlagsStorage();
                         float* data = liquid->GetHeightStorage();
-                        uint8 type = NAV_EMPTY;
+                        uint8 type = NAV_AREA_EMPTY;
 
                         // convert liquid type to NavTerrain
-                        switch (GetLiquidFlags(liquid->GetType()))
-                        {
-                        case MAP_LIQUID_TYPE_WATER:
-                        case MAP_LIQUID_TYPE_OCEAN:
-                            type = NAV_WATER;
-                            break;
-                        case MAP_LIQUID_TYPE_MAGMA:
-                            type = NAV_MAGMA;
-                            break;
-                        case MAP_LIQUID_TYPE_SLIME:
-                            type = NAV_SLIME;
-                            break;
-                        case MAP_LIQUID_TYPE_DARK_WATER:
-                            type = NAV_EMPTY;
-                            break;
-                        }
+                        uint32 liquidFlags = GetLiquidFlags(liquid->GetType());
+                        if ((liquidFlags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN)) != 0)
+                            type = NAV_AREA_WATER;
+                        else if ((liquidFlags & (MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME)) != 0)
+                            type = NAV_AREA_MAGMA_SLIME;
 
                         // indexing is weird...
                         // after a lot of trial and error, this is what works:
@@ -866,7 +822,7 @@ namespace MMAP
                         {
                             for (uint32 y = 0; y < vertsY; ++y)
                             {
-                                vert = G3D::Vector3(corner.x + x * GRID_PART_SIZE, corner.y + y * GRID_PART_SIZE, data[y * vertsX + x]);
+                                vert = G3D::Vector3(corner.x + x * GRID_PART_SIZE, corner.y + y * GRID_PART_SIZE, data[y*vertsX + x]);
                                 vert = vert * rotation * scale + position;
                                 vert.x *= -1.f;
                                 vert.y *= -1.f;
@@ -880,7 +836,7 @@ namespace MMAP
                         {
                             for (uint32 y = 0; y < tilesY; ++y)
                             {
-                                if ((flags[x + y * tilesX] & 0x0f) != 0x0f)
+                                if ((flags[x + y*tilesX] & 0x0f) != 0x0f)
                                 {
                                     square = x * tilesY + y;
                                     idx1 = square + x;
@@ -909,7 +865,7 @@ namespace MMAP
                             meshData.liquidTris.append(liqTris[j * 3 + 1] + liqOffset, liqTris[j * 3 + 2] + liqOffset, liqTris[j * 3] + liqOffset);
                             meshData.liquidType.append(type);
                         }
-                    }                        
+                    }
                 }
             }
         }

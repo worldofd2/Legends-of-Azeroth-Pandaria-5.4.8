@@ -285,56 +285,6 @@ namespace VMAP
         corner = iCorner;
     }
 
-    // void WmoLiquid::BuildGeometry()
-    // {
-    //     uint32 offset = iLiquidVertices.size();
-
-    //     // Copy from mmaps_generator/TerrainBuilder.cpp
-    //     uint32 vertsX = iTilesX + 1;
-    //     uint32 vertsY = iTilesY + 1;
-
-    //     G3D::Vector3 vert;
-    //     for (uint32 x = 0; x < vertsX; ++x)
-    //         for (uint32 y = 0; y < vertsY; ++y)
-    //         {
-    //             vert = G3D::Vector3(iCorner.x + x * LIQUID_TILE_SIZE, iCorner.y + y * LIQUID_TILE_SIZE, iHeight[y*vertsX + x]);
-    //             vert.x *= -1.f;
-    //             vert.y *= -1.f;
-    //             iLiquidVertices.push_back(vert);
-    //         }
-
-    //     uint32 idx1, idx2, idx3, idx4;
-    //     uint32 square;
-    //     for (uint32 x = 0; x < iTilesX; ++x)
-    //         for (uint32 y = 0; y < iTilesY; ++y)
-    //             if ((iFlags[x + y*iTilesX] & 0x0f) != 0x0f)
-    //             {
-    //                 square = offset + x * iTilesY + y;
-    //                 idx1 = square + x;
-    //                 idx2 = square + 1 + x;
-    //                 idx3 = square + iTilesY + 1 + 1 + x;
-    //                 idx4 = square + iTilesY + 1 + x;
-
-    //                 iLiquidTriangles.emplace_back(idx3, idx2, idx1); // top triangle
-    //                 iLiquidTriangles.emplace_back(idx4, idx3, idx1); // bottom triangle
-    //             }
-    // }
-
-    // bool WmoLiquid::IntersectRay(G3D::Ray const& ray, float& distance) const
-    // {
-    //     // It would be cool to late-initialize geometry this way, but it might cause race conditions
-    //     //if (iLiquidVertices.empty())
-    //     //    BuildGeometry();
-
-    //     auto verts = iLiquidVertices.begin();
-
-    //     bool hit = false;
-    //     for (auto&& triangle : iLiquidTriangles)
-    //         hit |= IntersectTriangle(triangle, verts, ray, distance);
-
-    //     return hit;
-    // }
-
     // ===================== GroupModel ==================================
 
     GroupModel::GroupModel(const GroupModel &other):
@@ -448,8 +398,7 @@ namespace VMAP
             vertices(vert.begin()), triangles(tris.begin()), hit(false) { }
         bool operator()(const G3D::Ray& ray, uint32 entry, float& distance, bool /*pStopAtFirstHit*/)
         {
-            bool result = IntersectTriangle(triangles[entry], vertices, ray, distance);
-            if (result)  hit=true;
+            hit = IntersectTriangle(triangles[entry], vertices, ray, distance) || hit;
             return hit;
         }
         std::vector<Vector3>::const_iterator vertices;
@@ -471,9 +420,8 @@ namespace VMAP
     {
         if (triangles.empty() || !iBound.contains(pos))
             return false;
-        GModelRayCallback callback(triangles, vertices);
         Vector3 rPos = pos - 0.1f * down;
-        float dist = G3D::inf();
+        float dist = G3D::finf();
         G3D::Ray ray(rPos, down);
         bool hit = IntersectRay(ray, dist, false);
         if (hit)
@@ -526,6 +474,14 @@ namespace VMAP
 
     bool WorldModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit, ModelIgnoreFlags ignoreFlags) const
     {
+        // If the caller asked us to ignore certain objects we should check flags
+        if ((ignoreFlags & ModelIgnoreFlags::M2) != ModelIgnoreFlags::Nothing)
+        {
+            // M2 models are not taken into account for LoS calculation if caller requested their ignoring.
+            if (Flags & MOD_M2)
+                return false;
+        }        
+
         // small M2 workaround, maybe better make separate class with virtual intersection funcs
         // in any case, there's no need to use a bound tree if we only have one submodel
         if (groupModels.size() == 1)

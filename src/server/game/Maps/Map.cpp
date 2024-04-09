@@ -36,6 +36,7 @@
 #include "Transport.h"
 #include "Vehicle.h"
 #include "VMapFactory.h"
+#include "VMapManager2.h"
 #include "BattlePetSpawnMgr.h"
 #include "G3D/Plane.h"
 
@@ -135,7 +136,7 @@ void Map::LoadMMap(int gx, int gy)
     if (!DisableMgr::IsPathfindingEnabled(GetId()))
         return;
 
-    bool mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap(sWorld->GetDataPath(), GetId(), gx, gy);
+    bool mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap(GetId(), gx, gy);
 
     if (mmapLoadResult)
         TC_LOG_DEBUG("maps", "MMAP loaded name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
@@ -2551,7 +2552,12 @@ bool Map::IsOutdoors(float x, float y, float z) const
     return IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry);
 }
 
-bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const
+static inline bool IsInWMOInterior(uint32 mogpFlags)
+{
+    return (mogpFlags & 0x2000) != 0;
+}
+
+bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const // todo
 {
     float vmap_z = z;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
@@ -2658,8 +2664,11 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     float liquid_level = INVALID_HEIGHT;
     float ground_level = INVALID_HEIGHT;
     uint32 liquid_type = 0;
-    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
+    uint32 mogpFlags = 0;
+    bool useGridLiquid = true;
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type, mogpFlags))
     {
+        useGridLiquid = !IsInWMOInterior(mogpFlags);
         TC_LOG_DEBUG("maps", "getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
@@ -2715,22 +2724,25 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
         }
     }
 
-    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    if (useGridLiquid)
     {
-        LiquidData map_data;
-        ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, ReqLiquidType, &map_data, collisionHeight);
-        // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
-        if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
+        if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
         {
-            if (data)
+            LiquidData map_data;
+            ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, ReqLiquidType, &map_data, collisionHeight);
+            // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
+            if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
             {
-                // hardcoded in client like this
-                if (GetId() == 530 && map_data.entry == 2)
-                    map_data.entry = 15;
+                if (data)
+                {
+                    // hardcoded in client like this
+                    if (GetId() == 530 && map_data.entry == 2)
+                        map_data.entry = 15;
 
-                *data = map_data;
+                    *data = map_data;
+                }
+                return map_result;
             }
-            return map_result;
         }
     }
     return result;

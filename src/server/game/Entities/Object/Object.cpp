@@ -52,6 +52,7 @@
 #include "BattlefieldMgr.h"
 #include "Chat.h"
 #include "Transport.h"
+#include "VMapManager2.h"
 // #include "timeless_isle.h" remove hack , fix in future
 
 #define STEALTH_VISIBILITY_UPDATE_TIMER 500

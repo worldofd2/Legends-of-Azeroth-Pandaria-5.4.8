@@ -57,7 +57,6 @@
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
-#include "VMapFactory.h"
 #include "MMapFactory.h"
 #include "GameEventMgr.h"
 #include "GitRevision.h"
@@ -95,6 +94,8 @@
 #include "ServiceMgr.h"
 #include "WordFilterMgr.h"
 #include "Realm.h"
+#include "VMapFactory.h"
+#include "VMapManager2.h"
 #include <boost/asio/ip/address.hpp>
 #ifdef ELUNA
 #include "LuaEngine.h"
@@ -1237,7 +1238,7 @@ void World::LoadConfigSettings(bool reload)
 
     TC_LOG_INFO("server.loading", "WORLD: MMap data directory is: %smmaps", m_dataPath.c_str());
 
-    m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", 0);
+    m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", true);
     bool enableIndoor = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", true);
     bool enableLOS = sConfigMgr->GetBoolDefault("vmap.enableLOS", true);
     bool enableHeight = sConfigMgr->GetBoolDefault("vmap.enableHeight", true);
@@ -1665,8 +1666,6 @@ void World::LoadRates(bool loading)
     }
 }
 
-extern void LoadGameObjectModelList(std::string const& dataPath);
-
 /// Initialize the World
 void World::SetInitialWorldSettings()
 {
@@ -1678,6 +1677,11 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
+
+    ///- Initialize VMapManager function pointers (to untangle game/collision circular deps)
+    VMAP::VMapManager2* vmmgr2 = VMAP::VMapFactory::createOrGetVMapManager();
+    vmmgr2->GetLiquidFlagsPtr = &GetLiquidFlags;
+    vmmgr2->IsVMAPDisabledForPtr = &DisableMgr::IsVMAPDisabledFor;
 
     ///- Initialize config settings
     LoadConfigSettings();
@@ -1741,6 +1745,16 @@ void World::SetInitialWorldSettings()
     // Load IP Location Database
     sIPLocation->Load();
 
+    std::vector<uint32> mapIds;
+    for (uint32 mapId = 0; mapId < sMapStore.GetNumRows(); mapId++)
+        if (sMapStore.LookupEntry(mapId))
+            mapIds.push_back(mapId);
+
+    vmmgr2->InitializeThreadUnsafe(mapIds);
+
+    MMAP::MMapManager* mmmgr = MMAP::MMapFactory::createOrGetMMapManager();
+    mmmgr->InitializeThreadUnsafe(mapIds);    
+
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");
     sSpellMgr->LoadSpellInfoStore();
 
@@ -1754,7 +1768,7 @@ void World::SetInitialWorldSettings()
     sSpellMgr->LoadSpellInfoCustomAttributes();
 
     TC_LOG_INFO("server.loading", "Loading GameObject models...");
-    LoadGameObjectModelList(sWorld->GetDataPath());
+    LoadGameObjectModelList(m_dataPath);
 
     TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();

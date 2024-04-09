@@ -62,6 +62,7 @@
 #include "BattlePetMgr.h"
 #include "TradeData.h"
 #include "Random.h"
+#include "VMapManager2.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 

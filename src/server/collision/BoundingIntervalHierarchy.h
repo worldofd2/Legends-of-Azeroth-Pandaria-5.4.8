@@ -114,10 +114,10 @@ class BIH
             delete[] dat.primBound;
             delete[] dat.indices;
         }
-        uint32 primCount() const { return objects.size(); }
+        uint32 primCount() const { return uint32(objects.size()); }
 
         template<typename RayCallback>
-        void intersectRay(const G3D::Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst=false) const
+        void intersectRay(const G3D::Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst = false) const
         {
             float intervalMin = -1.f;
             float intervalMax = -1.f;

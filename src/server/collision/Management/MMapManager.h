@@ -64,8 +64,8 @@ namespace MMAP
             ~MMapManager();
 
             void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
-            bool loadMap(std::string const& basePath, uint32 mapId, int32 x, int32 y);
-            bool loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId);
+            bool loadMap(uint32 mapId, int32 x, int32 y);
+            bool loadMapInstance(uint32 mapId, uint32 instanceId);
             bool unloadMap(uint32 mapId, int32 x, int32 y);
             bool unloadMap(uint32 mapId);
             bool unloadMapInstance(uint32 mapId, uint32 instanceId);
@@ -77,7 +77,7 @@ namespace MMAP
             uint32 getLoadedTilesCount() const { return loadedTiles; }
             uint32 getLoadedMapsCount() const { return uint32(loadedMMaps.size()); }
         private:
-            bool loadMapData(std::string const& basePath, uint32 mapId);
+            bool loadMapData(uint32 mapId);
             uint32 packTileID(int32 x, int32 y);
 
             MMapDataSet::const_iterator GetMMapData(uint32 mapId) const;

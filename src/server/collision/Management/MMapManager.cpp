@@ -18,12 +18,13 @@
 #include "MMapManager.h"
 #include "Errors.h"
 #include "Log.h"
+#include "Config.h"
 #include "MapDefines.h"
 
 namespace MMAP
 {
-    constexpr char MAP_FILE_NAME_FORMAT[] = "%smmaps/%04i.mmap";
-    constexpr char TILE_FILE_NAME_FORMAT[] = "%smmaps/%04i_%02i_%02i.mmtile";
+    constexpr char MAP_FILE_NAME_FORMAT[] = "%s/mmaps/%04i.mmap";
+    constexpr char TILE_FILE_NAME_FORMAT[] = "%s/mmaps/%04i_%02i_%02i.mmtile";
 
     // ######################## MMapManager ########################
     MMapManager::~MMapManager()
@@ -54,7 +55,7 @@ namespace MMAP
         return itr;
     }
 
-    bool MMapManager::loadMapData(std::string const& basePath, uint32 mapId)
+    bool MMapManager::loadMapData(uint32 mapId)
     {
         // we already have this map loaded?
         MMapDataSet::iterator itr = loadedMMaps.find(mapId);
@@ -72,7 +73,7 @@ namespace MMAP
         }
 
         // load and init dtNavMesh - read parameters from file
-        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, basePath, mapId);
+        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, sConfigMgr->GetStringDefault("DataDir", ".").c_str(), mapId);
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
@@ -112,10 +113,10 @@ namespace MMAP
         return uint32(x << 16 | y);
     }
 
-    bool MMapManager::loadMap(std::string const& basePath, uint32 mapId, int32 x, int32 y)
+    bool MMapManager::loadMap(uint32 mapId, int32 x, int32 y)
     {
         // make sure the mmap is loaded and ready to load tiles
-        if (!loadMapData(basePath, mapId))
+        if (!loadMapData(mapId))
             return false;
 
         // get this mmap data
@@ -128,7 +129,7 @@ namespace MMAP
             return false;
 
         // load this tile :: mmaps/MMMXXYY.mmtile
-        std::string fileName = Trinity::StringFormat(TILE_FILE_NAME_FORMAT, basePath, mapId, x, y);
+        std::string fileName = Trinity::StringFormat(TILE_FILE_NAME_FORMAT, sConfigMgr->GetStringDefault("DataDir", ".").c_str(), mapId, x, y);
         FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
@@ -196,9 +197,9 @@ namespace MMAP
         }
     }
 
-    bool MMapManager::loadMapInstance(std::string const& basePath, uint32 mapId, uint32 instanceId)
+    bool MMapManager::loadMapInstance(uint32 mapId, uint32 instanceId)
     {
-        if (!loadMapData(basePath, mapId))
+        if (!loadMapData(mapId))
             return false;
 
         MMapData* mmap = loadedMMaps[mapId];

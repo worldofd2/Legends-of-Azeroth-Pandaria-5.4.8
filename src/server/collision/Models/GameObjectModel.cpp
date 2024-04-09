@@ -22,9 +22,6 @@
 
 #include "GameObjectModel.h"
 #include "Log.h"
-#include "GameObject.h"
-#include "Creature.h"
-#include "TemporarySummon.h"
 #include "Object.h"
 #include "DBCStores.h"
 

@@ -263,7 +263,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
 
     SetDisplayId(goinfo->displayId);
 
-    m_model = CreateModel();
+    CreateModel();
     // GAMEOBJECT_FIELD_STATE_SPELL_VISUAL_ID, index at 0, 1, 2 and 3
     SetGoType(GameobjectTypes(goinfo->type));
     SetGoState(go_state);
@@ -1993,9 +1993,9 @@ private:
     GameObject* _owner;
 };
 
-GameObjectModel* GameObject::CreateModel()
+void GameObject::CreateModel()
 {
-    return GameObjectModel::Create(std::make_unique<GameObjectModelOwnerImpl>(this), sWorld->GetDataPath());
+    m_model = GameObjectModel::Create(std::make_unique<GameObjectModelOwnerImpl>(this), sWorld->GetDataPath());
 }
 
 SpellInfo const* GameObject::GetSpellForLock(Player const* player) const
@@ -2485,7 +2485,7 @@ void GameObject::UpdateModel()
         if (GetMap()->ContainsGameObjectModel(*m_model))
             GetMap()->RemoveGameObjectModel(*m_model);
     delete m_model;
-    m_model = CreateModel();
+    CreateModel();
     if (m_model)
         GetMap()->InsertGameObjectModel(*m_model);
 }
@@ -2493,14 +2493,14 @@ void GameObject::UpdateModel()
 Player* GameObject::GetLootRecipient() const
 {
     if (!m_lootRecipient)
-        return NULL;
+        return nullptr;
     return ObjectAccessor::FindPlayer(m_lootRecipient);
 }
 
 Group* GameObject::GetLootRecipientGroup() const
 {
     if (!m_lootRecipientGroup)
-        return NULL;
+        return nullptr;
     return sGroupMgr->GetGroupByGUID(m_lootRecipientGroup);
 }
 

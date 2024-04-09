@@ -70,7 +70,7 @@ namespace VMAP
     };
 
     /*! holding additional info for WMO group files */
-    class GroupModel
+    class TC_COMMON_API GroupModel
     {
         public:
             GroupModel() : iBound(), iMogpFlags(0), iGroupWMOID(0), iLiquid(nullptr) { }
@@ -100,10 +100,10 @@ namespace VMAP
             std::vector<MeshTriangle> triangles;
             BIH meshTree;
             WmoLiquid* iLiquid;
-            
     };
+
     /*! Holds a model (converted M2 or WMO) in its original coordinate space */
-    class WorldModel
+    class TC_COMMON_API WorldModel
     {
         public:
             WorldModel(): Flags(0), RootWMOID(0) { }
@@ -122,7 +122,6 @@ namespace VMAP
             uint32 RootWMOID;
             std::vector<GroupModel> groupModels;
             BIH groupTree;
-            
     };
 } // namespace VMAP
 
