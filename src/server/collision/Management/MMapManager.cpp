@@ -197,32 +197,6 @@ namespace MMAP
         }
     }
 
-    bool MMapManager::loadMapInstance(uint32 mapId, uint32 instanceId)
-    {
-        if (!loadMapData(mapId))
-            return false;
-
-        MMapData* mmap = loadedMMaps[mapId];
-        auto [queryItr, inserted] = mmap->navMeshQueries.try_emplace(instanceId, nullptr);
-        if (!inserted)
-            return true;
-
-        // allocate mesh query
-        dtNavMeshQuery* query = dtAllocNavMeshQuery();
-        ASSERT(query);
-        if (dtStatusFailed(query->init(mmap->navMesh, 1024)))
-        {
-            dtFreeNavMeshQuery(query);
-            mmap->navMeshQueries.erase(queryItr);
-            TC_LOG_ERROR("maps", "MMAP:GetNavMeshQuery: Failed to initialize dtNavMeshQuery for mapId {:03} instanceId {}", mapId, instanceId);
-            return false;
-        }
-
-        TC_LOG_DEBUG("maps", "MMAP:GetNavMeshQuery: created dtNavMeshQuery for mapId {:03} instanceId {}", mapId, instanceId);
-        queryItr->second = query;
-        return true;
-    }
-
     bool MMapManager::unloadMap(uint32 mapId, int32 x, int32 y)
     {
         // check if we have this map loaded
@@ -288,7 +262,7 @@ namespace MMAP
             else
             {
                 --loadedTiles;
-                TC_LOG_DEBUG("maps", "MMAP:unloadMap: Unloaded mmtile %04i[%02i, %02i] from %04i", mapId, x, y, mapId);
+                TC_LOG_DEBUG("maps", "MMAP:unloadMap: Unloaded mmtile %04u[%02i, %02i] from %04u", mapId, x, y, mapId);
             }
         }
 

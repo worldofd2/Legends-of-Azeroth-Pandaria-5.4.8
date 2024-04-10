@@ -65,7 +65,15 @@ namespace VMAP
     typedef std::unordered_map<uint32, StaticMapTree*> InstanceTreeMap;
     typedef std::unordered_map<std::string, ManagedModel> ModelFileMap;
 
-    class VMapManager2 : public IVMapManager
+    enum DisableTypes
+    {
+        VMAP_DISABLE_AREAFLAG       = 0x1,
+        VMAP_DISABLE_HEIGHT         = 0x2,
+        VMAP_DISABLE_LOS            = 0x4,
+        VMAP_DISABLE_LIQUIDSTATUS   = 0x8
+    };
+
+    class TC_COMMON_API VMapManager2 : public IVMapManager
     {
         protected:
             // Tree to check collision
@@ -92,19 +100,19 @@ namespace VMAP
             ~VMapManager2(void);
 
             void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
-            int loadMap(const char* pBasePath, unsigned int mapId, int x, int y);
+            int loadMap(const char* pBasePath, unsigned int mapId, int x, int y) override;
 
-            void unloadMap(unsigned int mapId, int x, int y);
-            void unloadMap(unsigned int mapId);
+            void unloadMap(unsigned int mapId, int x, int y) override;
+            void unloadMap(unsigned int mapId) override;
 
             bool isInLineOfSight(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, ModelIgnoreFlags ignoreFlags) override;
             /**
             fill the hit pos and return true, if an object was hit
             */
-            bool getObjectHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
+            bool getObjectHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist) override;
             float getHeight(unsigned int mapId, float x, float y, float z, float maxSearchDist) override;
 
-            bool processCommand(char* /*command*/) { return false; } // for debug and extensions
+            bool processCommand(char* /*command*/) override { return false; } // for debug and extensions
 
             bool getAreaInfo(uint32 mapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const override;
             bool GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type, uint32& mogpFlags) const override;
@@ -114,7 +122,7 @@ namespace VMAP
             void releaseModelInstance(const std::string& filename);
 
             // what's the use of this? o.O
-            virtual std::string getDirFileName(unsigned int mapId, int /*x*/, int /*y*/) const
+            virtual std::string getDirFileName(unsigned int mapId, int /*x*/, int /*y*/) const override
             {
                 return getMapFileName(mapId);
             }

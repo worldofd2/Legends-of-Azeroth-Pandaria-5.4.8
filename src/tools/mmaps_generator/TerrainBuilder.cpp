@@ -128,7 +128,7 @@ uint32 GetLiquidFlags(uint32 liquidId);
 namespace MMAP
 {
 
-    char const* MAP_VERSION_MAGIC = "v1.8";
+    uint32 const MAP_VERSION_MAGIC = 10;
 
     TerrainBuilder::TerrainBuilder(bool skipLiquid) : m_skipLiquid (skipLiquid){ }
     TerrainBuilder::~TerrainBuilder() { }

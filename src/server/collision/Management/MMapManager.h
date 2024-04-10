@@ -19,7 +19,6 @@
 #define _MMAP_MANAGER_H
 
 #include "Define.h"
-#include "DetourAlloc.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
 #include <string>
@@ -65,7 +64,6 @@ namespace MMAP
 
             void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
             bool loadMap(uint32 mapId, int32 x, int32 y);
-            bool loadMapInstance(uint32 mapId, uint32 instanceId);
             bool unloadMap(uint32 mapId, int32 x, int32 y);
             bool unloadMap(uint32 mapId);
             bool unloadMapInstance(uint32 mapId, uint32 instanceId);
