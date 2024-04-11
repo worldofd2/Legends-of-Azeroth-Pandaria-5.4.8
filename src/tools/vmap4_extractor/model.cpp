@@ -83,7 +83,7 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
         printf("Can't create the output file '%s'\n",outfilename);
         return false;
     }
-    fwrite(szRawVMAPMagic, 8, 1, output);
+    fwrite(VMAP::RAW_VMAP_MAGIC, 8, 1, output);
     uint32 nVertices = header.nBoundingVertices;
     fwrite(&nVertices, sizeof(int), 1, output);
     uint32 nofgroups = 1;

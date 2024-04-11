@@ -66,6 +66,7 @@ class TC_GAME_API PathGenerator
         // option setters - use optional
         void SetUseStraightPath(bool useStraightPath) { _useStraightPath = useStraightPath; }
         void SetPathLengthLimit(float distance) { _pointPathLimit = std::min<uint32>(uint32(distance/SMOOTH_PATH_STEP_SIZE), MAX_POINT_PATH_LENGTH); }
+        void SetUseRaycast(bool useRaycast) { _useRaycast = useRaycast; }
 
         // result getters
         G3D::Vector3 const& GetStartPosition() const { return _startPosition; }
@@ -76,8 +77,11 @@ class TC_GAME_API PathGenerator
 
         float GetLinearPathLength() const;
 
-        void SetPathType(PathType type) { _type = type; } // For hacks
+        void SetPathType(PathType type) { _type = type; } // For hacks todo
         PathType GetPathType() const { return _type; }
+
+        // shortens the path until the destination is the specified distance from the target point
+        // void ShortenPathUntilDist(G3D::Vector3 const& point, float dist);
 
         void ReducePathLenghtByDist(float dist); // path must be already built
 
@@ -113,7 +117,7 @@ class TC_GAME_API PathGenerator
         void SetStartPosition(G3D::Vector3 const& point) { _startPosition = point; }
         void SetEndPosition(G3D::Vector3 const& point) { _actualEndPosition = point; _endPosition = point; }
         void SetActualEndPosition(G3D::Vector3 const& point) { _actualEndPosition = point; }
-        void NormalizePath(bool worldSpace);
+        void NormalizePath();
 
         void Clear()
         {
