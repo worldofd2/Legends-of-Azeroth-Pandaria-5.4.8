@@ -15,15 +15,15 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "GameObjectModel.h"
+#include "Log.h"
+#include "MapTree.h"
+#include "Timer.h"
 #include "VMapFactory.h"
 #include "VMapManager2.h"
 #include "VMapDefinitions.h"
 #include "WorldModel.h"
 
-#include "GameObjectModel.h"
-#include "Log.h"
-#include "Object.h"
-#include "DBCStores.h"
 
 using G3D::Vector3;
 using G3D::Ray;

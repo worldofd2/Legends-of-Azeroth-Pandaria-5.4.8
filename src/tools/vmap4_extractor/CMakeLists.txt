@@ -26,11 +26,9 @@ add_executable(vmap4extractor ${sources})
 target_include_directories(vmap4extractor
   PUBLIC
     common
-    collision
     g3dlite
     ${CMAKE_SOURCE_DIR}/src/common/
     ${CMAKE_SOURCE_DIR}/src/common/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/collision
     ${CMAKE_SOURCE_DIR}/dep/StormLib/src
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
 )
