@@ -24,15 +24,14 @@
 #include "VMapDefinitions.h"
 #include "WorldModel.h"
 
-
 using G3D::Vector3;
 using G3D::Ray;
 using G3D::AABox;
 
 struct GameobjectModelData
 {
-    GameobjectModelData(const std::string& name_, const AABox& box) :
-        bound(box), name(name_) { }
+    GameobjectModelData(char const* name_, uint32 nameLength, Vector3 const& lowBound, Vector3 const& highBound, bool isWmo_) :
+        bound(lowBound, highBound), name(name_, nameLength), isWmo(isWmo_) { }
 
     AABox bound;
     std::string name;
@@ -53,7 +52,17 @@ void LoadGameObjectModelList(std::string const& dataPath)
         return;
     }
 
+    char magic[8];
+    if (fread(magic, 1, 8, model_list_file) != 8
+        || memcmp(magic, VMAP::VMAP_MAGIC, 8) != 0)
+    {
+        TC_LOG_ERROR("misc", "File '%s' has wrong header, expected %s.", VMAP::GAMEOBJECT_MODELS, VMAP::VMAP_MAGIC);
+        fclose(model_list_file);
+        return;
+    }
+
     uint32 name_length, displayId;
+    uint8 isWmo;
     char buff[500];
     while (true)
     {
@@ -72,10 +81,13 @@ void LoadGameObjectModelList(std::string const& dataPath)
             break;
         }
 
-        model_list.insert
-        (
-            ModelList::value_type( displayId, GameobjectModelData(std::string(buff, name_length), AABox(v1, v2)) )
-        );
+        if (v1.isNaN() || v2.isNaN())
+        {
+            VMAP_ERROR_LOG("misc", "File '%s' Model '%s' has invalid v1%s v2%s values!", VMAP::GAMEOBJECT_MODELS, std::string(buff, name_length).c_str(), v1.toString().c_str(), v2.toString().c_str());
+            continue;
+        }
+
+        model_list.emplace(std::piecewise_construct, std::forward_as_tuple(displayId), std::forward_as_tuple(&buff[0], name_length, v1, v2, isWmo != 0));
     }
 
     fclose(model_list_file);
@@ -102,7 +114,7 @@ bool GameObjectModel::initialize(std::unique_ptr<GameObjectModelOwnerBase> model
         return false;
     }
 
-    iModel = ((VMAP::VMapManager2*)VMAP::VMapFactory::createOrGetVMapManager())->acquireModelInstance(dataPath + "vmaps/", it->second.name);
+    iModel = VMAP::VMapFactory::createOrGetVMapManager()->acquireModelInstance(dataPath + "vmaps/", it->second.name);
 
     if (!iModel)
         return false;
@@ -168,6 +180,69 @@ bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool Sto
         MaxDist = distance;
     }
     return hit;
+}
+
+void GameObjectModel::intersectPoint(G3D::Vector3 const& point, VMAP::AreaInfo& info, uint32 ph_mask) const
+{
+    if (!(phasemask & ph_mask) || !owner->IsSpawned() || !isMapObject())
+        return;
+
+    if (!iBound.contains(point))
+        return;
+
+    // child bounds are defined in object space:
+    Vector3 pModel = iInvRot * (point - iPos) * iInvScale;
+    Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+    float zDist;
+    if (iModel->IntersectPoint(pModel, zDirModel, zDist, info))
+    {
+        Vector3 modelGround = pModel + zDist * zDirModel;
+        float world_Z = ((modelGround * iInvRot) * iScale + iPos).z;
+        if (info.ground_Z < world_Z)
+            info.ground_Z = world_Z;
+    }
+}
+
+bool GameObjectModel::GetLocationInfo(G3D::Vector3 const& point, VMAP::LocationInfo& info, uint32 ph_mask) const
+{
+    if (!(phasemask & ph_mask) || !owner->IsSpawned() || !isMapObject())
+        return false;
+
+    if (!iBound.contains(point))
+        return false;
+
+    // child bounds are defined in object space:
+    Vector3 pModel = iInvRot * (point - iPos) * iInvScale;
+    Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+    float zDist;
+    if (iModel->GetLocationInfo(pModel, zDirModel, zDist, info))
+    {
+        Vector3 modelGround = pModel + zDist * zDirModel;
+        float world_Z = ((modelGround * iInvRot) * iScale + iPos).z;
+        if (info.ground_Z < world_Z)
+        {
+            info.ground_Z = world_Z;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GameObjectModel::GetLiquidLevel(G3D::Vector3 const& point, VMAP::LocationInfo& info, float& liqHeight) const
+{
+    // child bounds are defined in object space:
+    Vector3 pModel = iInvRot * (point - iPos) * iInvScale;
+    //Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+    float zDist;
+    if (info.hitModel->GetLiquidLevel(pModel, zDist))
+    {
+        // calculate world height (zDist in model coords):
+        // assume WMO not tilted (wouldn't make much sense anyway)
+        liqHeight = zDist * iScale + iPos.z;
+        return true;
+    }
+    return false;
 }
 
 bool GameObjectModel::UpdatePosition()

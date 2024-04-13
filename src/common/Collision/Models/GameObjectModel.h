@@ -24,6 +24,7 @@
 #include <G3D/Ray.h>
 
 #include "Define.h"
+#include <memory>
 
 namespace VMAP
 {
@@ -52,9 +53,7 @@ public:
 
 class TC_COMMON_API GameObjectModel /*, public Intersectable*/
 {
-
     GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(nullptr), owner(nullptr), isWmo(false) { }
-
 public:
     std::string name;
 
@@ -72,6 +71,9 @@ public:
     bool isMapObject() const { return isWmo; }
 
     bool intersectRay(const G3D::Ray& Ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask, VMAP::ModelIgnoreFlags ignoreFlags) const;
+    void intersectPoint(G3D::Vector3 const& point, VMAP::AreaInfo& info, uint32 ph_mask) const;
+    bool GetLocationInfo(G3D::Vector3 const& point, VMAP::LocationInfo& info, uint32 ph_mask) const;
+    bool GetLiquidLevel(G3D::Vector3 const& point, VMAP::LocationInfo& info, float& liqHeight) const;
 
     static GameObjectModel* Create(std::unique_ptr<GameObjectModelOwnerBase> modelOwner, std::string const& dataPath);
 

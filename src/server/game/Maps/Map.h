@@ -77,7 +77,7 @@ union u_map_magic
 struct map_fileheader
 {
     u_map_magic mapMagic;
-    u_map_magic versionMagic;
+    uint32 versionMagic;
     u_map_magic buildMagic;
     uint32 areaMapOffset;
     uint32 areaMapSize;
@@ -167,6 +167,7 @@ class GridMap
         uint16* m_uint16_V8;
         uint8* m_uint8_V8;
     };
+    G3D::Plane* _minHeightPlanes;
     int16* _maxHeight;
     int16* _minHeight;
     // Height level data
@@ -266,11 +267,11 @@ typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*> CreatureGroupHolderType
 
 typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMap;
 
-class Map : public GridRefManager<NGridType>
+class TC_GAME_API Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint16 SpawnMode, Map* _parent = NULL);
+        Map(uint32 id, time_t, uint32 InstanceId, uint16 SpawnMode, Map* _parent = nullptr);
         virtual ~Map();
 
         MapEntry const* GetEntry() const { return i_mapEntry; }

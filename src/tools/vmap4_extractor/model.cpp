@@ -76,30 +76,30 @@ bool Model::open()
 
 bool Model::ConvertToVMAPModel(const char * outfilename)
 {
-    int N[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
-    FILE* output=fopen(outfilename, "wb");
+    int N[12] = { };
+    FILE* output = fopen(outfilename, "wb");
     if (!output)
     {
-        printf("Can't create the output file '%s'\n",outfilename);
+        printf("Can't create the output file '%s'\n", outfilename);
         return false;
     }
     fwrite(VMAP::RAW_VMAP_MAGIC, 8, 1, output);
     uint32 nVertices = header.nBoundingVertices;
     fwrite(&nVertices, sizeof(int), 1, output);
     uint32 nofgroups = 1;
-    fwrite(&nofgroups,sizeof(uint32), 1, output);
-    fwrite(N,4*3,1,output);// rootwmoid, flags, groupid
-    fwrite(N,sizeof(float),3*2,output);//bbox, only needed for WMO currently
-    fwrite(N,4,1,output);// liquidflags
-    fwrite("GRP ",4,1,output);
+    fwrite(&nofgroups, sizeof(uint32), 1, output);
+    fwrite(N, 4 * 3, 1, output);// rootwmoid, flags, groupid
+    fwrite(N, sizeof(float), 3 * 2, output);//bbox, only needed for WMO currently
+    fwrite(N, 4, 1, output);// liquidflags
+    fwrite("GRP ", 4, 1, output);
     uint32 branches = 1;
     int wsize;
     wsize = sizeof(branches) + sizeof(uint32) * branches;
     fwrite(&wsize, sizeof(int), 1, output);
-    fwrite(&branches,sizeof(branches), 1, output);
+    fwrite(&branches, sizeof(branches), 1, output);
     uint32 nIndexes = header.nBoundingTriangles;
-    fwrite(&nIndexes,sizeof(uint32), 1, output);
-    fwrite("INDX",4, 1, output);
+    fwrite(&nIndexes, sizeof(uint32), 1, output);
+    fwrite("INDX", 4, 1, output);
     wsize = sizeof(uint32) + sizeof(unsigned short) * nIndexes;
     fwrite(&wsize, sizeof(int), 1, output);
     fwrite(&nIndexes, sizeof(uint32), 1, output);
@@ -121,7 +121,7 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
     wsize = sizeof(int) + sizeof(float) * 3 * nVertices;
     fwrite(&wsize, sizeof(int), 1, output);
     fwrite(&nVertices, sizeof(int), 1, output);
-    if (nVertices >0)
+    if (nVertices > 0)
     {
         for (uint32 vpos = 0; vpos < nVertices; ++vpos)
         {
@@ -130,7 +130,7 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
             vertices[vpos].z = tmp;
         }
 
-        fwrite(vertices, sizeof(float)*3, nVertices, output);
+        fwrite(vertices, sizeof(float) * 3, nVertices, output);
     }
 
     fclose(output);
@@ -138,15 +138,9 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
     return true;
 }
 
-
-Vec3D fixCoordSystem(Vec3D v)
+Vec3D fixCoordSystem(Vec3D const& v)
 {
     return Vec3D(v.x, v.z, -v.y);
-}
-
-Vec3D fixCoordSystem2(Vec3D v)
-{
-    return Vec3D(v.x, v.z, v.y);
 }
 
 void Doodad::Extract(ADT::MDDF const& doodadDef, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile)

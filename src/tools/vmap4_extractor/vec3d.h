@@ -94,21 +94,21 @@ public:
 
     float lengthSquared() const
     {
-        return x*x+y*y+z*z;
+        return x * x + y * y + z * z;
     }
 
     float length() const
     {
-        return sqrt(x*x+y*y+z*z);
+        return std::sqrt(lengthSquared());
     }
 
     Vec3D& normalize()
     {
-        this->operator*= (1.0f/length());
+        *this *= (1.0f / length());
         return *this;
     }
 
-    Vec3D operator~ () const
+    Vec3D operator~() const
     {
         Vec3D r(*this);
         r.normalize();
@@ -121,7 +121,7 @@ public:
         return in;
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const Vec3D& v)
+    friend std::ostream& operator<<(std::ostream& out, Vec3D const& v)
     {
         out << v.x << " " << v.y << " " << v.z;
         return out;
@@ -203,17 +203,17 @@ public:
 
     float lengthSquared() const
     {
-        return x*x+y*y;
+        return x * x + y * y;
     }
 
     float length() const
     {
-        return sqrt(x*x+y*y);
+        return std::sqrt(lengthSquared());
     }
 
     Vec2D& normalize()
     {
-        this->operator*= (1.0f/length());
+        *this *= (1.0f / length());
         return *this;
     }
 

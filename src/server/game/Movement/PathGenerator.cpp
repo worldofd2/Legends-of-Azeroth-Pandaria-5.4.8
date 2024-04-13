@@ -339,7 +339,6 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
                 startPolyFound = true;
                 break;
             }
-
         }
 
         for (pathEndIndex = _polyLength-1; pathEndIndex > pathStartIndex; --pathEndIndex)
@@ -409,29 +408,6 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             BuildShortcut();
             _type = PATHFIND_NOPATH;
             return;
-
-            float hit = 0;
-            float hitNormal[3];
-            memset(hitNormal, 0, sizeof(hitNormal));
-
-            // dtResult = _navMeshQuery->raycast(
-            //     suffixStartPoly,
-            //     suffixEndPoint,
-            //     endPoint,
-            //     &_filter,
-            //     &hit,
-            //     hitNormal,
-            //     _pathPolyRefs + prefixPolyLength - 1,
-            //     (int*)&suffixPolyLength,
-            //     MAX_PATH_LENGTH - prefixPolyLength);
-
-            // // raycast() sets hit to FLT_MAX if there is a ray between start and end
-            // if (hit != FLT_MAX)
-            // {
-            //     // the ray hit something, return no path instead of the incomplete one
-            //     _type = PATHFIND_NOPATH;
-            //     return;
-            // }
         }
         else
         {
@@ -451,7 +427,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // this is probably an error state, but we'll leave it
             // and hopefully recover on the next Update
             // we still need to copy our preffix
-            TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _sourceUnit->GetGUIDLow());
+            TC_LOG_ERROR("maps.mmaps", "%u's Path Build failed: 0 length path", _sourceUnit->GetGUIDLow());
         }
 
         TC_LOG_DEBUG("maps.mmaps", "++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u", _polyLength, prefixPolyLength, suffixPolyLength);
@@ -513,11 +489,32 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
                 _pathPoints[0] = GetStartPosition();
                 _pathPoints[1] = G3D::Vector3(hitPos[2], hitPos[0], hitPos[1]);
 
-                NormalizePath(); // todo
+                NormalizePath();
                 _type = PATHFIND_INCOMPLETE;
                 AddFarFromPolyFlags(startFarFromPoly, false);
                 return;
             }
+            else
+            {
+                // clamp to poly boundary if we fail to get the height
+                if (dtStatusFailed(_navMeshQuery->getPolyHeight(_pathPolyRefs[_polyLength - 1], endPoint, &endPoint[1])))
+                    _navMeshQuery->closestPointOnPolyBoundary(_pathPolyRefs[_polyLength - 1], endPoint, endPoint);
+
+                _pathPoints.resize(2);
+                _pathPoints[0] = GetStartPosition();
+                _pathPoints[1] = G3D::Vector3(endPoint[2], endPoint[0], endPoint[1]);
+
+                NormalizePath();
+                if (startFarFromPoly || endFarFromPoly)
+                {
+                    _type = PathType(PATHFIND_INCOMPLETE);
+
+                    AddFarFromPolyFlags(startFarFromPoly, endFarFromPoly);
+                }
+                else
+                    _type = PATHFIND_NORMAL;
+                return;
+            }            
         }
         else
         {
@@ -548,6 +545,8 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
     else
         _type = PATHFIND_INCOMPLETE;
 
+    AddFarFromPolyFlags(startFarFromPoly, endFarFromPoly);
+
     // generate the point-path out of our up-to-date poly-path
     BuildPointPath(startPoint, endPoint);
 }
@@ -559,36 +558,11 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
     dtStatus dtResult = DT_FAILURE;
     if (_useRaycast)
     {
-        dtResult = DT_SUCCESS;
-        pointCount = 1;
-        memcpy(&pathPoints[VERTEX_SIZE * 0], startPoint, sizeof(float) * 3); // first point
-
-                                                                             // path has to be split into polygons with dist SMOOTH_PATH_STEP_SIZE between them
-        G3D::Vector3 startVec = G3D::Vector3(startPoint[0], startPoint[1], startPoint[2]);
-        G3D::Vector3 endVec = G3D::Vector3(endPoint[0], endPoint[1], endPoint[2]);
-        G3D::Vector3 diffVec = (endVec - startVec);
-        G3D::Vector3 prevVec = startVec;
-        float len = diffVec.length();
-        diffVec *= SMOOTH_PATH_STEP_SIZE / 2 / len;
-        while (len > SMOOTH_PATH_STEP_SIZE / 2)
-        {
-            if (pointCount >= MAX_POINT_PATH_LENGTH)
-            {
-                BuildShortcut();
-                _type = PATHFIND_SHORT;
-                return;
-            }
-
-            len -= SMOOTH_PATH_STEP_SIZE / 2;
-            prevVec += diffVec;
-            pathPoints[VERTEX_SIZE * pointCount + 0] = prevVec.x;
-            pathPoints[VERTEX_SIZE * pointCount + 1] = prevVec.y;
-            pathPoints[VERTEX_SIZE * pointCount + 2] = prevVec.z;
-            ++pointCount;
-        }
-
-        memcpy(&pathPoints[VERTEX_SIZE * pointCount], endPoint, sizeof(float) * 3); // last point
-        ++pointCount;
+        // _straightLine uses raycast and it currently doesn't support building a point path, only a 2-point path with start and hitpoint/end is returned
+        TC_LOG_ERROR("maps.mmaps", "PathGenerator::BuildPointPath() called with _useRaycast for unit %u", _sourceUnit->GetGUIDLow());        
+        BuildShortcut();
+        _type = PATHFIND_NOPATH;
+        return;
     }
     else if (_useStraightPath)
     {
@@ -620,16 +594,16 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
         // only happens if pass bad data to findStraightPath or navmesh is broken
         // single point paths can be generated here
         /// @todo check the exact cases
-        TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath FAILED! path sized %d returned\n", pointCount);
+        TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::BuildPointPath FAILED! path sized %d returned\n", pointCount);
         BuildShortcut();
-        _type = PATHFIND_NOPATH;
+        _type = PathType(_type | PATHFIND_NOPATH);
         return;
     }
-    else if (pointCount == _pointPathLimit && !_useRaycast) // _useRaycast assumes the path is already of a valid length
+    else if (pointCount >= _pointPathLimit) // _useRaycast assumes the path is already of a valid length todo
     {
-        TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath FAILED! path sized %d returned, lower than limit set to %d\n", pointCount, _pointPathLimit);
+        TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::BuildPointPath FAILED! path sized %d returned, lower than limit set to %d\n", pointCount, _pointPathLimit);
         BuildShortcut();
-        _type = PATHFIND_SHORT;
+        _type = PathType(_type | PATHFIND_SHORT);
         return;
     }
 

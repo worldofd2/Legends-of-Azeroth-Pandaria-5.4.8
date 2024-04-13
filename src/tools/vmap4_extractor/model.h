@@ -28,7 +28,7 @@ class MPQFile;
 struct WMODoodadData;
 namespace ADT { struct MDDF; struct MODF; }
 
-Vec3D fixCoordSystem(Vec3D v);
+Vec3D fixCoordSystem(Vec3D const& v);
 
 class Model
 {

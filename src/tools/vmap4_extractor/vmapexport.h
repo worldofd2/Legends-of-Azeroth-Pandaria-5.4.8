@@ -37,7 +37,6 @@ extern const char * szWorkDirWmo;
 extern std::unordered_map<std::string, WMODoodadData> WmoDoodads;
 
 uint32 GenerateUniqueObjectId(uint32 clientId, uint16 clientDoodadId);
-extern const char * szRawVMAPMagic;                         // vmap magic string for extracted raw vmap data
 
 bool FileExists(const char * file);
 void strToLower(char* str);

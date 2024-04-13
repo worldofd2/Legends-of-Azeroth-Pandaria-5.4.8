@@ -118,9 +118,7 @@ std::unordered_map<std::string, WMODoodadData> WmoDoodads;
 
 // Constants
 
-//static const char * szWorkDirMaps = ".\\Maps";
 const char* szWorkDirWmo = "./Buildings";
-const char* szRawVMAPMagic = "VMAP043";
 
 std::map<std::pair<uint32, uint16>, uint32> uniqueObjectIds;
 
@@ -311,31 +309,31 @@ void ReadLiquidTypeTableDBC()
     printf("Done! (%zu LiqTypes loaded)\n", LiqType_count);
 }
 
-bool ExtractWmo()
-{
-    bool success = false;
+// bool ExtractWmo()
+// {
+//     bool success = false;
 
-    //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
+//     //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
 
-    SFILE_FIND_DATA data;
-    HANDLE find = SFileFindFirstFile(WorldMpq, "*.wmo", &data, NULL);
-    if (find != NULL)
-    {
-        do
-        {
-            std::string str = data.cFileName;
-            //printf("Extracting wmo %s\n", str.c_str());
-            success |= ExtractSingleWmo(str);
-        }
-        while (SFileFindNextFile(find, &data));
-    }
-    SFileFindClose(find);
+//     SFILE_FIND_DATA data;
+//     HANDLE find = SFileFindFirstFile(WorldMpq, "*.wmo", &data, NULL);
+//     if (find != NULL)
+//     {
+//         do
+//         {
+//             std::string str = data.cFileName;
+//             //printf("Extracting wmo %s\n", str.c_str());
+//             success |= ExtractSingleWmo(str);
+//         }
+//         while (SFileFindNextFile(find, &data));
+//     }
+//     SFileFindClose(find);
 
-    if (success)
-        printf("\nExtract wmo complete (No (fatal) errors)\n");
+//     if (success)
+//         printf("\nExtract wmo complete (No (fatal) errors)\n");
 
-    return success;
-}
+//     return success;
+// }
 
 bool ExtractSingleWmo(std::string& fname)
 {
@@ -601,13 +599,6 @@ int main(int argc, char ** argv)
 
     ReadLiquidTypeTableDBC();
 
-    // extract data
-    // if (success)
-    //     success = ExtractWmo();
-
-    // Extract models, listed in GameObjectDisplayInfo.dbc
-    ExtractGameobjectModels(&input_path[0]);
-
     //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     //map.dbc
     if (success)
@@ -624,13 +615,15 @@ int main(int argc, char ** argv)
         for (unsigned int x = 0; x < map_count; ++x)
         {
             map_ids[x].id = dbc->getRecord(x).getUInt(0);
-            strcpy(map_ids[x].name,dbc->getRecord(x).getString(1));
+            strcpy(map_ids[x].name, dbc->getRecord(x).getString(1));
             printf("Map - %s\n",map_ids[x].name);
         }
 
         delete dbc;
         ParsMapFiles();
 
+        // Extract models, listed in GameObjectDisplayInfo.dbc
+        ExtractGameobjectModels(&input_path[0]);
     }
 
     SFileCloseArchive(LocaleMpq);
