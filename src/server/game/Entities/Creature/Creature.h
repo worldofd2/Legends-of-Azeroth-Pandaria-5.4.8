@@ -356,6 +356,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
 
         void UpdateMovementFlags(bool force = false);
+
+        bool CanEnterWater() const override;
+
         void SetFlying(bool enable);
 
         bool UpdateStats(Stats stat);

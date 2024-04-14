@@ -2766,6 +2766,15 @@ void Creature::UpdateMovementFlags(bool force)
     SetSwim(CanSwim() && IsInWater());
 }
 
+bool Creature::CanEnterWater() const
+{
+    if (CanSwim())
+        return true;
+
+    //return GetMovementTemplate().IsSwimAllowed();
+    return false; // todo
+}
+
 void Creature::SetFlying(bool enable)
 {
     if (enable)

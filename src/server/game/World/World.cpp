@@ -1234,7 +1234,6 @@ void World::LoadConfigSettings(bool reload)
     }
 
     m_bool_configs[CONFIG_ENABLE_MMAPS] = sConfigMgr->GetBoolDefault("mmap.enablePathFinding", false);
-    m_bool_configs[CONFIG_MMAP_ALLOW_REUSE_OF_PREVIOUS_PATH_SEGMENTS] = sConfigMgr->GetBoolDefault("mmap.AllowReuseOfPreviousPathSegments", true);
 
     TC_LOG_INFO("server.loading", "WORLD: MMap data directory is: %smmaps", m_dataPath.c_str());
 
