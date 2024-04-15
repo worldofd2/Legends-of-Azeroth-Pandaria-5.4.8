@@ -524,6 +524,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void GetFirstCollisionPosition(Position &pos, float dist, float angle);
         void GetRandomNearPosition(Position &pos, float radius);
         void GetContactPoint(WorldObject const* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
+
+        virtual float GetCombatReach() const { return 0.0f; } // overridden (only) in Unit
         void GetBlinkPosition(Position& pos, float dist, float angle);
         void MovePositionToFirstCollosionBySteps(Position& pos, float dist, float angle, float heightCheckInterval = 2.0f, bool allowInAir = false);
 
@@ -574,6 +576,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         }
         bool IsWithinLOS(float x, float y, float z, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
         bool IsWithinLOSInMap(WorldObject const* obj, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
+        Position GetHitSpherePointFor(Position const& dest) const;
+        void GetHitSpherePointFor(Position const& dest, float& x, float& y, float& z) const;
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
         bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
         bool IsInRange2d(float x, float y, float minRange, float maxRange) const;
