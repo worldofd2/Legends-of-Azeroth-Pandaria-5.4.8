@@ -1049,46 +1049,6 @@ float PathGenerator::Dist3DSqr(G3D::Vector3 const& p1, G3D::Vector3 const& p2) c
     return (p1 - p2).squaredLength();
 }
 
-void PathGenerator::ReducePathLenghtByDist(float dist)
-{
-    if (GetPathType() == PATHFIND_BLANK)
-    {
-        TC_LOG_DEBUG("maps", "PathGenerator::ReducePathLenghtByDist called before path was built");
-        return;
-    }
-
-    if (_pathPoints.size() < 2) // path building failure
-        return;
-
-    uint32 i = _pathPoints.size();
-    G3D::Vector3 nextVec = _pathPoints[--i];
-    while (i > 0)
-    {
-        G3D::Vector3 currVec = _pathPoints[--i];
-        G3D::Vector3 diffVec = (nextVec - currVec);
-        float len = diffVec.length();
-        if (len > dist)
-        {
-            float step = dist / len;
-            // same as nextVec
-            _pathPoints[i + 1] -= diffVec * step;
-            _pathPoints.resize(i + 2);
-            break;
-        }
-        else if (i == 0) // at second point
-        {
-            _pathPoints[1] = _pathPoints[0];
-            _pathPoints.resize(2);
-            break;
-        }
-
-        dist -= len;
-        nextVec = currVec; // we're going backwards
-    }
-
-    NormalizePath();
-}
-
 float PathGenerator::GetLinearPathLength() const
 {
     if (_pathPoints.size() < 2)
@@ -1275,61 +1235,61 @@ void PathGenerator::VisualizeNavmesh(uint32 duration)
     }
 }
 
-// void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
-// {
-//     if (GetPathType() == PATHFIND_BLANK || _pathPoints.size() < 2)
-//     {
-//         TC_LOG_ERROR("maps.mmaps", "PathGenerator::ReducePathLengthByDist called before path was successfully built");
-//         return;
-//     }
+void PathGenerator::ShortenPathUntilDist(G3D::Vector3 const& target, float dist)
+{
+    if (GetPathType() == PATHFIND_BLANK || _pathPoints.size() < 2)
+    {
+        TC_LOG_ERROR("maps.mmaps", "PathGenerator::ReducePathLengthByDist called before path was successfully built");
+        return;
+    }
 
-//     float const distSq = dist * dist;
+    float const distSq = dist * dist;
 
-//     // the first point of the path must be outside the specified range
-//     // (this should have really been checked by the caller...)
-//     if ((_pathPoints[0] - target).squaredLength() < distSq)
-//         return;
+    // the first point of the path must be outside the specified range
+    // (this should have really been checked by the caller...)
+    if ((_pathPoints[0] - target).squaredLength() < distSq)
+        return;
 
-//     // check if we even need to do anything
-//     if ((*_pathPoints.rbegin() - target).squaredLength() >= distSq)
-//         return;
+    // check if we even need to do anything
+    if ((*_pathPoints.rbegin() - target).squaredLength() >= distSq)
+        return;
 
-//     size_t i = _pathPoints.size()-1;
-//     float x, y, z, collisionHeight = _source->GetCollisionHeight();
-//     // find the first i s.t.:
-//     //  - _pathPoints[i] is still too close
-//     //  - _pathPoints[i-1] is too far away
-//     // => the end point is somewhere on the line between the two
-//     while (1)
-//     {
-//         // we know that pathPoints[i] is too close already (from the previous iteration)
-//         if ((_pathPoints[i-1] - target).squaredLength() >= distSq)
-//             break; // bingo!
+    size_t i = _pathPoints.size()-1;
+    float x, y, z, collisionHeight = _source->GetCollisionHeight();
+    // find the first i s.t.:
+    //  - _pathPoints[i] is still too close
+    //  - _pathPoints[i-1] is too far away
+    // => the end point is somewhere on the line between the two
+    while (1)
+    {
+        // we know that pathPoints[i] is too close already (from the previous iteration)
+        if ((_pathPoints[i-1] - target).squaredLength() >= distSq)
+            break; // bingo!
 
-//         // check if the shortened path is still in LoS with the target
-//         _source->GetHitSpherePointFor({ _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight }, x, y, z);
-//         if (!_source->GetMap()->isInLineOfSight(x, y, z, _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight, _source->GetPhaseMask(), VMAP::ModelIgnoreFlags::Nothing)) // LINEOFSIGHT_ALL_CHECKS todo
-//         {
-//             // whenver we find a point that is not in LoS anymore, simply use last valid path
-//             _pathPoints.resize(i + 1);
-//             return;
-//         }
+        // check if the shortened path is still in LoS with the target
+        _source->GetHitSpherePointFor({ _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight }, x, y, z);
+        if (!_source->GetMap()->isInLineOfSight(x, y, z, _pathPoints[i - 1].x, _pathPoints[i - 1].y, _pathPoints[i - 1].z + collisionHeight, _source->GetPhaseMask(), VMAP::ModelIgnoreFlags::Nothing)) // LINEOFSIGHT_ALL_CHECKS todo
+        {
+            // whenver we find a point that is not in LoS anymore, simply use last valid path
+            _pathPoints.resize(i + 1);
+            return;
+        }
 
-//         if (!--i)
-//         {
-//             // no point found that fulfills the condition
-//             _pathPoints[0] = _pathPoints[1];
-//             _pathPoints.resize(2);
-//             return;
-//         }
-//     }
+        if (!--i)
+        {
+            // no point found that fulfills the condition
+            _pathPoints[0] = _pathPoints[1];
+            _pathPoints.resize(2);
+            return;
+        }
+    }
 
-//     // ok, _pathPoints[i] is too close, _pathPoints[i-1] is not, so our target point is somewhere between the two...
-//     //   ... settle for a guesstimate since i'm not confident in doing trig on every chase motion tick...
-//     // (@todo review this)
-//     _pathPoints[i] += (_pathPoints[i - 1] - _pathPoints[i]).direction() * (dist - (_pathPoints[i] - target).length());
-//     _pathPoints.resize(i+1);
-// }
+    // ok, _pathPoints[i] is too close, _pathPoints[i-1] is not, so our target point is somewhere between the two...
+    //   ... settle for a guesstimate since i'm not confident in doing trig on every chase motion tick...
+    // (@todo review this)
+    _pathPoints[i] += (_pathPoints[i - 1] - _pathPoints[i]).direction() * (dist - (_pathPoints[i] - target).length());
+    _pathPoints.resize(i+1);
+}
 
 bool PathGenerator::IsInvalidDestinationZ(Unit const* target) const
 {

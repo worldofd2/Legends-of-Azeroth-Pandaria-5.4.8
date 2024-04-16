@@ -33,6 +33,7 @@
 #include "Totem.h"
 #include "Spell.h"
 #include "DynamicObject.h"
+#include "G3DPosition.hpp"
 #include "Guild.h"
 #include "Group.h"
 #include "UpdateData.h"
@@ -6537,8 +6538,10 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                             float objSize = target->GetObjectSize();
                             float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
+
                             m_preGeneratedPath.reset(new PathGenerator(m_caster));
                             m_preGeneratedPath->SetPathLengthLimit(range);
+                            
                             // first try with raycast, if it fails fall back to normal path
                             bool result = m_preGeneratedPath->CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, true, true);
                             if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT)
@@ -6555,7 +6558,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                                 m_preGeneratedPath->SetPathType(PATHFIND_BLANK); // Clear path if straight line succeeded - let caster boost through the air (but only if we don't have any point higher than caster, otherwise we risk falling below ground)
 
                             if (m_preGeneratedPath->GetPathType() != PATHFIND_BLANK)
-                               m_preGeneratedPath->ReducePathLenghtByDist(objSize); // move back
+                                m_preGeneratedPath->ShortenPathUntilDist(PositionToVector3(target), objSize); // move back
                         }
                     }
                 }

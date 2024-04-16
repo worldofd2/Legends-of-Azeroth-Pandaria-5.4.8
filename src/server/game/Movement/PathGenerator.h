@@ -81,9 +81,7 @@ class TC_GAME_API PathGenerator
         PathType GetPathType() const { return _type; }
 
         // shortens the path until the destination is the specified distance from the target point
-        // void ShortenPathUntilDist(G3D::Vector3 const& point, float dist);
-
-        void ReducePathLenghtByDist(float dist); // path must be already built
+        void ShortenPathUntilDist(G3D::Vector3 const& point, float dist);
 
         void VisualizePath(uint32 duration);
         void VisualizeNavmesh(uint32 duration);
