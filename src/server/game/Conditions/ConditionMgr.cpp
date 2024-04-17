@@ -1055,7 +1055,7 @@ bool ConditionMgr::IsObjectMeetingSpellClickConditions(uint32 creatureId, uint32
         ConditionsByEntryMap::const_iterator i = itr->second.find(spellId);
         if (i != itr->second.end())
         {
-            TC_LOG_DEBUG("condition", "GetConditionsForSpellClickEvent: found conditions for Vehicle entry %u spell %u", creatureId, spellId);
+            TC_LOG_DEBUG("condition", "GetConditionsForSpellClickEvent: found conditions for SpellClickEvent entry %u spell %u", creatureId, spellId);
             ConditionSourceInfo sourceInfo(clicker, target);
             return IsObjectMeetToConditions(sourceInfo, i->second);
         }

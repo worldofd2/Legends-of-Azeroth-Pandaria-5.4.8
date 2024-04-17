@@ -26005,22 +26005,11 @@ void Player::UpdateForQuestWorldObjects()
             SpellClickInfoMapBounds clickPair = sObjectMgr->GetSpellClickInfoMapBounds(obj->GetEntry());
             for (SpellClickInfoContainer::const_iterator _itr = clickPair.first; _itr != clickPair.second; ++_itr)
             {
-                //! This code doesn't look right, but it was logically converted to condition system to do the exact
-                //! same thing it did before. It definitely needs to be overlooked for intended functionality.
-                if (ConditionContainer const* conds = sConditionMgr->GetConditionsForSpellClickEvent(obj->GetEntry(), _itr->second.spellId))
+                if (sConditionMgr->GetConditionsForSpellClickEvent(obj->GetEntry(), _itr->second.spellId))
                 {
-                    bool buildUpdateBlock = false;
+                    obj->BuildValuesUpdateBlockForPlayer(&udata, this);
                     break;
-                    for (ConditionContainer::const_iterator jtr = conds->begin(); jtr != conds->end() && !buildUpdateBlock; ++jtr)
-                        if ((*jtr)->ConditionType == CONDITION_QUESTREWARDED || (*jtr)->ConditionType == CONDITION_QUESTTAKEN)
-                            buildUpdateBlock = true;
-
-                    if (buildUpdateBlock)
-                    {
-                        obj->BuildValuesUpdateBlockForPlayer(&udata, this);
-                        break;
-                    }                    
-                }
+                }                
             }
         }
     }
@@ -27972,12 +27961,10 @@ bool Player::CanSeeSpellClickOn(Creature const* c) const
     for (SpellClickInfoContainer::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
     {
         if (!itr->second.IsFitToRequirements(this, c))
-            continue;
+            return false;
 
         if (sConditionMgr->IsObjectMeetingSpellClickConditions(c->GetEntry(), itr->second.spellId, const_cast<Player*>(this), const_cast<Creature*>(c)))            
-            continue;
-
-        return true;
+            return true;
     }
 
     return false;
