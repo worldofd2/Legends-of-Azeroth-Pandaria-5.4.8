@@ -262,7 +262,7 @@ public:
             data.displayid = cinfo->GetFirstValidModelId();
             data.dynamicflags = 0;
             data.equipmentId = 0;
-            data.mapid = trans->GetGOInfo()->moTransport.mapID;
+            data.mapId = trans->GetGOInfo()->moTransport.mapID;
             data.movementType = 0;
             data.npcflag = 0;
             data.npcflag2 = 0;
@@ -865,7 +865,7 @@ public:
                     return false;
                 }
 
-                uint32 map_id = data->mapid;
+                uint32 map_id = data->mapId;
 
                 if (handler->GetSession()->GetPlayer()->GetMapId() != map_id)
                 {

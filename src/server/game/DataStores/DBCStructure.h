@@ -1722,7 +1722,7 @@ struct LiquidTypeEntry
     //uint32 Flags;
     uint32 SoundBank;
     //uint32 SoundId;
-    uint32 SpellId;
+    uint32 SpellID;
     //float MaxDarkenDepth;
     //float FogDarkenIntensity;
     //float AmbDarkenIntensity;
@@ -1771,7 +1771,7 @@ struct MapEntry
     //uint32 flags;                                         // 3
     //uint32 isPvp;                                         // 4
     DbcStr name;                                            // 5        m_MapName_lang
-    uint32  linked_zone;                                    // 6        m_areaTableID
+    uint32  AreaTableID;                                    // 6        m_areaTableID
     //DbcStr    hordeIntro;                                 // 7        m_MapDescription0_lang
     //DbcStr    allianceIntro;                              // 8        m_MapDescription1_lang
     uint32  multimap_id;                                    // 9        m_LoadingScreenID (LoadingScreens.dbc)
@@ -2776,7 +2776,7 @@ struct WMOAreaTableEntry
     //uint32 field7;
     //uint32 field8;
     uint32 Flags;                                           // 9 used for indoor/outdoor determination
-    uint32 areaId;                                          // 10 link to AreaTableEntry.ID
+    uint32 AreaTableID;                                     // 10 link to AreaTableEntry.ID
     //char *Name;                                           // 11       m_AreaName_lang
     //uint32 field12;                                       // 12
     //uint32 field13;                                       // 13

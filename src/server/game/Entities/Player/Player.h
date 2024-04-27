@@ -93,7 +93,7 @@ enum PlayerUnderwaterState
     UNDERWATER_INWATER = 0x01,             // terrain type is water and player is afflicted by it
     UNDERWATER_INLAVA = 0x02,             // terrain type is lava and player is afflicted by it
     UNDERWATER_INSLIME = 0x04,             // terrain type is lava and player is afflicted by it
-    UNDERWARER_INDARKWATER = 0x08,             // terrain type is dark water and player is afflicted by it
+    UNDERWATER_INDARKWATER = 0x08,             // terrain type is dark water and player is afflicted by it
 
     UNDERWATER_EXIST_TIMERS = 0x10
 };
@@ -1224,7 +1224,7 @@ enum class LootLockoutType
     Max
 };
 
-class Player : public Unit, public GridObject<Player>
+class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player* player);
@@ -1261,12 +1261,6 @@ class Player : public Unit, public GridObject<Player>
     static bool BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer, bool boosted = false);
 
     void SetInWater(bool apply);
-
-    bool IsInWater() const
-    {
-        return m_isInWater;
-    }
-    bool IsUnderWater() const;
 
     void SendInitialPacketsBeforeAddToMap();
     void SendInitialPacketsAfterAddToMap();
@@ -2432,8 +2426,7 @@ public:
     {
         return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport);
     }
-    void UpdateUnderwaterState(Map* m, float x, float y, float z);
-
+    void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData) override;
     void SendMessageToSet(WorldPacket* data, bool self)
     {
         SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self);
@@ -3299,8 +3292,6 @@ public:
 
     void UpdateValorOfTheAncients();
     void UpdatePromotionAuras();
-
-    void UpdateMount();
 
     void ApplyDeserter(bool reset = false);
     uint8 GetDeserterMod() { return deserterMod; }

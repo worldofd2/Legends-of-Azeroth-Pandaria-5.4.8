@@ -1483,14 +1483,8 @@ public:
     UnitAnimationTier GetAnimationTier() const { return (UnitAnimationTier)GetByteValue(UNIT_FIELD_ANIM_TIER, 3); }
     void SetAnimationTier(UnitAnimationTier tier) { SetByteValue(UNIT_FIELD_ANIM_TIER, 3, (uint8)tier); }
 
-    bool IsMounted() const
-    {
-        return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
-    }
-    uint32 GetMountID() const
-    {
-        return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID);
-    }
+    bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
+    uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID); }
     void Mount(uint32 mount, uint32 vehicleId = 0, uint32 creatureEntry = 0);
     void Dismount();
     MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
@@ -1685,9 +1679,8 @@ public:
     bool IsValidAssistTarget(Unit const* target) const;
     bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
 
-    virtual bool IsInWater() const;
-    virtual bool IsUnderWater() const;
-    virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
+    bool IsInWater() const;
+    bool IsUnderWater() const;
     bool isInAccessiblePlaceFor(Creature const* c) const;
 
     void SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 OverHeal, uint32 Absorb, bool critical = false);
@@ -2783,6 +2776,9 @@ protected:
     bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 
     void DisableSpline();
+
+    void ProcessPositionDataChanged(PositionFullTerrainStatus const& data) override;
+    virtual void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData);
 
 private:
     bool IsTriggeredAtSpellProcEvent(Unit* victim, ProcTriggeredData& triggerData, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active);

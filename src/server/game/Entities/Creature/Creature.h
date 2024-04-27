@@ -76,7 +76,7 @@ struct CreatureData
 {
     CreatureData() : dbData(true) { }
     uint32 id;                                              // entry in creature_template
-    uint16 mapid;
+    uint16 mapId;
     uint32 phaseMask;
     uint32 displayid;
     int8 equipmentId;

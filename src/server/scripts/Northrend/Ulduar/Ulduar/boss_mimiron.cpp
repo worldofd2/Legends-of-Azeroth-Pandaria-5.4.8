@@ -2256,7 +2256,8 @@ class npc_mimiron_bomb_bot : public CreatureScript
                 {
                     Position pos;
                     pos.Relocate(me);
-                    me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 0, 100.0f);
+                    //me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 0, 100.0f);
+                    me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ);
                     me->UpdatePosition(pos);
                     DoCast(me, SPELL_BOOM_BOT, true);
                     DoZoneInCombat(me, 100.0f);
