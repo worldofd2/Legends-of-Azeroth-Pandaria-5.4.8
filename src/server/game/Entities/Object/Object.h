@@ -105,6 +105,8 @@ enum ZLiquidStatus : uint32;
 
 typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 
+float const DEFAULT_COLLISION_HEIGHT = 2.03128f; // Most common value in dbc
+
 class TC_GAME_API Object
 {
     public:

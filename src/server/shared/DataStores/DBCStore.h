@@ -73,15 +73,16 @@ class DBCStorage
         explicit DBCStorage(char const* f)
             : fmt(f), nCount(0), fieldCount(0), dataTable(NULL)
         {
-            indexTable.asT = NULL;
+            indexTable.asT = nullptr;
         }
 
         ~DBCStorage() { Clear(); }
 
         T const* LookupEntry(uint32 id) const
         {
-            return (id >= nCount) ? NULL : indexTable.asT[id];
+            return (id >= nCount) ? nullptr : indexTable.asT[id];
         }
+        T const* AssertEntry(uint32 id) const { return ASSERT_NOTNULL(LookupEntry(id)); }
 
         uint32  GetNumRows() const { return nCount; }
         char const* GetFormat() const { return fmt; }
@@ -126,7 +127,7 @@ class DBCStorage
                 }
             }
 
-            char* sqlDataTable = NULL;
+            char* sqlDataTable = nullptr;
             fieldCount = dbc.GetCols();
 
             dataTable = reinterpret_cast<T*>(dbc.AutoProduceData(fmt, nCount, indexTable.asChar,

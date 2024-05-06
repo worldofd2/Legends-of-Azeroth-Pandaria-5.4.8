@@ -1484,7 +1484,8 @@ public:
     void SetAnimationTier(UnitAnimationTier tier) { SetByteValue(UNIT_FIELD_ANIM_TIER, 3, (uint8)tier); }
 
     bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
-    uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID); }
+    uint32 GetMountDisplayId() const { return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID); }
+    void SetMountDisplayId(uint32 mountDisplayId) { SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, mountDisplayId); }
     void Mount(uint32 mount, uint32 vehicleId = 0, uint32 creatureEntry = 0);
     void Dismount();
     MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
@@ -2624,16 +2625,15 @@ public:
         if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return NULL;
     }
 
-    uint64 GetTarget() const
-    {
-        return GetUInt64Value(UNIT_FIELD_TARGET);
-    }
+    uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
     virtual void SetTarget(uint64 /*guid*/) = 0;
 
     void OnRelocated();
 
     // Movement info
     Movement::MoveSpline* movespline;
+
+    float GetCollisionHeight() const override;
 
     uint32 GetMovementCounter() const
     {
