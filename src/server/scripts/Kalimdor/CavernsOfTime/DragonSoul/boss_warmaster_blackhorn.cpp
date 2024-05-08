@@ -1378,7 +1378,7 @@ class npc_warmaster_blackhorn_skyfire: public CreatureScript
                         }
             }
 
-            void JustDied(Unit* /*owner*/)
+            void JustDied(Unit* /*owner*/) override
             {
                 if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
                     pSwayze->AI()->DoAction(ACTION_END_BATTLE);

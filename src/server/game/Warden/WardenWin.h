@@ -44,8 +44,8 @@ class WardenWin : public Warden
         void Init(WorldSession* session, BigNumber* K);
         void RequestHash();
         void HandleHashResult(ByteBuffer &buff);
-        void RequestData(WardenRequestContext* context = NULL);
-        void HandleData(ByteBuffer &buff);
+        void RequestData(WardenRequestContext* context = nullptr);
+        void HandleData(ByteBuffer &buff) override;
 
         void Disable() override;
 

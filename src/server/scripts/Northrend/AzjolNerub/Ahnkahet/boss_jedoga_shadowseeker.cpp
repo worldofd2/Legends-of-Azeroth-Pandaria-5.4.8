@@ -191,7 +191,7 @@ class boss_jedoga_shadowseeker : public CreatureScript
                 ScriptedAI::AttackStart(who);
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(Unit* victim) override
             {
                 if (!victim || victim->GetTypeId() != TYPEID_PLAYER)
                     return;

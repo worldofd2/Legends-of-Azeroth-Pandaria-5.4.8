@@ -1010,7 +1010,7 @@ class npc_snowdrift_miniboss : public CreatureScript
             InstanceScript* instance;       
             bool stillInFight;
 
-            void PassengerBoarded(Unit* who, int8 seatId, bool apply)
+            void PassengerBoarded(Unit* who, int8 seatId, bool apply) override
             {
                 if (who->GetTypeId() != TYPEID_UNIT)
                     return;

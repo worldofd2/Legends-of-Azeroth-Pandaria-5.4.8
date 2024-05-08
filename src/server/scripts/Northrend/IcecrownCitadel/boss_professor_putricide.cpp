@@ -884,7 +884,7 @@ class npc_putricide_ooze : public CreatureScript
                 }
             }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(Unit* /*summoner*/) override
             {
                 float x, y, z;
                 me->GetPosition(x, y, z);

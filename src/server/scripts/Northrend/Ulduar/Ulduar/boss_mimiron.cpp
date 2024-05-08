@@ -1861,7 +1861,7 @@ class boss_aerial_unit : public CreatureScript
                 _events.ScheduleEvent(EVENT_SUMMON_BOOM_BOT,    11 * IN_MILLISECONDS, 0, PHASE_AERIAL_SOLO__GLOBAL_3);
             }
 
-            void AttackStart(Unit* target)
+            void AttackStart(Unit* target) override
             {
                 AttackStartCaster(target, 100.0f);
             }
@@ -2288,7 +2288,7 @@ class npc_mimiron_bomb_bot : public CreatureScript
                     me->DespawnOrUnsummon(1*IN_MILLISECONDS);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 DoCast(me, SPELL_BOOM_BOT, true);
             }

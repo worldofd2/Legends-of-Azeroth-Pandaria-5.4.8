@@ -578,7 +578,7 @@ struct golemsBaseAI : public ScriptedAI
         Reset();
     }
 
-    void Reset()
+    void Reset() override
     {
         events.Reset();
         scheduler.CancelAll();

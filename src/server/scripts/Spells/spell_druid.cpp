@@ -239,7 +239,7 @@ class spell_dru_tooth_and_claw_trigger : public SpellScript
 {
     PrepareSpellScript(spell_dru_tooth_and_claw_trigger);
 
-    bool Load() { return GetCaster()->HasAura(SPELL_DRUID_TOOTH_AND_CLAW_AURA); }
+    bool Load() override { return GetCaster()->HasAura(SPELL_DRUID_TOOTH_AND_CLAW_AURA); }
 
     void HandleCast()
     {
@@ -1704,7 +1704,7 @@ class spell_dru_eclipse : public SpellScript
 {
     PrepareSpellScript(spell_dru_eclipse);
 
-    bool Load()
+    bool Load() override
     {
         Player* caster = GetCaster()->ToPlayer();
         return caster && caster->GetTalentSpecialization() == SPEC_DRUID_BALANCE;
@@ -4785,7 +4785,7 @@ class spell_druid_astral_communion : public SpellScriptLoader
             PrepareAuraScript(spell_druid_astral_communion_AuraScript);
 
             int32 direction;
-            bool Load()
+            bool Load() override
             {
                 direction = 1;
                 return true;

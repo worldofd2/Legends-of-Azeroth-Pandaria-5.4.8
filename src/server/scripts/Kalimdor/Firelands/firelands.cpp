@@ -1536,7 +1536,7 @@ class spell_alysrazor_cosmetic_egg_xplosion : public SpellScriptLoader
         {
             PrepareSpellScript(spell_alysrazor_cosmetic_egg_xplosion_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sCreatureDisplayInfoStore.LookupEntry(MODEL_INVISIBLE_STALKER))
                     return false;
@@ -1573,7 +1573,7 @@ class spell_alysrazor_turn_monstrosity : public SpellScriptLoader
         {
             PrepareSpellScript(spell_alysrazor_turn_monstrosity_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_GENERIC_DUMMY_CAST))
                     return false;

@@ -163,7 +163,7 @@ class boss_nightbane : public CreatureScript
                 HandleTerraceDoors(true);
             }
 
-            void MovementInform(uint32 type, uint32 id)
+            void MovementInform(uint32 type, uint32 id) override
             {
                 if (type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE || id == 0)
                     return;

@@ -293,7 +293,7 @@ class boss_kalecgos : public CreatureScript
                 }
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(Unit* who) override
             {
                 if (justReset)//boss is invisible, don't attack
                     return;
@@ -333,12 +333,12 @@ class boss_kalecgos : public CreatureScript
                     instance->SetData(DATA_KALECGOS_EVENT, IN_PROGRESS);
             }
 
-            void KilledUnit(Unit* /*victim*/)override
+            void KilledUnit(Unit* /*victim*/) override
             {
                 Talk(SAY_EVIL_SLAY);
             }
 
-            void MovementInform(uint32 type,uint32 id)
+            void MovementInform(uint32 type,uint32 id) override
             {
                 if (type != EFFECT_MOTION_TYPE || id != 1)
                     return;

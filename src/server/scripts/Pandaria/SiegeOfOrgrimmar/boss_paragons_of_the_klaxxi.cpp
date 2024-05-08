@@ -2640,7 +2640,7 @@ class spell_soo_paragon_toxic_injection : public SpellScript
 {
     PrepareSpellScript(spell_soo_paragon_toxic_injection);
 
-    bool Load()
+    bool Load() override
     {
         prevToxinID = 0;
         return true;
@@ -3697,7 +3697,7 @@ class spell_paragon_fiery_edge_eff : public SpellScript
 {
     PrepareSpellScript(spell_paragon_fiery_edge_eff);
 
-    bool Load()
+    bool Load() override
     {
         linkedTargetGUID = 0;
         return true;
@@ -3777,7 +3777,7 @@ class spell_paragon_feed : public SpellScript
 
     std::list<WorldObject*> m_targets, copyTargets;
 
-    bool Load()
+    bool Load() override
     {
         allowPrevTarget = false;
         return true;
@@ -4307,7 +4307,7 @@ class spell_paragon_rapid_rife : public AuraScript
 {
     PrepareAuraScript(spell_paragon_rapid_rife);
 
-    bool Load()
+    bool Load() override
     {
         sonicEntry = SPELL_SONIC_PULSE_1;
         keyId = 1;

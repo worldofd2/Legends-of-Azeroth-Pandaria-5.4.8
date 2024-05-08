@@ -140,7 +140,7 @@ struct npc_minigob_manabonk : public ScriptedAI
         me->setActive(true);
     }
 
-    void Reset()
+    void Reset() override
     {
         playerGuid = ObjectGuid();
         me->SetVisible(false);

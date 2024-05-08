@@ -1931,7 +1931,7 @@ class npc_unstable_sun_beam : public CreatureScript
                 SetCombatMovement(false);
             }
             
-            void MoveInLineOfSight(Unit* target)
+            void MoveInLineOfSight(Unit* target) override
             {
                 if (target && target->GetTypeId() == TYPEID_UNIT)
                 {

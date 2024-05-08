@@ -346,7 +346,7 @@ class npc_anubar_crusher : public CreatureScript
                     ScriptedAI::MoveInLineOfSight(who);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (!frenzied && me->HealthBelowPctDamaged(30, damage))
                 {

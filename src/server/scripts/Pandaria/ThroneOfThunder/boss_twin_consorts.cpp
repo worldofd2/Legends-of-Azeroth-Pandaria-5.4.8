@@ -1068,7 +1068,7 @@ class boss_lulin : public CreatureScript
                 }
             }
 
-            void DoAction(int32 actionId)
+            void DoAction(int32 actionId) override
             {
                 switch (actionId)
                 {

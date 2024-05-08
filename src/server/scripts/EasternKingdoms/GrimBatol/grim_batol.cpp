@@ -1854,7 +1854,7 @@ class npc_battered_red_drake : public CreatureScript
                     clicker->NearTeleportTo(-549.354f, -582.390f, 276.597f, 2.73476f, false);
             }
 
-            void UpdateAI(uint32 /*diff*/) { }
+            void UpdateAI(uint32 /*diff*/) override { }
         };
 
         CreatureAI* GetAI(Creature* creature) const override

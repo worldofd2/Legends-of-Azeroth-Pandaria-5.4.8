@@ -1169,7 +1169,7 @@ class sat_hunt_ice_trap : public IAreaTriggerAura
         return object->ToUnit() && GetCaster()->IsValidAttackTarget(object->ToUnit(), sSpellMgr->GetSpellInfo(spellId), nullptr, true);
     }
 
-    void OnTriggeringApply(WorldObject* object)
+    void OnTriggeringApply(WorldObject* object) override
     {
         object->ToUnit()->CastSpell(object->ToUnit(), spellId, true);
     }
@@ -1195,7 +1195,7 @@ class sat_hunt_ice_trap_black_ice : public IAreaTriggerAura
         return object == GetCaster();
     }
 
-    void OnTriggeringApply(WorldObject* object)
+    void OnTriggeringApply(WorldObject* object) override
     {
         GetCaster()->CastSpell(GetCaster(), SPELL_HUNTER_BLACK_ICE, true);
     }
@@ -2568,7 +2568,7 @@ class sat_hunt_flare : public IAreaTriggerAura
         return target && target->IsAlive() && GetCaster()->IsValidAttackTarget(target, nullptr, nullptr, true) && GetAreaTrigger()->IsWithinLOSInMap(target);
     }
 
-    void OnTriggeringApply(WorldObject* object)
+    void OnTriggeringApply(WorldObject* object) override
     {
         object->ToUnit()->CastSpell(object->ToUnit(), SPELL_HUNTER_FLARE, true);
     }

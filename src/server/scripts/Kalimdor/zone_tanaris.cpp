@@ -116,7 +116,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(Unit* who) override
         {
             Talk(AGGRO_YELL_AQUE, who);
         }
@@ -199,7 +199,7 @@ public:
     {
         npc_custodian_of_timeAI(Creature* creature) : npc_escortAI(creature) { }
 
-        void WaypointReached(uint32 waypointId)
+        void WaypointReached(uint32 waypointId) override
         {
             if (Player* player = GetPlayerForEscort())
             {
@@ -266,7 +266,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(Unit* who) override
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING))
                 return;
@@ -304,7 +304,7 @@ class npc_steward_of_time : public CreatureScript
 public:
     npc_steward_of_time() : CreatureScript("npc_steward_of_time") { }
 
-    bool OnQuestAccept(Player* player, Creature* /*creature*/, Quest const* quest) 
+    bool OnQuestAccept(Player* player, Creature* /*creature*/, Quest const* quest) override
     {
         if (quest->GetQuestId() == 10279)                      //Quest: To The Master's Lair
             player->CastSpell(player, 34891, true);               //(Flight through Caverns)
@@ -312,7 +312,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action) override
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -321,7 +321,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (creature->IsQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -387,7 +387,7 @@ public:
     {
         npc_OOX17AI(Creature* creature) : npc_escortAI(creature) { }
 
-        void WaypointReached(uint32 waypointId)
+        void WaypointReached(uint32 waypointId) override
         {
             if (Player* player = GetPlayerForEscort())
             {
@@ -510,7 +510,7 @@ public:
             }
         }
 
-        void MovementInform(uint32 MotionType, uint32 PointId)
+        void MovementInform(uint32 MotionType, uint32 PointId) override
         {
             FollowerAI::MovementInform(MotionType, PointId);
 
@@ -521,7 +521,7 @@ public:
                 SetFollowComplete();
         }
 
-        void UpdateFollowerAI(uint32 Diff)
+        void UpdateFollowerAI(uint32 Diff) override
         {
             if (!UpdateVictim())
             {
@@ -596,7 +596,7 @@ class npc_steamwheedle_balloon : public CreatureScript
 public:
    npc_steamwheedle_balloon() : CreatureScript("npc_steamwheedle_balloon") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_ENTRY_ROCKET_RESCUE_H) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_ENTRY_ROCKET_RESCUE_A))
         {
@@ -620,12 +620,12 @@ public:
     {
         npc_steamwheedle_balloon_escortAI(Creature* creature) : npc_escortAI(creature)
         {
-            playerQuester = NULL;
+            playerQuester = nullptr;
         }
 
         EventMap events;
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
 
         void WaypointReached(uint32 point) override
         {
@@ -650,7 +650,7 @@ public:
             }
         }
 
-        void IsSummonedBy(Unit* owner)
+        void IsSummonedBy(Unit* owner) override
         {
             playerQuester = owner;
             me->SetReactState(REACT_PASSIVE);
@@ -709,9 +709,9 @@ struct npc_balloon_throwing_station : public ScriptedAI
 
     EventMap events;
 
-    void OnCharmed(bool apply) { }
+    void OnCharmed(bool apply) override { }
 
-    void IsSummonedBy(Unit* owner)
+    void IsSummonedBy(Unit* owner) override
     {
         events.ScheduleEvent(EVENT_RIDE_INVOKER, 1s + 500ms);
         me->SetReactState(REACT_PASSIVE);
@@ -781,7 +781,7 @@ class spell_emergency_rocket_pack : public SpellScript
         }
     }
 
-    void Register()
+    void Register() override
     {
         AfterCast += SpellCastFn(spell_emergency_rocket_pack::HandleReturnToGadgetzan);
     }

@@ -2951,7 +2951,7 @@ struct npc_lorekeeper_vaeldrin : public ScriptedAI
 {
     npc_lorekeeper_vaeldrin(Creature* creature) : ScriptedAI(creature) { }
 
-    void Reset()
+    void Reset() override
     {
         if (me->GetAreaId() == 6009)
             me->HandleEmoteStateCommand(EMOTE_STATE_READ);

@@ -5629,7 +5629,7 @@ class spell_siege_of_orgrimmar_blood_of_yshaarj : public AuraScript
 {
     PrepareAuraScript(spell_siege_of_orgrimmar_blood_of_yshaarj);
 
-    bool Load()
+    bool Load() override
     {
         allowStack = true;
         return true;

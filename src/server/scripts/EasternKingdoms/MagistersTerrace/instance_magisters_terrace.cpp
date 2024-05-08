@@ -110,7 +110,7 @@ public:
             return false;
         }
 
-        uint32 GetData(uint32 identifier) const
+        uint32 GetData(uint32 identifier) const override
         {
             switch (identifier)
             {
@@ -130,7 +130,7 @@ public:
             return 0;
         }
 
-        void SetData(uint32 identifier, uint32 data)
+        void SetData(uint32 identifier, uint32 data) override
         {
             switch (identifier)
             {
@@ -267,7 +267,7 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-        uint64 GetData64(uint32 identifier) const
+        uint64 GetData64(uint32 identifier) const override
         {
             switch (identifier)
             {

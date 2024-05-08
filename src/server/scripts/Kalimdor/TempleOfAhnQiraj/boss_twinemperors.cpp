@@ -98,7 +98,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     uint32 EnrageTimer;
 
     virtual bool IAmVeklor() = 0;
-    virtual void Reset() = 0;
+    virtual void Reset() override = 0;
     virtual void CastSpellOnBug(Creature* target) = 0;
 
     void TwinReset()

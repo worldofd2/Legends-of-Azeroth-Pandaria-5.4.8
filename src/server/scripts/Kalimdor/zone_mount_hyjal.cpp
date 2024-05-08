@@ -880,7 +880,7 @@ class spell_sethrias_roost_squad_aura : public SpellScriptLoader
 
             PrepareAuraScript(spell_sethrias_roost_squad_aura_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 sethriasRoostSummonCreatures.clear();
                 for (uint32 i = 0; i < sizeof(sethriasRoostSummonSpells) / sizeof(sethriasRoostSummonSpells[0]); ++i)

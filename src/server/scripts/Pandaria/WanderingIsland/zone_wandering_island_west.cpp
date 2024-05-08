@@ -609,7 +609,7 @@ class npc_master_shang_xi_after_zhao_escort : public CreatureScript
                 playerGuid = guid;
             }
 
-            void WaypointReached(uint32 waypointId)
+            void WaypointReached(uint32 waypointId) override
             {
                 switch (waypointId)
                 {

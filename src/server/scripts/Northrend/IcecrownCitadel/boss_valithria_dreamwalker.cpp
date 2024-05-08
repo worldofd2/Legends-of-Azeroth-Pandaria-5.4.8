@@ -614,7 +614,7 @@ class npc_green_dragon_combat_trigger : public CreatureScript
                     BossAI::EnterEvadeMode();
             }
 
-            void UpdateAI(uint32 const /*diff*/)
+            void UpdateAI(uint32 const /*diff*/) override
             {
                 if (!me->IsInCombat() || _isEvading)
                     return;

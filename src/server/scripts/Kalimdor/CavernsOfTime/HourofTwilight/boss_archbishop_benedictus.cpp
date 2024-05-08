@@ -209,7 +209,7 @@ class boss_archbishop_benedictus : public CreatureScript
                 }
             }
 
-            void Reset()
+            void Reset() override
             {
                 _Reset();
 

@@ -1048,7 +1048,7 @@ struct npc_mercurial_guardian : public customCreatureAI
         events.ScheduleEvent(EVENT_CLAW_SWIPE, 3.5 * IN_MILLISECONDS);
     }
 
-    void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/)
+    void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/) override
     {
         if (++counter >= 6)
             me->RemoveAurasDueToSpell(SPELL_HARDEN_SKIN);

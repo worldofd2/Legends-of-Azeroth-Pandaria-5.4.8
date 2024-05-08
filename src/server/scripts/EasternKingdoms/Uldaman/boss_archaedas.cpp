@@ -193,7 +193,7 @@ class boss_archaedas : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied (Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 if (instance)
                 {

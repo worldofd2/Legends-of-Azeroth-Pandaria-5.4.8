@@ -1627,7 +1627,7 @@ class npc_tirion_fordring_tft : public CreatureScript
                     SetEquipmentSlots(true);    // remove glow on ashbringer
             }
 
-            bool OnGossipSelect(Player* /*player*/, uint32 sender, uint32 action)
+            bool OnGossipSelect(Player* /*player*/, uint32 sender, uint32 action) override
             {
                 if (me->GetGossipMenuId() == sender && !action)
                 {
@@ -1824,7 +1824,7 @@ class npc_raging_spirit : public CreatureScript
                 return target->GetPositionZ() > 830.0f;
             }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(Unit* /*summoner*/) override
             {
                 // player is the spellcaster so register summon manually
                 if (Creature* lichKing = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_THE_LICH_KING)))

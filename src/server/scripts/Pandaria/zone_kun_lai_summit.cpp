@@ -1099,7 +1099,7 @@ struct npc_ordo_overseer : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*victim*/)
+    void EnterCombat(Unit* /*victim*/) override
     {
         events.ScheduleEvent(EVENT_AGONIZING_STRIKE, randtime(5s, 10s));
     }
@@ -1479,7 +1479,7 @@ struct npc_relcaimer_zuan_pets : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* /*victim*/)
+    void EnterCombat(Unit* /*victim*/) override
     {
         if (me->GetEntry() == NPC_RECLAIMER_ZUAN)
         {
@@ -1929,7 +1929,7 @@ struct celestial_experience_sha : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*victim*/)
+    void EnterCombat(Unit* /*victim*/) override
     {
         events.ScheduleEvent(EVENT_HATED_BLAST, randtime(2s, 3s));
         events.ScheduleEvent(EVENT_SHA_CORRUPTION, 8s);

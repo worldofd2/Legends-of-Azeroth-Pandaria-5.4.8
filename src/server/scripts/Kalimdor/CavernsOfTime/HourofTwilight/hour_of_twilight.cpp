@@ -587,7 +587,7 @@ class npc_thrall_intro : public CreatureScript
             uint32 timer;
             uint32 wp;
 
-            void Reset()
+            void Reset() override
             {
                 events.Reset();
                 nonCombatEvents.Reset();
@@ -782,7 +782,7 @@ class npc_thrall_arcurion : public CreatureScript
                 me->HandleEmoteStateCommand(EMOTE_STATE_READY1H);
             }
 
-            void Reset()
+            void Reset() override
             {
                 if (instance && instance->GetBossState(DATA_ARCURION) == DONE)
                 {
@@ -989,7 +989,7 @@ class npc_thrall_asira : public CreatureScript
                 me->HandleEmoteStateCommand(EMOTE_STATE_CANNIBALIZE);
             }
 
-            void Reset()
+            void Reset() override
             {
                 events.Reset();
                 nonCombatEvents.Reset();

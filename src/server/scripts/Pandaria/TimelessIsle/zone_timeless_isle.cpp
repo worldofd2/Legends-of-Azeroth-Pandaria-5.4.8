@@ -917,7 +917,7 @@ class npc_timeless_silkworms : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* killer)
+            void JustDied(Unit* killer) override
             {
                 if (me->GetEntry() == 72909)
                 {
@@ -1628,7 +1628,7 @@ class npc_ordos_minions : public CreatureScript
                         Talk(0, player);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 if (me->GetEntry() == RARE_ARCHIEREUS_OF_FLAME_CLOAK)
                     for (auto&& guid : me->GetLootRecipients())
@@ -2557,7 +2557,7 @@ struct npc_cranegnasher : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit*)
+    void JustDied(Unit*) override
     {
         for (auto&& guid : me->GetLootRecipients())
             if (Player* player = ObjectAccessor::GetPlayer(*me, guid))

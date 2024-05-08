@@ -165,7 +165,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SetOrientation(float orientation) = delete;
 
         // overwrite WorldObject function for proper name localization
-        std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const;
+        std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
 
         void SaveToDB();
         void SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask);
@@ -236,7 +236,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SetGameobjectTransparence(uint8 transparency) { SetByteValue(GAMEOBJECT_FIELD_STATE_SPELL_VISUAL_ID, 0, transparency); }
         static void SetGoArtKit(uint8 artkit, GameObject* go, uint32 lowguid = 0);
 
-        void SetPhaseMask(uint32 newPhaseMask, bool update);
+        void SetPhaseMask(uint32 newPhaseMask, bool update) override;
         void EnableCollision(bool enable);
         void UpdateCollision();
 

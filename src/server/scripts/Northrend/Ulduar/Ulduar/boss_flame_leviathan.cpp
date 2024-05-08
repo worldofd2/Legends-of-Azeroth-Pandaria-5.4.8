@@ -1903,14 +1903,14 @@ class spell_pursue : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pursue_SpellScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /*spell*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_PURSUED))
                     return false;
                 return true;
             }
 
-            bool Load()
+            bool Load() override
             {
                 _target = nullptr;
                 return true;
@@ -2105,7 +2105,7 @@ class spell_grab_crate : public SpellScriptLoader
         {
             PrepareSpellScript(spell_grab_crate_SpellScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /*spell*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(62479))
                     return false;

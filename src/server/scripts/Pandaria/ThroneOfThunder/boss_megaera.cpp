@@ -1772,6 +1772,8 @@ class correctSummonerPredicate
             {
                 return target->ToCreature()->GetOwnerGUID() != uiGuid;
             }
+            
+            return false;
         }
 };
 

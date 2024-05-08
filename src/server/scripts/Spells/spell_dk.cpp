@@ -2779,7 +2779,7 @@ class spel_dk_death_shroud_duration : public SpellScript
 {
     PrepareSpellScript(spel_dk_death_shroud_duration);
 
-    bool Load()
+    bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
     }
@@ -3142,7 +3142,7 @@ struct npc_dk_army_of_the_dead_ghoul : public ScriptedAI
         });
     }
 
-    void UpdateAI(uint32 diff)
+    void UpdateAI(uint32 diff) override
     {
         assist.Update(diff);
         scheduler.Update(diff);
@@ -3306,7 +3306,7 @@ class sat_dk_anti_magic_zone : public IAreaTriggerAura
         target->ToUnit()->CastSpell(target->ToUnit(), SPELL_DK_ANTI_MAGIC_ZONE, true);
     }
 
-    void OnTriggeringRemove(WorldObject* target)
+    void OnTriggeringRemove(WorldObject* target) override
     {
         target->ToUnit()->RemoveAurasDueToSpell(SPELL_DK_ANTI_MAGIC_ZONE);
     }

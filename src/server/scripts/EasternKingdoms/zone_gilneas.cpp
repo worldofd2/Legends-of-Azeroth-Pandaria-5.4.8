@@ -1017,7 +1017,7 @@ struct npc_josiah_avery_worgen_form : public PassiveAI
         }, 200);
     }
 
-    void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+    void SpellHit(Unit* /*caster*/, const SpellInfo* spell) override
     {
         if (spell->Id == SPELL_SHOOT_INSTAKILL)
             me->CastSpell(me, SPELL_GET_SHOT);
@@ -1433,7 +1433,7 @@ public:
             }
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 i) override
         {
             Player* player = GetPlayerForEscort();
 
@@ -1533,7 +1533,7 @@ public:
             }
         }
 
-        void OnCharmed(bool /*apply*/) { }
+        void OnCharmed(bool /*apply*/) override { }
 
         void UpdateAI(uint32 diff) override
         {
@@ -1602,7 +1602,7 @@ class npc_gilneas_children : public CreatureScript
                     events.ScheduleEvent(EVENT_CRY, 1s);
             }
 
-            void SpellHit(Unit* caster, const SpellInfo* spell)
+            void SpellHit(Unit* caster, const SpellInfo* spell) override
             {
                 if (!activated && spell->Id == _spellId)
                 {
@@ -1713,7 +1713,7 @@ public:
             }
         }
 
-        void WaypointReached(uint32 point)
+        void WaypointReached(uint32 point) override
         {
             if (point == 1)
                 if (me->IsSummon())
@@ -1937,7 +1937,7 @@ class npc_mountain_horse : public CreatureScript
 public:
     npc_mountain_horse(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_THE_HUNGRY_ETTIN) == QUEST_STATUS_INCOMPLETE)
         {
@@ -1961,7 +1961,7 @@ public:
                 me->GetMotionMaster()->MoveRandom(8.0f);
         }
 
-        void SpellHit(Unit* caster, SpellInfo const* spell)
+        void SpellHit(Unit* caster, SpellInfo const* spell) override
         {
             switch (spell->Id)
             {
@@ -1988,7 +1988,7 @@ public:
             }
         }
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
     };
 
     CreatureAI* GetAI(Creature* creature) const override
@@ -2085,7 +2085,7 @@ class npc_stagecoach_carriage_exodus : public CreatureScript
 public:
     npc_stagecoach_carriage_exodus(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_ENTRY_EXODUS) == QUEST_STATUS_COMPLETE)
         {
@@ -2157,15 +2157,15 @@ public:
     {
         npc_stagecoach_harnessAI(Creature* creature) : npc_escortAI(creature) { }
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
 
-        void IsSummonedBy(Unit* owner)
+        void IsSummonedBy(Unit* owner) override
         {
             DoAction(ACTION_START_WP);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {

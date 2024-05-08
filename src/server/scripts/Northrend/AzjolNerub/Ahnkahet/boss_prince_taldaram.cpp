@@ -396,9 +396,9 @@ class npc_taldaram_flamesphere : public CreatureScript
                 uiDespawnTimer = 10 * IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) { }
+            void EnterCombat(Unit* /*who*/) override { }
 
-            void MoveInLineOfSight(Unit* /*who*/) { }
+            void MoveInLineOfSight(Unit* /*who*/) override { }
 
             void JustDied(Unit* /*killer*/) override
             {

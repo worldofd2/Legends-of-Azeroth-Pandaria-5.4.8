@@ -1640,10 +1640,7 @@ public:
     void ResetPvECombatTimer() { m_combatTimerPvE = 0; }
 
     bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName, uint32 familyFlags) const;
-    bool virtual HasSpell(uint32 /*spellID*/) const
-    {
-        return false;
-    }
+    bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
 
     bool HasCrowdControlAuraType(AuraType type, uint32 excludeAura = 0, uint32 dispelType = 0) const;
     bool HasCrowdControlAura(Unit* excludeCasterChannel = NULL, uint32 dispelType = 0) const;

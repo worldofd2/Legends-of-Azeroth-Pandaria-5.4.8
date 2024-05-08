@@ -2441,7 +2441,7 @@ class spell_yogg_saron_psychosis : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_psychosis_SpellScript);
 
-            bool Load()
+            bool Load() override
             {
                 _stacks = GetSpellInfo()->Id == SPELL_PSYCHOSIS ? 9 : 12;
                 return true;
@@ -2503,7 +2503,7 @@ class spell_yogg_saron_malady_of_the_mind : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_malady_of_the_mind_AuraScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /*spell*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MALADY_OF_THE_MIND_JUMP))
                     return false;
@@ -2678,7 +2678,7 @@ class spell_yogg_saron_boil_ominously : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_boil_ominously_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SUMMON_GUARDIAN_1))
                     return false;
@@ -2781,7 +2781,7 @@ class spell_yogg_saron_empowering_shadows_missile : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_empowering_shadows_missile_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_EMPOWERING_SHADOWS))
                     return false;
@@ -2853,7 +2853,7 @@ class spell_yogg_saron_constrictor_tentacle : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_constrictor_tentacle_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_CONSTRICTOR_TENTACLE_SUMMON))
                     return false;
@@ -2892,7 +2892,7 @@ class spell_yogg_saron_lunge : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_lunge_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SQUEEZE))
                     return false;
@@ -2990,7 +2990,7 @@ class spell_yogg_saron_empowered : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_empowered_AuraScript);
 
-            bool Validate(SpellInfo const* spellInfo)
+            bool Validate(SpellInfo const* spellInfo) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_EMPOWERED_BUFF))
                     return false;
@@ -3101,7 +3101,7 @@ class spell_yogg_saron_death_ray_warning_visual : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_death_ray_warning_visual_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_DEATH_RAY_PERIODIC))
                     return false;
@@ -3143,7 +3143,7 @@ class spell_yogg_saron_cancel_illusion_room_aura : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_cancel_illusion_room_aura_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_TELEPORT_BACK_TO_MAIN_ROOM))
                     return false;
@@ -3208,7 +3208,7 @@ class spell_yogg_saron_revealed_tentacle : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_revealed_tentacle_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_TENTACLE_VOID_ZONE))
                     return false;
@@ -3249,7 +3249,7 @@ class spell_yogg_saron_grim_reprisal : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_grim_reprisal_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_GRIM_REPRISAL_DAMAGE))
                     return false;
@@ -3284,7 +3284,7 @@ class spell_yogg_saron_induce_madness : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_induce_madness_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_TELEPORT_BACK_TO_MAIN_ROOM))
                     return false;
@@ -3355,7 +3355,7 @@ class spell_yogg_saron_sanity : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_sanity_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_LOW_SANITY_SCREEN_EFFECT))
                     return false;
@@ -3415,7 +3415,7 @@ class spell_yogg_saron_insane : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_insane_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_INSANE_VISUAL))
                     return false;
@@ -3502,7 +3502,7 @@ class spell_yogg_saron_lunatic_gaze : public SpellScriptLoader
         {
             PrepareSpellScript(spell_yogg_saron_lunatic_gaze_SpellScript);
 
-            bool Load()
+            bool Load() override
             {
                 _stacks = GetSpellInfo()->Id == SPELL_LUNATIC_GAZE_DAMAGE ? 4 : 2;
                 return true;
@@ -3660,7 +3660,7 @@ class spell_yogg_saron_hodirs_protective_gaze : public SpellScriptLoader
         {
             PrepareAuraScript(spell_yogg_saron_hodirs_protective_gaze_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_FLASH_FREEZE))
                     return false;

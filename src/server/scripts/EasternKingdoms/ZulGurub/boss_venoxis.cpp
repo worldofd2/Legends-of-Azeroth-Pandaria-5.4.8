@@ -165,7 +165,7 @@ class boss_venoxis : public CreatureScript
                 Talk(SAY_DEATH);
             }
 
-            void MovementInform (uint32 type, uint32 id)
+            void MovementInform(uint32 type, uint32 id) override
             {
                 if (id == POINT_DOWN && phase == 2)
                     events.ScheduleEvent(EVENT_MOVE_UP, 400);

@@ -90,7 +90,7 @@ class npc_frost_tomb : public CreatureScript
                 FrostTombGUID = uPrisoner->GetGUID();
             }
 
-            void Reset()
+            void Reset() override
             {
                 FrostTombGUID = 0;
             }
@@ -298,7 +298,7 @@ class npc_vrykul_skeleton : public CreatureScript
 
             void EnterCombat(Unit* /*who*/) { }
             
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32& damage) override
             {
                 if (attacker->GetGUID() == me->GetGUID())
                     return;

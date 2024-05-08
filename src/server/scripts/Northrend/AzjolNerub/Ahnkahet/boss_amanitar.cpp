@@ -207,7 +207,7 @@ class npc_amanitar_mushrooms : public CreatureScript
                     DoCast(SPELL_POWER_MUSHROOM_VISUAL_AURA);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32& damage) override
             {
                 if (damage >= me->GetHealth() && me->GetEntry() == NPC_HEALTHY_MUSHROOM)
                 {

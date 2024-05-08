@@ -4407,7 +4407,7 @@ class spell_power_surge_achiev : public AuraScript
 {
     PrepareAuraScript(spell_power_surge_achiev);
 
-    bool Load()
+    bool Load() override
     {
         oldAmount = 1;
         return true;

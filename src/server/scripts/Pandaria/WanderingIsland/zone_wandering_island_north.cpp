@@ -444,7 +444,7 @@ class boss_jaomin_ro : public CreatureScript
                 me->SetFaction(2357); //mechant!
             }
 
-            void MoveInLineOfSight(Unit*  who)
+            void MoveInLineOfSight(Unit*  who) override
             {
                 Player * const player = who->ToPlayer();
                 if (!player)
@@ -1172,7 +1172,7 @@ class npc_trainee_nim : public CreatureScript
             npc_trainee_nimAI(Creature* creature) : ScriptedAI(creature) { }
             std::set<uint64> guids;
 
-            void MoveInLineOfSight(Unit*  who)
+            void MoveInLineOfSight(Unit* who) override
             {
                 Player * const player = who->ToPlayer();
                 if (!player)
@@ -1208,7 +1208,7 @@ class npc_merchant_lorvo : public CreatureScript
             npc_merchant_lorvoAI(Creature* creature) : ScriptedAI(creature) { }
             std::set<uint64> guids;
 
-            void MoveInLineOfSight(Unit*  who)
+            void MoveInLineOfSight(Unit* who) override
             {
                 Player * const player = who->ToPlayer();
                 if (!player)

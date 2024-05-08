@@ -351,7 +351,7 @@ class npc_annhylde_the_caller : public CreatureScript
 
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
-            void EnterCombat(Unit* /*who*/) { }
+            void EnterCombat(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -430,7 +430,7 @@ class npc_ingvar_throw_dummy : public CreatureScript
 
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
-            void EnterCombat(Unit* /*who*/) { }
+            void EnterCombat(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {

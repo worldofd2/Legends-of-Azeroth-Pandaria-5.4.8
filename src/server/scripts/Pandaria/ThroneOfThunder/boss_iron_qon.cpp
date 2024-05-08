@@ -523,7 +523,7 @@ struct quelingBaseAI : public ScriptedAI
         Reset();
     }
 
-    void Reset()
+    void Reset() override
     {
         events.Reset();
         additionalEvents.Reset();

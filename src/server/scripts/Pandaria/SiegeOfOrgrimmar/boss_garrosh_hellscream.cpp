@@ -2162,7 +2162,7 @@ class spell_soo_whirling_corruption : public AuraScript
 {
     PrepareAuraScript(spell_soo_whirling_corruption);
 
-    bool Load()
+    bool Load() override
     {
         minionsCount = 0;
         return true;
@@ -3209,7 +3209,7 @@ class spell_garrosh_clump_check : public SpellScript
 {
     PrepareSpellScript(spell_garrosh_clump_check);
 
-    bool Load()
+    bool Load() override
     {
         launched = false;
         return true;
@@ -3258,7 +3258,7 @@ class spell_garrosh_call_bombardment : public AuraScript
 {
     PrepareAuraScript(spell_garrosh_call_bombardment);
 
-    bool Load()
+    bool Load() override
     {
         procCount = 0; // limit is 4, so first trigger after 1s cast finishing bombardment. next - trigger each 3s
         bombardCounter = 0; // 30 per 10 sec, so trigger 3 each 1s, not 500ms

@@ -242,13 +242,13 @@ class npc_voljin_ancient_enemy : public CreatureScript
             events.ScheduleEvent(EVENT_INTRO, 10000);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit * /*who*/) override
         {
             events.ScheduleEvent(EVENT_SHOOT, 2000);
             events.ScheduleEvent(EVENT_SHADOW_SHOCK, 5000);
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             if(!EventInProgress)
                 return;
@@ -371,14 +371,14 @@ class npc_zarjira : public CreatureScript
                 player->KilledMonsterCredit(NPC_ZARJIRA, 0);
         }
 
-        void EnterCombat(Unit *)
+        void EnterCombat(Unit *) override
         {
             events.ScheduleEvent(EVENT_FROSTBOLT, 3000);
             events.ScheduleEvent(EVENT_MANIFESTATION, 10000);
             events.ScheduleEvent(EVENT_FIRES, 60000);
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 diff) override
         {
             events.Update(diff);
             if(uint32 eventId = events.ExecuteEvent())
