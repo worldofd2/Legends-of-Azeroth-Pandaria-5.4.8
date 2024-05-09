@@ -19,7 +19,7 @@
 #define DBCSTORE_H
 
 #include "DBCFileLoader.h"
-#include "DBCStorageIterator.h"
+#include "DBStorageIterator.h"
 #include "Log.h"
 #include "Field.h"
 #include "DatabaseWorkerPool.h"
@@ -70,15 +70,18 @@ class DBCStorage
 {
     friend void LoadDBCStores(const std::string&, uint32& availableDbcLocales);
     typedef std::vector<char*> StringPoolList;
-    typedef DBCStorageIterator<T> iterator;
+    typedef DBStorageIterator<T> iterator;
     public:
         explicit DBCStorage(char const* f)
-            : fmt(f), nCount(0), fieldCount(0), dataTable(NULL)
+            : fmt(f), nCount(0), fieldCount(0), dataTable(nullptr)
         {
             indexTable.asT = nullptr;
         }
 
-        ~DBCStorage() { delete[] reinterpret_cast<char*>(indexTable.asT); }
+        ~DBCStorage() 
+        { 
+            delete[] reinterpret_cast<char*>(indexTable.asT); 
+        }
 
         T const* LookupEntry(uint32 id) const
         {
@@ -99,8 +102,8 @@ class DBCStorage
 
             uint32 sqlRecordCount = 0;
             uint32 sqlHighestIndex = 0;
-            Field* fields = NULL;
-            QueryResult result = QueryResult(NULL);
+            Field* fields = nullptr;
+            QueryResult result = QueryResult(nullptr);
             // Load data from sql
             if (sql)
             {
@@ -230,14 +233,14 @@ class DBCStorage
                             return false;
                         }
 
-                        fields = NULL;
+                        fields = nullptr;
                         ++rowIndex;
                     } while (result->NextRow());
                 }
             }
 
             // error in dbc file at loading if NULL
-            return indexTable.asT != NULL;
+            return indexTable.asT != nullptr;
         }
 
         bool LoadStringsFrom(char const* fn, LocaleConstant loc)

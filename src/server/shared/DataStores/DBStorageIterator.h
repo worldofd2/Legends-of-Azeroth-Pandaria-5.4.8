@@ -15,18 +15,18 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DBCStorageIterator_h__
-#define DBCStorageIterator_h__
+#ifndef DBStorageIterator_h__
+#define DBStorageIterator_h__
 
 #include "Define.h"
 #include <iterator>
 
 template <class T>
-class DBCStorageIterator : public std::iterator<std::forward_iterator_tag, T>
+class DBStorageIterator : public std::iterator<std::forward_iterator_tag, T>
 {
     public:
-        DBCStorageIterator() : _index(nullptr), _pos(0), _end(0) { }
-        DBCStorageIterator(T** index, uint32 size, uint32 pos = 0) : _index(index), _pos(pos), _end(size)
+        DBStorageIterator() : _index(nullptr), _pos(0), _end(0) { }
+        DBStorageIterator(T** index, uint32 size, uint32 pos = 0) : _index(index), _pos(pos), _end(size)
         {
             if (_pos < _end)
             {
@@ -38,10 +38,10 @@ class DBCStorageIterator : public std::iterator<std::forward_iterator_tag, T>
         T const* operator->() { return _index[_pos]; }
         T const* operator*() { return _index[_pos]; }
 
-        bool operator==(DBCStorageIterator const& right) const { /*ASSERT(_index == right._index, "Iterator belongs to a different container")*/ return _pos == right._pos; }
-        bool operator!=(DBCStorageIterator const& right) const { return !(*this == right); }
+        bool operator==(DBStorageIterator const& right) const { /*ASSERT(_index == right._index, "Iterator belongs to a different container")*/ return _pos == right._pos; }
+        bool operator!=(DBStorageIterator const& right) const { return !(*this == right); }
 
-        DBCStorageIterator& operator++()
+        DBStorageIterator& operator++()
         {
             if (_pos < _end)
             {
@@ -53,9 +53,9 @@ class DBCStorageIterator : public std::iterator<std::forward_iterator_tag, T>
             return *this;
         }
 
-        DBCStorageIterator operator++(int)
+        DBStorageIterator operator++(int)
         {
-            DBCStorageIterator tmp = *this;
+            DBStorageIterator tmp = *this;
             ++*this;
             return tmp;
         }
@@ -66,4 +66,4 @@ class DBCStorageIterator : public std::iterator<std::forward_iterator_tag, T>
         uint32 _end;
 };
 
-#endif // DBCStorageIterator_h__
+#endif // DBStorageIterator_h__
