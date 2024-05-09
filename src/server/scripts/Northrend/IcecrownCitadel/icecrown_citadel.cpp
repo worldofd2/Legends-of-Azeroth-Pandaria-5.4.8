@@ -1277,7 +1277,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void WaypointReached(uint32 waypointId)
+            void WaypointReached(uint32 waypointId) override
             {
                 switch (waypointId)
                 {
@@ -1308,7 +1308,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void WaypointStart(uint32 waypointId)
+            void WaypointStart(uint32 waypointId) override
             {
                 _currentWPid = waypointId;
                 switch (waypointId)
@@ -1397,7 +1397,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void UpdateEscortAI(uint32 diff)
+            void UpdateEscortAI(uint32 diff) override
             {
                 if (_wipeCheckTimer <= diff)
                     _wipeCheckTimer = 0;

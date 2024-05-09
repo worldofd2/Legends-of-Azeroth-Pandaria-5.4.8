@@ -324,7 +324,7 @@ class boss_alysrazor : public CreatureScript
             bool bSpawnCloud;
             bool bVortex;
 
-            void IsSummonedBy(Unit* summoner)
+            void IsSummonedBy(Unit* summoner) override
             {
                 if (GameObject* volcano = ObjectAccessor::GetGameObject(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_VOLCANO) : 0))
                 {

@@ -296,7 +296,7 @@ class npc_vrykul_skeleton : public CreatureScript
                 isDead = false;
             }
 
-            void EnterCombat(Unit* /*who*/) { }
+            void EnterCombat(Unit* /*who*/) override { }
             
             void DamageTaken(Unit* attacker, uint32& damage) override
             {

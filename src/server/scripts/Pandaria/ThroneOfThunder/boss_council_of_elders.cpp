@@ -1238,7 +1238,7 @@ class boss_high_priestess_marli : public CreatureScript
             }
 
             // Override function to return the GUIDs of the targets for the Loa Spirits.
-            uint64 GetGUID(int32 iIndex) const
+            uint64 GetGUID(int32 iIndex) const override
             {
                 switch (iIndex)
                 {

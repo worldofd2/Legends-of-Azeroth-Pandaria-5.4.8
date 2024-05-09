@@ -880,7 +880,7 @@ class boss_thorim : public CreatureScript
                 }
             }
 
-            void SetGUID(uint64 /*guid*/, int32 data)
+            void SetGUID(uint64 /*guid*/, int32 data) override
             {
                 switch (data)
                 {
@@ -1655,7 +1655,7 @@ class npc_ancient_rune_giant : public CreatureScript
                     giantAddLocations[i].pos.GetOrientation(),TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3*IN_MILLISECONDS);
             }
 
-            void JustSummoned(Creature *summon)
+            void JustSummoned(Creature *summon) override
             {
                 _summons.Summon(summon);
             }

@@ -1102,7 +1102,7 @@ class npc_lorna_crowley_basement : public CreatureScript
 public:
     npc_lorna_crowley_basement(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_FROM_THE_SHADOWS)
         {
@@ -1115,7 +1115,7 @@ public:
         return true;
     }
 
-    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/)
+    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/) override
     {
         if (quest->GetQuestId() == QUEST_FROM_THE_SHADOWS)
             if (Unit* charm = Unit::GetCreature(*creature, player->GetMinionGUID()))
@@ -1285,7 +1285,7 @@ class npc_king_genn_greymane : public CreatureScript
 public:
     npc_king_genn_greymane() : CreatureScript("npc_king_genn_greymane") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_SAVE_KRENNAN_ARANAS)
         {
@@ -1406,7 +1406,7 @@ public:
             _playerSeated = false;
         }
 
-        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply) override
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -1978,7 +1978,7 @@ public:
             }
         }
 
-        void PassengerBoarded(Unit* /*passenger*/, int8 /*SeatId*/, bool apply)
+        void PassengerBoarded(Unit* /*passenger*/, int8 /*SeatId*/, bool apply) override
         {
             if (!apply)
             {

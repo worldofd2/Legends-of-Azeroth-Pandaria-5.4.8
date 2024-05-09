@@ -1734,7 +1734,7 @@ struct npc_spoils_amber_encased_kunchong : public spoils_baseAI
 {
     npc_spoils_amber_encased_kunchong(Creature* creature) : spoils_baseAI(creature) { }
 
-    void DoAction(int32 actionId)
+    void DoAction(int32 actionId) override
     {
         if (actionId == ACTION_INITIALIZE_COMBAT)
             DoCast(me, SPELL_ENCAPSULATED_PHEROMONES_AURA);

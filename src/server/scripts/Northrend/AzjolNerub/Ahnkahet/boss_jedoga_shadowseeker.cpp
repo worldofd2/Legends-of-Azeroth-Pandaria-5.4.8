@@ -199,7 +199,7 @@ class boss_jedoga_shadowseeker : public CreatureScript
                 Talk(TEXT_SLAY);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 Talk(TEXT_DEATH);
 

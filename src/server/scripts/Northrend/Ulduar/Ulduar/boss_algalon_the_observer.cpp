@@ -981,8 +981,8 @@ class npc_black_hole : public CreatureScript
         {
             npc_black_holeAI(Creature* creature) : CreatureAI(creature) { }
 
-            void MoveInLineOfSight(Unit* /*who*/) { }
-            void AttackStart(Unit* /*who*/) { }
+            void MoveInLineOfSight(Unit* /*who*/) override { }
+            void AttackStart(Unit* /*who*/) override { }
             void UpdateAI(uint32 /*diff*/) override { }
 
             void SpellHitTarget(Unit* target, SpellInfo const* spell) override
@@ -1385,7 +1385,7 @@ class spell_algalon_big_bang : public SpellScriptLoader
         {
             PrepareSpellScript(spell_algalon_big_bang_SpellScript);
 
-            bool Load()
+            bool Load() override
             {
                 _targetCount = 0;
                 return true;

@@ -2549,7 +2549,7 @@ class transport_icc_gunship : public TransportScript
             const_cast<GameObjectValue*>(transport->GetGOValue())->Transport.PathProgress = itr->ArriveTime;
         }
 
-        void OnAddCreaturePassenger(Transport* transport, Creature* passenger)
+        void OnAddCreaturePassenger(Transport* transport, Creature* passenger) override
         {
             passenger->Respawn();
             passenger->setActive(false, ActiveFlags::OnTransport);

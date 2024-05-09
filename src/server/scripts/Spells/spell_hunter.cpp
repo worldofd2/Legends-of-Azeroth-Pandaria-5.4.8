@@ -1174,14 +1174,14 @@ class sat_hunt_ice_trap : public IAreaTriggerAura
         object->ToUnit()->CastSpell(object->ToUnit(), spellId, true);
     }
 
-    void OnTriggeringUpdate(WorldObject* object)
+    void OnTriggeringUpdate(WorldObject* object) override
     {
         Unit* unit = object->ToUnit();
         if (!unit->HasAura(spellId))
             unit->CastSpell(object->ToUnit(), spellId, true);
     }
 
-    void OnTriggeringRemove(WorldObject* object)
+    void OnTriggeringRemove(WorldObject* object) override
     {
         object->ToUnit()->RemoveAurasDueToSpell(spellId);
     }
@@ -1200,13 +1200,13 @@ class sat_hunt_ice_trap_black_ice : public IAreaTriggerAura
         GetCaster()->CastSpell(GetCaster(), SPELL_HUNTER_BLACK_ICE, true);
     }
 
-    void OnTriggeringUpdate(WorldObject* object)
+    void OnTriggeringUpdate(WorldObject* object) override
     {
         if (!GetCaster()->HasAura(SPELL_HUNTER_BLACK_ICE))
             GetCaster()->CastSpell(GetCaster(), SPELL_HUNTER_BLACK_ICE, true);
     }
 
-    void OnTriggeringRemove(WorldObject* object)
+    void OnTriggeringRemove(WorldObject* object) override
     {
         GetCaster()->RemoveAurasDueToSpell(SPELL_HUNTER_BLACK_ICE);
     }
@@ -1638,7 +1638,7 @@ class spell_hunt_camouflage_driver : public AuraScript
 
     Player* hunter = nullptr;
 
-    bool Load()
+    bool Load() override
     {
         hunter = GetOwner()->ToPlayer();
         return hunter != nullptr;
@@ -2573,7 +2573,7 @@ class sat_hunt_flare : public IAreaTriggerAura
         object->ToUnit()->CastSpell(object->ToUnit(), SPELL_HUNTER_FLARE, true);
     }
 
-    void OnTriggeringRemove(WorldObject* object)
+    void OnTriggeringRemove(WorldObject* object) override
     {
         object->ToUnit()->RemoveAurasDueToSpell(SPELL_HUNTER_FLARE);
     }
@@ -3236,7 +3236,7 @@ class spell_hunt_t16_4p_bonus : public AuraScript
 
     Player* hunter = nullptr;
 
-    bool Load()
+    bool Load() override
     {
         hunter = GetOwner()->ToPlayer();
         return hunter != nullptr;

@@ -4051,7 +4051,7 @@ struct npc_stormsea_landing_sentry_beam_bunny : public ScriptedAI
     TaskScheduler scheduler;
     uint64 targetGUID;
 
-    void IsSummonedBy(Unit* summoner)
+    void IsSummonedBy(Unit* summoner) override
     {
         if (summoner->ToCreature())
             targetGUID = summoner->ToCreature()->AI()->GetGUID();

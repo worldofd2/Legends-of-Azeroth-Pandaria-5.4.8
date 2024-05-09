@@ -365,7 +365,7 @@ class boss_valithria_dreamwalker : public CreatureScript
                 }
             }
 
-            void HealReceived(Unit* healer, uint32& heal)
+            void HealReceived(Unit* healer, uint32& heal) override
             {
                 if (!me->HasLootRecipient())
                     me->SetLootRecipient(healer);
@@ -950,7 +950,7 @@ class npc_suppresser : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(Unit* /*summoner*/) override
             {
                 me->m_Events.Schedule(2000, [this]()
                 {
@@ -1179,7 +1179,7 @@ class npc_rot_worm : public CreatureScript
         {
             npc_rot_wormAI(Creature* creature) : ScriptedAI(creature), _instance(creature->GetInstanceScript()) { }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(Unit* /*summoner*/) override
             {
                 DoCast(me, SPELL_ROT_WORM_AURA, true);
                 DoCast(me, SPELL_ROT_WORM_SPAWN, true);
@@ -1221,7 +1221,7 @@ class npc_dream_portal : public CreatureScript
         {
             npc_dream_portalAI(Creature* creature) : CreatureAI(creature), _used(false) { }
 
-            void OnSpellClick(Unit* /*clicker*/, bool& result)
+            void OnSpellClick(Unit* /*clicker*/, bool& result) override
             {
                 if (!result)
                     return;

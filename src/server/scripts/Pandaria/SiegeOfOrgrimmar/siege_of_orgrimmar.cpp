@@ -407,7 +407,7 @@ struct npc_tormented_initiate : public customCreatureAI
         });
     }
 
-    uint64 GetLowestFriendGUID()
+    uint64 GetLowestFriendGUID() override
     {
         std::list<Creature*> tmpTargets;
         GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_TORMENTED_INITIATE, 40.0f);

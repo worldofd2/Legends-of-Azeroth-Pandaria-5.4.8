@@ -226,7 +226,7 @@ class npc_corrupted_soul_fragment : public CreatureScript
                     instance->SetData(DATA_SOUL_POWER, 0);
             }
 
-            void MovementInform(uint32 type, uint32 pointId)
+            void MovementInform(uint32 type, uint32 pointId) override
             {
                 if (type != FOLLOW_MOTION_TYPE)
                     return;

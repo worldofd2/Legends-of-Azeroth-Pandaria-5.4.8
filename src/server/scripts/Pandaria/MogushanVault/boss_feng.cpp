@@ -872,7 +872,7 @@ class npc_siphon_shield : public CreatureScript
             InstanceScript* instance;
             std::map<uint32, uint32> soulsMap;
 
-            void Reset()
+            void Reset() override
             {
                 instance = me->GetInstanceScript();
                 // Set invisible

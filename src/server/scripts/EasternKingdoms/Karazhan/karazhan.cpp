@@ -231,7 +231,7 @@ class npc_barnes : public CreatureScript
 
             void EnterCombat(Unit* /*who*/) override { }
 
-            void WaypointReached(uint32 i)
+            void WaypointReached(uint32 i) override
             {
                 if (!instance)
                     return;

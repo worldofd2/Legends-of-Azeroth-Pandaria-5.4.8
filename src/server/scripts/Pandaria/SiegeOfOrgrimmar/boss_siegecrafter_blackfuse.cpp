@@ -2997,7 +2997,7 @@ class spell_siegecrafter_magnetic_crush_push_saw : public SpellScript
 
     std::list<WorldObject*> m_targets;
 
-    bool Load()
+    bool Load() override
     {
         useCount = 0;
         step = 0.0f;
@@ -3062,7 +3062,7 @@ class spell_siegecrafter_magnetic_crush_pull_saw : public SpellScript
 
     std::list<WorldObject*> m_targets;
 
-    bool Load()
+    bool Load() override
     {
         useCount = 0;
         step = 0.0f;

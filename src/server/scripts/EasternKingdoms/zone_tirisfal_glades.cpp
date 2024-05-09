@@ -1328,7 +1328,7 @@ struct npc_vile_fin_puddlejumper : public ScriptedAI
         me->CastSpell(who, TirisfalGlades::SPELL_LEAPING_RUSH);
     }
 
-    void DamageTaken(Unit* attacker, uint32& damage) 
+    void DamageTaken(Unit* attacker, uint32& damage) override
     { 
         if (Player* player = attacker->ToPlayer())
         {

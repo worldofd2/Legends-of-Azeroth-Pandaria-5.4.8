@@ -1340,7 +1340,7 @@ class npc_frostworn_general : public CreatureScript
                 AttackStart(who);
             }
 
-            void EnterCombat(Unit* /*victim*/)
+            void EnterCombat(Unit* /*victim*/) override
             {
                 if (!instance)
                     return;
@@ -1563,7 +1563,7 @@ class npc_jaina_and_sylvanas_hor_part2 : public CreatureScript
                 return true;
             }
 
-            void WaypointReached(uint32 waypointId)
+            void WaypointReached(uint32 waypointId) override
             {
                 switch (waypointId)
                 {
@@ -1626,9 +1626,9 @@ class npc_jaina_and_sylvanas_hor_part2 : public CreatureScript
                 }
             }
 
-            void MoveInLineOfSight(Unit* /*who*/) { }
+            void MoveInLineOfSight(Unit* /*who*/) override { }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (!instance)
                     return;

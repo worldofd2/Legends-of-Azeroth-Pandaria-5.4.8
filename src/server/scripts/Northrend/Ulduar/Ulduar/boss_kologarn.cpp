@@ -637,7 +637,7 @@ class spell_ulduar_stone_grip_cast_target : public SpellScriptLoader
         {
             PrepareSpellScript(spell_ulduar_stone_grip_cast_target_SpellScript);
 
-            bool Load()
+            bool Load() override
             {
                 if (GetCaster()->GetTypeId() != TYPEID_UNIT)
                     return false;

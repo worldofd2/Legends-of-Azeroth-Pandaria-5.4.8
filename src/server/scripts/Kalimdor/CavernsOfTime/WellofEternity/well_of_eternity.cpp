@@ -2578,7 +2578,7 @@ class spell_well_of_eternity_shadow_walk : public SpellScriptLoader
         {
             PrepareAuraScript(spell_well_of_eternity_shadow_walk_AuraScript);
 
-            bool Validate(SpellInfo const* /*entry*/)
+            bool Validate(SpellInfo const* /*entry*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHADOW_AMBUSHER) || !sSpellMgr->GetSpellInfo(SPELL_SHADOW_AMBUSHER_BUFF) || !sSpellMgr->GetSpellInfo(SPELL_SHADOWCLOAK_PLAYERS) || !sSpellMgr->GetSpellInfo(SPELL_SHADOWCLOAK_PETS) || !sSpellMgr->GetSpellInfo(SPELL_SHADOW_WALK_STACKS))
                     return false;
@@ -2661,7 +2661,7 @@ class spell_well_of_eternity_shadowcloak_illidan : public SpellScriptLoader
         {
             PrepareAuraScript(spell_well_of_eternity_shadowcloak_illidan_AuraScript);
 
-            bool Validate(SpellInfo const* /*entry*/)
+            bool Validate(SpellInfo const* /*entry*/) override
             {
                 if (!sObjectMgr->GetCreatureTemplate(NPC_SHADOWCLOAK_ILLIDAN_STALKER))
                     return false;

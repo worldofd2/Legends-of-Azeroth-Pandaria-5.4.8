@@ -1243,10 +1243,7 @@ public:
     {
         m_canDualWield = value;
     }
-    float GetCombatReach() const
-    {
-        return m_floatValues [UNIT_FIELD_COMBAT_REACH];
-    }
+    float GetCombatReach() const override { return m_floatValues [UNIT_FIELD_COMBAT_REACH]; }
     float GetMeleeReach() const;
     bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
     bool IsWithinMeleeRange(const Unit* obj, float dist = NOMINAL_MELEE_RANGE) const;
@@ -2544,7 +2541,7 @@ public:
     bool IsOnVehicle(const Unit* vehicle) const;
     Unit* GetVehicleBase()  const;
     Creature* GetVehicleCreatureBase() const;
-    uint64 GetTransGUID() const;
+    uint64 GetTransGUID() const override;
     /// Returns the transport this unit is on directly (if on vehicle and transport, return vehicle)
     TransportBase* GetDirectTransport() const;
 
@@ -2691,7 +2688,7 @@ public:
 protected:
     explicit Unit (bool isWorldObject);
 
-    void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const;
+    void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
 
     UnitAI* i_AI, *i_disabledAI;
 
@@ -2769,8 +2766,8 @@ protected:
     uint32 m_unitTypeMask;
     LiquidTypeEntry const* _lastLiquid;
 
-    bool IsAlwaysVisibleFor(WorldObject const* seer) const;
-    bool IsAlwaysDetectableFor(WorldObject const* seer) const;
+    bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
+    bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
 
     void DisableSpline();
 

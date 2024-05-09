@@ -235,7 +235,7 @@ class boss_eadric : public CreatureScript
                 Talk(SAY_COMMON_INTRO_1);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (damage >= me->GetHealth())
                 {
@@ -589,7 +589,7 @@ class boss_paletress : public CreatureScript
                     _instance->SetData(DATA_MEMORY_ENTRY, summon->GetEntry());
             }
 
-            void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/)
+            void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/) override
             {
                 me->RemoveAura(SPELL_SHIELD);
                 Talk(SAY_PALETRESS_MEMORY_DIES);
@@ -847,7 +847,7 @@ class npc_argent_soldier : public CreatureScript
                 }
             }
 
-            void WaypointReached(uint32 point)
+            void WaypointReached(uint32 point) override
             {
                 if (point == 0)
                 {
@@ -869,7 +869,7 @@ class npc_argent_soldier : public CreatureScript
                 }
             }
 
-            void SetData(uint32 type, uint32 /*data*/)
+            void SetData(uint32 type, uint32 /*data*/) override
             {
                 switch (me->GetEntry())
                 {

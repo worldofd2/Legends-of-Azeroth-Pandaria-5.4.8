@@ -754,7 +754,7 @@ class boss_freya : public CreatureScript
                 }
             }
 
-            void SetGUID(uint64 guid, int32 id)
+            void SetGUID(uint64 guid, int32 id) override
             {
                 switch (id)
                 {

@@ -275,7 +275,7 @@ class npc_sinclari_vh : public CreatureScript
     public:
         npc_sinclari_vh() : CreatureScript("npc_sinclari_vh") { }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
         {
             player->PlayerTalkClass->ClearMenus();
             switch (action)
@@ -314,7 +314,7 @@ class npc_sinclari_vh : public CreatureScript
             return true;
         }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(Player* player, Creature* creature) override
         {
             if (creature->IsQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
@@ -532,7 +532,7 @@ class npc_azure_saboteur : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            void WaypointReached(uint32 waypointId)
+            void WaypointReached(uint32 waypointId) override
             {
                 switch (uiBoss)
                 {
@@ -785,7 +785,7 @@ struct violet_hold_trashAI : public npc_escortAI
         uint32 portalLocationID;
         uint32 secondPortalRouteID;
 
-    void WaypointReached(uint32 uiPointId)
+    void WaypointReached(uint32 uiPointId) override
     {
         switch (portalLocationID)
         {

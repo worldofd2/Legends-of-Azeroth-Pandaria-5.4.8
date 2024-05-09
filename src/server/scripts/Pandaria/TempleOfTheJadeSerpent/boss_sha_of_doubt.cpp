@@ -472,7 +472,7 @@ struct npc_ghost_of_lin_dagu : public ScriptedAI
     InstanceScript* instance;
     EventMap events;
 
-    void Reset()
+    void Reset() override
     {
         events.Reset();
     }

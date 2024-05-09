@@ -707,7 +707,7 @@ class spell_aura_of_despair_aura : public SpellScriptLoader // Spell 62692
         {
             PrepareAuraScript(spell_aura_of_despair_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_AURA_OF_DESPAIR_EFFECT_DESPAIR))
                     return false;
@@ -763,7 +763,7 @@ class spell_mark_of_the_faceless : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mark_of_the_faceless_AuraScript);
 
-            bool Validate(SpellInfo const* /*spellInfo*/)
+            bool Validate(SpellInfo const* /*spellInfo*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MARK_OF_THE_FACELESS_DAMAGE))
                     return false;

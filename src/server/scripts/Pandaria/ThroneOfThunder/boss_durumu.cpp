@@ -2103,7 +2103,7 @@ class sat_disintegration_beam : public IAreaTriggerAura
         return triggering && triggering->ToPlayer();
     }
 
-    void OnTriggeringUpdate(WorldObject* triggering) 
+    void OnTriggeringUpdate(WorldObject* triggering) override
     {
         if (Unit* caster = GetCaster())
             if (Player* target = triggering->ToPlayer())

@@ -256,7 +256,7 @@ class npc_spiteful_apparition : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (damage >= me->GetHealth() && !me->HasUnitState(UNIT_STATE_CASTING))
                 {
@@ -387,7 +387,7 @@ class npc_soulguard_watchman : public CreatureScript
                 events.Reset();
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (!rage && me->HealthBelowPctDamaged(25, damage))
                 {

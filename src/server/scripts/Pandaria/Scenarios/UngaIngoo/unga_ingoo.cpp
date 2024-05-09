@@ -466,7 +466,7 @@ struct npc_unga_spearscamp : public ScriptedAI
     InstanceScript* instance;
     EventMap events;
 
-    void IsSummonedBy(Unit* summoner)
+    void IsSummonedBy(Unit* summoner) override
     {
         Movement::MoveSplineInit init(me);
         for (auto itr : SpearscampPath)

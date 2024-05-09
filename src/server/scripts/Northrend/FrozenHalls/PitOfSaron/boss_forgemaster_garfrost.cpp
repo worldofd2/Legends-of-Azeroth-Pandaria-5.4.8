@@ -124,7 +124,7 @@ class boss_garfrost : public CreatureScript
                 instance->SetBossState(DATA_GARFROST, DONE);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/) override
             {
                 if (events.IsInPhase(PHASE_ONE) && !HealthAbovePct(66))
                 {

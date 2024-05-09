@@ -1068,7 +1068,7 @@ class npc_harbinger_of_flame : public CreatureScript
         {
             npc_harbinger_of_flameAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(Unit* /*who*/) override
             {
                 if (Creature* bird = ObjectAccessor::GetCreature(*me, me->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)))
                     DoZoneInCombat(bird, 200.0f);

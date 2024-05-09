@@ -196,7 +196,7 @@ class boss_devourer_of_souls : public CreatureScript
                 events.ScheduleEvent(EVENT_WAILING_SOULS, urand(60000, 70000));
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (uiMirroredSoulTarget && me->HasAura(SPELL_MIRRORED_SOUL))
                 {

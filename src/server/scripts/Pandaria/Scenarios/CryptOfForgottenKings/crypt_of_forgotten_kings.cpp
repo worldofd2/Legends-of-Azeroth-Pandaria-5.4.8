@@ -1273,7 +1273,7 @@ class spell_cfk_hate_periodic : public AuraScript
 {
     PrepareAuraScript(spell_cfk_hate_periodic);
 
-    bool Load()
+    bool Load() override
     {
         hasFirstTrigger = false;
         return true;

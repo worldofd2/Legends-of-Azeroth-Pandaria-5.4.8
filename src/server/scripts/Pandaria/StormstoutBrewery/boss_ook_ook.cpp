@@ -166,7 +166,7 @@ class boss_ook_ook : public CreatureScript
                 Talk(TALK_AGGRO);
 
                 events.ScheduleEvent(EVENT_GOING_BANANAS, 2000);
-                events.ScheduleEvent(EVENT_GROUND_POUND, (8000, 14000));
+                events.ScheduleEvent(EVENT_GROUND_POUND, urand(8000, 14000));
 
                 if (instance)
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);

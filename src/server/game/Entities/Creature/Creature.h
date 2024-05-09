@@ -345,7 +345,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool HasSpellCooldown(uint32 spell_id) const;
         bool HasCategoryCooldown(uint32 spell_id) const;
         uint32 GetCreatureSpellCooldownDelay(uint32 spellId) const;
-        virtual void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
+        virtual void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
 
         // For spells with Cone targets
         void PrepareChanneledCast(float facing, uint32 spellId = 0, bool triggered = false);
@@ -368,7 +368,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void UpdateMaxHealth() override;
         void UpdateMaxPower(Powers power) override;
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
-        void UpdateDamagePhysical(WeaponAttackType attType);
+        void UpdateDamagePhysical(WeaponAttackType attType) override;
 
         int8 GetOriginalEquipmentId() const { return m_originalEquipmentId; }
         uint8 GetCurrentEquipmentId() { return m_equipmentId; }

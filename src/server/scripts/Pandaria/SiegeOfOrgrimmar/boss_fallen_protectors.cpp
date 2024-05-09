@@ -3195,7 +3195,7 @@ class spell_rook_vengeful_strikes_periodic : public AuraScript
 {
     PrepareAuraScript(spell_rook_vengeful_strikes_periodic);
 
-    bool Load()
+    bool Load() override
     {
         tickCount = 0;
         return true;

@@ -2540,7 +2540,7 @@ struct npc_cranegnasher : public ScriptedAI
             });
     }
 
-    void EnterEvadeMode()
+    void EnterEvadeMode() override
     {
         scheduler.CancelAll();
         ScriptedAI::EnterEvadeMode();

@@ -299,7 +299,7 @@ public:
             return 0;
         }
 
-        void SetData64(uint32 identifier, uint64 value)
+        void SetData64(uint32 identifier, uint64 value) override
         {
             if (identifier == DATA_FEL_CRYSTAL)
                 felCristalIndex = value;

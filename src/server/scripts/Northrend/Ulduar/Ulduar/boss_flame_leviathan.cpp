@@ -926,7 +926,7 @@ class boss_flame_leviathan_defense_cannon : public CreatureScript
                     NapalmTimer -= diff;
             }
 
-            bool CanAIAttack(Unit const* who) const
+            bool CanAIAttack(Unit const* who) const override
             {
                 if (who->GetTypeId() != TYPEID_PLAYER || !who->GetVehicle() || who->GetVehicleBase()->GetEntry() == NPC_LEVIATHAN_SEATS)
                     return false;
@@ -955,7 +955,7 @@ class boss_flame_leviathan_defense_turret : public CreatureScript
                     damage = 0;
             }
 
-            bool CanAIAttack(Unit const* who) const
+            bool CanAIAttack(Unit const* who) const override
             {
                 if (who->GetTypeId() != TYPEID_PLAYER || !who->GetVehicle() || who->GetVehicleBase()->GetEntry() != NPC_LEVIATHAN_SEATS)
                     return false;
@@ -1010,7 +1010,7 @@ class boss_flame_leviathan_safety_container : public CreatureScript
         {
             boss_flame_leviathan_safety_containerAI(Creature* creature) : PassiveAI(creature) { }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 //float x, y, z;
                 //me->GetPosition(x, y, z);
@@ -1052,7 +1052,7 @@ class npc_mechanolift : public CreatureScript
                 me->SetVisible(true);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 me->GetMotionMaster()->MoveTargetedHome();
                 DoCast(me, SPELL_DUSTY_EXPLOSION);

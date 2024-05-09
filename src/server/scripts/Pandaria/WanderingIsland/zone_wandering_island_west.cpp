@@ -1104,7 +1104,7 @@ class mob_aisa_pre_balon_event : public CreatureScript
 public:
     mob_aisa_pre_balon_event() : CreatureScript("mob_aisa_pre_balon_event") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == 29791)
             sCreatureTextMgr->SendChat(creature, 1);
@@ -1300,7 +1300,7 @@ public:
             events.ScheduleEvent(EVENT_AISA_TALK_10, t += 7000);         //17:28:10.000
         }
 
-        void PassengerBoarded(Unit* passenger, int8 seatId, bool apply)
+        void PassengerBoarded(Unit* passenger, int8 seatId, bool apply) override
         {
             if (!apply)
             {
@@ -1384,7 +1384,7 @@ public:
             sCreatureTextMgr->SendChat(shen, text);
         }
 
-        void IsSummonedBy(Unit* summoner)
+        void IsSummonedBy(Unit* summoner) override
         {
             me->SetTarget(summoner->GetGUID());
             playerGuid = summoner->GetGUID();

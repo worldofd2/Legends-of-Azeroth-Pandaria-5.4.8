@@ -970,7 +970,7 @@ struct npc_high_seas_explosive_barrel : public ScriptedAI
     {
         if (actionId == ACTION_START_INTRO && !hasTriggered)
         {
-            hasTriggered;
+            hasTriggered = true;
 
             if (me->GetEntry() == NPC_PLANT_EXPLOSIVES)
                 me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);

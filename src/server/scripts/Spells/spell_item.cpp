@@ -4112,7 +4112,7 @@ class spell_item_symbiotic_growth_aura : public AuraScript
 
     uint32 spec = 0;
 
-    bool Load()
+    bool Load() override
     {
         if (GetUnitOwner()->GetTypeId() != TYPEID_PLAYER)
             return false;

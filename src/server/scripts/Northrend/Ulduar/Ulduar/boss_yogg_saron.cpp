@@ -1791,7 +1791,7 @@ class npc_descend_into_madness : public CreatureScript
                 me->DespawnOrUnsummon(30000);
             }
 
-            void OnSpellClick(Unit* clicker, bool& result)
+            void OnSpellClick(Unit* clicker, bool& result) override
             {
                 if (!result)
                     return;

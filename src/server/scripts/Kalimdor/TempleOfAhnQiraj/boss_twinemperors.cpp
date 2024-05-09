@@ -421,7 +421,7 @@ class boss_veknilash : public CreatureScript
     
         struct boss_veknilashAI : public boss_twinemperorsAI
         {
-            bool IAmVeklor() {return false;}
+            bool IAmVeklor() override { return false; }
             boss_veknilashAI(Creature* creature) : boss_twinemperorsAI(creature) { }
     
             uint32 UpperCut_Timer;
@@ -459,7 +459,7 @@ class boss_veknilash : public CreatureScript
                 }
             }
     
-            void CastSpellOnBug(Creature* target)
+            void CastSpellOnBug(Creature* target) override
             {
                 target->SetFaction(14);
                 target->AI()->AttackStart(me->getThreatManager().getHostilTarget());
@@ -521,7 +521,7 @@ class boss_veklor : public CreatureScript
     
         struct boss_veklorAI : public boss_twinemperorsAI
         {
-            bool IAmVeklor() {return true;}
+            bool IAmVeklor() override { return true; }
             boss_veklorAI(Creature* creature) : boss_twinemperorsAI(creature) { }
     
             uint32 ShadowBolt_Timer;
@@ -548,7 +548,7 @@ class boss_veklor : public CreatureScript
                 me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0);
             }
     
-            void CastSpellOnBug(Creature* target)
+            void CastSpellOnBug(Creature* target) override
             {
                 target->SetFaction(14);
                 target->AddAura(SPELL_EXPLODEBUG, target);

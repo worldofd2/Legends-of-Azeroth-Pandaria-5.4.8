@@ -559,7 +559,7 @@ public:
     {
         PrepareSpellScript(spell_steelbreaker_static_disruption_SpellScript);
 
-        bool Validate(SpellInfo const* /*spell*/)
+        bool Validate(SpellInfo const* /*spell*/) override
         {
             if (!sSpellMgr->GetSpellInfo(SPELL_STATIC_DISRUPTION_CHECKED_10))
                 return false;

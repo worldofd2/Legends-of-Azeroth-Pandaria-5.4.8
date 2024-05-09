@@ -1444,7 +1444,7 @@ class spell_rog_honor_among_thieves : public AuraScript
 {
     PrepareAuraScript(spell_rog_honor_among_thieves);
 
-    bool Load()
+    bool Load() override
     {
         return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
     }

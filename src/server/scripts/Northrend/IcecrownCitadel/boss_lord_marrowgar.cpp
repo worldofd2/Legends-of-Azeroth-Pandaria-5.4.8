@@ -478,7 +478,7 @@ class npc_coldflame : public CreatureScript
             {
             }
 
-            void IsSummonedBy(Unit* owner)
+            void IsSummonedBy(Unit* owner) override
             {
                 if (owner->GetTypeId() != TYPEID_UNIT || !owner->GetAI())
                     return;
@@ -598,7 +598,7 @@ class npc_bone_spike : public CreatureScript
                     KilledUnit(passenger);
             }
 
-            void IsSummonedBy(Unit* summoner)
+            void IsSummonedBy(Unit* summoner) override
             {
                 DoCast(summoner, SPELL_IMPALED);
                 summoner->CastSpell(me, SPELL_RIDE_VEHICLE, true);

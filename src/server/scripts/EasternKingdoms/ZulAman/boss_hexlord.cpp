@@ -553,7 +553,7 @@ class spell_hexlord_unstable_affliction : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hexlord_unstable_affliction_AuraScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /*spell*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_WL_UNSTABLE_AFFL_DISPEL))
                     return false;

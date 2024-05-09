@@ -524,7 +524,7 @@ class npc_black_knight_skeletal_gryphon : public CreatureScript
                 me->UpdateObjectVisibility();
             }
 
-            void WaypointReached(uint32 uiPointId)
+            void WaypointReached(uint32 uiPointId) override
             {
                 switch (uiPointId)
                 {
@@ -606,7 +606,7 @@ class npc_gr : public CreatureScript
 
             InstanceScript* instance;
 
-            void WaypointReached(uint32 uiPointId)
+            void WaypointReached(uint32 uiPointId) override
             {
                 switch (uiPointId)
                 {

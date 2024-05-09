@@ -3016,7 +3016,7 @@ class sat_druid_ursols_vortex : public IAreaTriggerAura
         m_caster->CastSpell(triggering->ToUnit(), SPELL_DRUID_URSOLS_VORTEX_SNARE, true);
     }
 
-    void OnTriggeringUpdate(WorldObject* triggering)
+    void OnTriggeringUpdate(WorldObject* triggering) override
     {
         if (!triggering->ToUnit()->HasAura(SPELL_DRUID_URSOLS_VORTEX_SNARE))
             GetCaster()->CastSpell(triggering->ToUnit(), SPELL_DRUID_URSOLS_VORTEX_SNARE, true);
@@ -4821,7 +4821,7 @@ class spell_druid_astral_communion : public SpellScriptLoader
                 player->CastCustomSpell(player, 89265, &mod, nullptr, nullptr, true);
             }
 
-            void Register()
+            void Register() override
             {
                 OnEffectApply += AuraEffectApplyFn(spell_druid_astral_communion_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_druid_astral_communion_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
