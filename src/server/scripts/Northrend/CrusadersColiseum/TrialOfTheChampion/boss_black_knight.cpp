@@ -179,7 +179,7 @@ class boss_black_knight : public CreatureScript
                 ScriptedAI::EnterEvadeMode();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 isAttacked = true;
                 Talk(SAY_AGGRO);
@@ -427,7 +427,7 @@ class npc_risen_ghoul : public CreatureScript
                 _events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 _events.ScheduleEvent(EVENT_CLAW, urand(5000, 10000));
 

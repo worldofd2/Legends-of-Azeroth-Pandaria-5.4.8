@@ -256,7 +256,7 @@ class boss_eadric : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat(me, 150.0f);
                 Talk(SAY_COMMON_AGGRO);
@@ -563,7 +563,7 @@ class boss_paletress : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat(me, 150.0f);
                 Talk(SAY_COMMON_AGGRO);
@@ -823,7 +823,7 @@ class npc_argent_soldier : public CreatureScript
                 _events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 switch (me->GetEntry())
                 {

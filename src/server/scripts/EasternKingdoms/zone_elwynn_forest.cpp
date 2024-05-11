@@ -372,7 +372,7 @@ struct npc_brother_paxton : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* /*p_Who*/) override
+    void JustEngagedWith(Unit* /*p_Who*/) override
     {
         return;
     }
@@ -563,7 +563,7 @@ struct npc_blackrock_spy : public ScriptedAI
                     DoCast(me, SPELL_SPYGLASS);
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         if (who && who->GetTypeId() == TypeID::TYPEID_PLAYER)
             if (roll_chance_i(50))
@@ -585,7 +585,7 @@ struct npc_blackrock_invader : public ScriptedAI
 {
     npc_blackrock_invader(Creature* creature) : ScriptedAI(creature) { }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         if (who && who->GetTypeId() == TypeID::TYPEID_PLAYER)
             if (roll_chance_i(50))
@@ -609,7 +609,7 @@ struct npc_goblin_assassin : public ScriptedAI
             DoCast(SPELL_SNEAKING);
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         if (who && who->GetTypeId() == TypeID::TYPEID_PLAYER)
             if (roll_chance_i(50))
@@ -643,9 +643,9 @@ class npc_king_varian_wrynn : public CreatureScript
         {
             npc_king_varian_wrynnAI(Creature* creature) : SmartAI(creature) { }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
-                SmartAI::EnterCombat(who);
+                SmartAI::JustEngagedWith(who);
             }
 
             void UpdateAI(uint32 diff) override
@@ -1025,7 +1025,7 @@ struct npc_hogger : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         if (urand(0, 9) < 3)
             Talk(ElwynnForest::SAY_AGGRO);

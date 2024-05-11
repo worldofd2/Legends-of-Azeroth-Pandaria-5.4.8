@@ -655,7 +655,7 @@ class npc_teleportation_portal_vh : public CreatureScript
                 bPortalGuardianOrKeeperOrEliteSpawn = false;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
@@ -1384,7 +1384,7 @@ class npc_violet_hold_arcane_sphere : public CreatureScript
 
             void Reset() override { }
             void AttackStart(Unit* /*who*/) override { }
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void EnterEvadeMode() override { }
             void UpdateAI(uint32 /*diff*/) override { }
         };

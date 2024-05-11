@@ -109,7 +109,7 @@ class boss_brutallus : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (instance->GetData(DATA_KALECGOS_EVENT) != DONE)
                 {

@@ -128,7 +128,7 @@ class boss_general_vezax : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_SHADOW_DODGER, 1);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (who->GetTypeId() != TYPEID_PLAYER)
                 {
@@ -136,7 +136,7 @@ class boss_general_vezax : public CreatureScript
                     return;
                 }
 
-                _EnterCombat();
+                _JustEngagedWith();
                 Talk(SAY_AGGRO);
                 DoCast(me, SPELL_AURA_OF_DESPAIR);
                 events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(8*IN_MILLISECONDS, 10*IN_MILLISECONDS));
@@ -613,7 +613,7 @@ class npc_faceless_horror : public CreatureScript
                 percentagesHandled[2] = false;
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.Reset();
                 events.ScheduleEvent(EVENT_DEATH_GRIP, urand(6000, 8000));

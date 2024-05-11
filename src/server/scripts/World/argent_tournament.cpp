@@ -327,7 +327,7 @@ public:
             DoEvade();
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
                 Talk(SAY_FACTION_VALIANT_START, player);
@@ -433,7 +433,7 @@ public:
             DoEvade();
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
                 Talk(SAY_FACTION_CHAMPION_START, player);

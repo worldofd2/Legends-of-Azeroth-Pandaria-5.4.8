@@ -91,7 +91,7 @@ class boss_moorabi : public CreatureScript
                     instance->SetData(DATA_MOORABI_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->InterruptNonMeleeSpells(false);
 
@@ -268,7 +268,7 @@ class npc_drakkari_inciter : public CreatureScript
                 });
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.Reset();
                 events.ScheduleEvent(EVENT_STRIKE, 500);
@@ -420,7 +420,7 @@ class npc_drakkari_earthshaker : public CreatureScript
         {
             npc_drakkari_earthshakerAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 sparring = who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == NPC_DRAKKARI_EARTHSHAKER;
                 if (sparring)

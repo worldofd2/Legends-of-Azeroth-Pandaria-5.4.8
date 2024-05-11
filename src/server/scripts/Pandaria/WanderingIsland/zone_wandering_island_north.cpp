@@ -272,7 +272,7 @@ class npc_tushui_trainee : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 isInCombat = true;
             }
@@ -371,7 +371,7 @@ class npc_huojin_trainee : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 isInCombat = true;
             }
@@ -430,7 +430,7 @@ class boss_jaomin_ro : public CreatureScript
             EventMap events;
             bool isInFalcon;
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_JAOMIN_JUMP, 1000);
                 events.ScheduleEvent(EVENT_HIT_CIRCLE, 2000);

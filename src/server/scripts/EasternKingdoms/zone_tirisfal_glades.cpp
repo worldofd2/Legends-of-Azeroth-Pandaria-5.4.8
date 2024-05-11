@@ -1323,7 +1323,7 @@ struct npc_vile_fin_puddlejumper : public ScriptedAI
         uint64 m_playerGUID = 0;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         me->CastSpell(who, TirisfalGlades::SPELL_LEAPING_RUSH);
     }

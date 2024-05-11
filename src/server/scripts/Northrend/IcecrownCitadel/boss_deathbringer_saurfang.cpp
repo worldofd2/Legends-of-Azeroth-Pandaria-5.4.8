@@ -272,7 +272,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                 me->GetMap()->SetWorldState(Is25ManRaid() ? WORLDSTATE_IVE_GONE_AND_MADE_A_MESS_25 : WORLDSTATE_IVE_GONE_AND_MADE_A_MESS_10, 1);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (_dead)
                     return;
@@ -2039,7 +2039,7 @@ class npc_bloodbeast : public CreatureScript
                 DoCast(me, SPELL_RESISTANT_SKIN, true);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {

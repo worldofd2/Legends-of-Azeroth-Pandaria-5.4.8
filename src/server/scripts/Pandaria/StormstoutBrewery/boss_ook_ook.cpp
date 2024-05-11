@@ -159,9 +159,9 @@ class boss_ook_ook : public CreatureScript
                 me->SetHomePosition(ookJumpPos);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 Talk(TALK_AGGRO);
 

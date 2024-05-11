@@ -111,7 +111,7 @@ class netherspite_infernal : public CreatureScript
             InfernalPoint* point;
 
             void Reset() override { }
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
@@ -256,7 +256,7 @@ class boss_malchezaar : public CreatureScript
                     instance->HandleGameObject(instance->GetData64(DATA_GO_NETHER_DOOR), true);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
 

@@ -393,8 +393,8 @@ class boss_council_of_elders_baseAI : public ScriptedAI
             });
         }
 
-        // Override EnterCombat to send the DoAction to the helper
-        void EnterCombat(Unit* /*who*/) override 
+        // Override JustEngagedWith to send the DoAction to the helper
+        void JustEngagedWith(Unit* /*who*/) override 
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
@@ -700,7 +700,7 @@ class boss_frost_king_malakk : public CreatureScript
             }
 
             // No need to override Reset since there is nothing to reset here
-            // No need to override EnterCombat since there is nothing to do here
+            // No need to override JustEngagedWith since there is nothing to do here
             void UpdateAI(uint32 diff) override
             {
                 scheduler.Update(diff);

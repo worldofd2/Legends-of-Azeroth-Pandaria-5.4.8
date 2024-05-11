@@ -264,7 +264,7 @@ class npc_garrosh_hellscream_warchief : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_WHIRLWIND, 25 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_CHARGE_B, urand(1 * IN_MILLISECONDS, 5 * IN_MILLISECONDS));

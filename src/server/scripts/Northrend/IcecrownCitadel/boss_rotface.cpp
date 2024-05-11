@@ -122,7 +122,7 @@ class boss_rotface : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_DANCES_WITH_OOZES, 1);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!instance->CheckRequiredBosses(DATA_ROTFACE, who->ToPlayer()))
                 {

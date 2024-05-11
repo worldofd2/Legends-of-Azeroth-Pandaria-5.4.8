@@ -569,7 +569,7 @@ class npc_green_dragon_combat_trigger : public CreatureScript
                 me->SetVisible(false);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!instance->CheckRequiredBosses(DATA_VALITHRIA_DREAMWALKER, who->ToPlayer()))
                 {
@@ -678,7 +678,7 @@ class npc_the_lich_king_controller : public CreatureScript
                 me->setActive(false);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (_instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
                 {
@@ -795,7 +795,7 @@ class npc_risen_archmage : public CreatureScript
                 _events.ScheduleEvent(EVENT_COLUMN_OF_FROST, urand(10000, 20000));
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->FinishSpell(CURRENT_CHANNELED_SPELL, false);
                 if (_instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == NOT_STARTED)

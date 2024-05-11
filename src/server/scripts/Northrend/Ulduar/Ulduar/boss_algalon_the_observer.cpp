@@ -415,7 +415,7 @@ class boss_algalon_the_observer : public CreatureScript
                 return type == DATA_HAS_FED_ON_TEARS ? _fedOnTears : 1;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (_fightWon)
                     return;
@@ -428,7 +428,7 @@ class boss_algalon_the_observer : public CreatureScript
                 if (!_firstPull)
                 {
                     Talk(SAY_ALGALON_AGGRO);
-                    _EnterCombat();
+                    _JustEngagedWith();
                     introDelay = 8000;
                     summons.DespawnEntry(NPC_AZEROTH);
                 }

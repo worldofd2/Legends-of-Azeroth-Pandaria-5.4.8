@@ -3054,7 +3054,7 @@ struct npc_pet_hunter_snake : public ScriptedAI
 
     enum { NPC_HUNTER_VIPER = 19921 };
 
-    void EnterCombat(Unit*) override { }
+    void JustEngagedWith(Unit*) override { }
 
     void InitializeAI() override
     {

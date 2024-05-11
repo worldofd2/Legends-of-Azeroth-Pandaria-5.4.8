@@ -368,7 +368,7 @@ class boss_flame_leviathan : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_ORBIT_UARY, 0);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 // idk fow it must works, but Shutdown increments after reset but not in combat
                 Shutdown = 0;
@@ -379,7 +379,7 @@ class boss_flame_leviathan : public CreatureScript
                     return;
                 }
 
-                _EnterCombat();
+                _JustEngagedWith();
                 firstPursuit = true;
                 events.ScheduleEvent(EVENT_PURSUE, 1);
                 events.ScheduleEvent(EVENT_MISSILE, urand(1500, 4*IN_MILLISECONDS));
@@ -1221,7 +1221,7 @@ class npc_colossus : public CreatureScript
                 availablecheck = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 groundSlamTimer = urand(8 * IN_MILLISECONDS, 10 * IN_MILLISECONDS);
                 availablecheck = 5*IN_MILLISECONDS;

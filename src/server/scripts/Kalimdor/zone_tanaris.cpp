@@ -116,7 +116,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             Talk(AGGRO_YELL_AQUE, who);
         }
@@ -274,7 +274,7 @@ struct npc_custodian_of_time : public npc_escortAI
         }
     }
 
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
     void Reset() override { }
 
     void UpdateAI(uint32 diff) override
@@ -405,7 +405,7 @@ public:
 
         void Reset()override { }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_OOX_AGGRO);
         }

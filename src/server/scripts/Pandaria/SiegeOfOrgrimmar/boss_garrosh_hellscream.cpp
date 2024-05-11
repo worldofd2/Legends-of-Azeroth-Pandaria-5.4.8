@@ -567,9 +567,9 @@ class boss_garrosh_hellscream : public CreatureScript
                 _DespawnAtEvade();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 if (instance)
                 {
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
@@ -1501,7 +1501,7 @@ struct npc_korkron_warbringer : public soo_garrosh_guards_typeAI
             DoCast(me, SPELL_BLOOD_FRENZIED);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         if (IsHeroic())
             DoCast(me, SPELL_BLOOD_FRENZIED_SELECTOR);
@@ -1563,7 +1563,7 @@ struct npc_wolf_rider_farseer : public soo_garrosh_guards_typeAI
         me->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(4 * IN_MILLISECONDS, 12 * IN_MILLISECONDS));
         events.ScheduleEvent(EVENT_CHAIN_HEAL, urand(6.5 * IN_MILLISECONDS, 19.5 *IN_MILLISECONDS));
@@ -1731,7 +1731,7 @@ struct npc_soo_embodied_minions : public ScriptedAI
             despair->CastSpell(despair, SPELL_ULTIMATE_DESPAIR, true);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         me->InterruptNonMeleeSpells(false, SPELL_COSMETIC_CHANNEL);
 
@@ -1946,7 +1946,7 @@ struct npc_garrosh_unstable_iron_star : public ScriptedAI
         DoCast(me, SPELL_UNSTABLE_IRON_STAR_AT);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         me->PrepareChanneledCast(me->GetOrientation());
 

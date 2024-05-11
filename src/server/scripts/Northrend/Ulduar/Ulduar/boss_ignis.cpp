@@ -159,9 +159,9 @@ class boss_ignis : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 Talk(SAY_AGGRO);
                 events.ScheduleEvent(EVENT_FLAME_JETS, 30000);
                 events.ScheduleEvent(EVENT_SCORCH, 25000);

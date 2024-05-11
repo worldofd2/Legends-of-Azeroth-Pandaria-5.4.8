@@ -50,7 +50,7 @@ struct boss_isle_of_conquest : public ScriptedAI
         uiResetTimer                = 5 * IN_MILLISECONDS;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         if (!me->IsWithinLOSInMap(who))
             EnterEvadeMode();

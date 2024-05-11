@@ -93,9 +93,9 @@ class boss_renataki : public CreatureScript
                 frenzied = false;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 Talk(SAY_AGGRO);
 
                 events.ScheduleEvent(EVENT_DEADLY_POISON, 5000);

@@ -252,7 +252,7 @@ class boss_professor_putricide : public CreatureScript
                 me->HandleEmoteCommand(EMOTE_STATE_USE_STANDING);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (events.IsInPhase(PHASE_ROTFACE) || events.IsInPhase(PHASE_FESTERGUT))
                     return;

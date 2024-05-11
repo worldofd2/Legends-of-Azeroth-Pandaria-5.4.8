@@ -322,9 +322,9 @@ class boss_lei_shen : public CreatureScript
                 berserkEvents.ScheduleEvent(EVENT_REMOVE_INACTIVITY, 2 * IN_MILLISECONDS); // scheduler stuck here...
             }
     
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
     
                 if (instance)
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);

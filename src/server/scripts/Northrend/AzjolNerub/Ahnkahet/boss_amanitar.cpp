@@ -89,9 +89,9 @@ class boss_amanitar : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 events.ScheduleEvent(EVENT_ROOT, urand(5 * IN_MILLISECONDS, 9 * IN_MILLISECONDS));
                 events.ScheduleEvent(EVENT_BASH, urand(10 * IN_MILLISECONDS, 14 * IN_MILLISECONDS));
@@ -221,7 +221,7 @@ class npc_amanitar_mushrooms : public CreatureScript
                     DoCast(me, SPELL_POISONOUS_MUSHROOM_POISON_CLOUD, true);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void AttackStart(Unit* /*who*/) override { }
 

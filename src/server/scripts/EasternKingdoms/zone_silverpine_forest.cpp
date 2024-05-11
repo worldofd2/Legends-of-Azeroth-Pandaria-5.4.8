@@ -108,7 +108,7 @@ public:
 
         void Reset() override { }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             Talk(SAY_AGGRO, who);
         }
@@ -158,7 +158,7 @@ struct npc_fenwick_thatros : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(SAY_FENWICK_AGGRO);
         events.ScheduleEvent(EVENT_BUFF_STRENGTH, 3000);

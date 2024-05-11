@@ -748,7 +748,7 @@ struct npc_worgen_runt : public ScriptedAI
         _playerGuid = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         _events.SetPhase(PHASE_COMBAT);
     }
@@ -1398,7 +1398,7 @@ public:
         bool _aranasSaved;
 
         void AttackStart(Unit* /*who*/) override { }
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
         void EnterEvadeMode() override { }
 
         void Reset() override

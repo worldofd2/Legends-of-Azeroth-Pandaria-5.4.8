@@ -320,7 +320,7 @@ class boss_elegon : public CreatureScript
                     instance->SetBossState(DATA_ELEGON, FAIL);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 me->SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, 24.0f);
                 me->SetFloatValue(UNIT_FIELD_COMBAT_REACH, 24.0f);
@@ -1177,7 +1177,7 @@ class npc_celestial_protector : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_ARCING_ENERGY, 10000);
                 events.ScheduleEvent(EVENT_CHECK_UNIT_ON_PLATFORM, 1000);

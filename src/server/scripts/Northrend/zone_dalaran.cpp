@@ -74,7 +74,7 @@ struct npc_mageguard_dalaran : public ScriptedAI
 
     void Reset() override { }
 
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
 
     void AttackStart(Unit* /*who*/) override { }
 

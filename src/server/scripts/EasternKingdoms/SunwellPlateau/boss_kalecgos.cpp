@@ -323,7 +323,7 @@ class boss_kalecgos : public CreatureScript
                 DoCast(target, SPELL_SPECTRAL_BLAST_SELF_VISUAL, true);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 Talk(SAY_EVIL_AGGRO);
@@ -586,7 +586,7 @@ class boss_sathrovarr : public CreatureScript
                     TeleportAllPlayersBack();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 isStarted = true;
                 if (Creature* kalec = me->SummonCreature(NPC_KALEC, me->GetPositionX() + 10, me->GetPositionY() + 5, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0))

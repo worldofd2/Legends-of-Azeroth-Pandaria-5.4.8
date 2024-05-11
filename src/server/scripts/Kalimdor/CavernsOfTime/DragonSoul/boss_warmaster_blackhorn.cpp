@@ -244,7 +244,7 @@ class boss_warmaster_blackhorn: public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_DECK_DEFENDER, 1);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 uiWave = 0;
                 drakeDied = 0;
@@ -1386,7 +1386,7 @@ class npc_warmaster_blackhorn_skyfire: public CreatureScript
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             }

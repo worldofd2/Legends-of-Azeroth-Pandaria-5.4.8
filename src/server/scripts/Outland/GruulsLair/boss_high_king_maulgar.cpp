@@ -122,7 +122,7 @@ class boss_high_king_maulgar : public CreatureScript
                     Talk(SAY_OGRE_DEATH);
             }
     
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
                 instance->SetBossState(DATA_MAULGAR, IN_PROGRESS);
@@ -241,7 +241,7 @@ class boss_olm_the_summoner : public CreatureScript
                 }
             }
     
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
                 instance->SetBossState(DATA_MAULGAR, IN_PROGRESS);
@@ -324,7 +324,7 @@ class boss_kiggler_the_crazed : public CreatureScript
                 instance->SetBossState(DATA_MAULGAR, NOT_STARTED);
             }
     
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
                 instance->SetBossState(DATA_MAULGAR, IN_PROGRESS);
@@ -410,7 +410,7 @@ class boss_blindeye_the_seer : public CreatureScript
                 instance->SetBossState(DATA_MAULGAR, NOT_STARTED);
             }
     
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
                 instance->SetBossState(DATA_MAULGAR, IN_PROGRESS);
@@ -487,7 +487,7 @@ class boss_krosh_firehand : public CreatureScript
                 instance->SetBossState(DATA_MAULGAR, NOT_STARTED);
             }
     
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
                 instance->SetBossState(DATA_MAULGAR, IN_PROGRESS);

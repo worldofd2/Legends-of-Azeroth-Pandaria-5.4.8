@@ -100,7 +100,7 @@ class boss_garfrost : public CreatureScript
                 instance->SetBossState(DATA_GARFROST, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
                 DoCast(me, SPELL_PERMAFROST);

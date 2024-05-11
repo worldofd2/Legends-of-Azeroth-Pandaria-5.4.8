@@ -177,7 +177,7 @@ class boss_lord_marrowgar : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_BONED, 1);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!instance->CheckRequiredBosses(DATA_LORD_MARROWGAR, who->ToPlayer()))
                 {

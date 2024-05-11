@@ -179,7 +179,7 @@ class boss_devourer_of_souls : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_THREE_FACED, 1);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance)
                     instance->SetData(DATA_DEVOURER_EVENT, IN_PROGRESS);

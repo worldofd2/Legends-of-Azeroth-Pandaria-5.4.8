@@ -660,7 +660,7 @@ class boss_the_lich_king : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!instance->CheckRequiredBosses(DATA_THE_LICH_KING, who->ToPlayer()))
                 {

@@ -614,7 +614,7 @@ void BossAI::_JustReachedHome()
     me->setActive(false);
 }
 
-bool BossAI::_EnterCombat()
+bool BossAI::_JustEngagedWith()
 {
     if (instance)
     {
@@ -764,7 +764,7 @@ void WorldBossAI::_JustDied()
     summons.DespawnAll();
 }
 
-void WorldBossAI::_EnterCombat()
+void WorldBossAI::_JustEngagedWith()
 {
     Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
     if (target)

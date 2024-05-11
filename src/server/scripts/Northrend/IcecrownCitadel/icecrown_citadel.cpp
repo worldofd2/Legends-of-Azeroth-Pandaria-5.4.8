@@ -658,7 +658,7 @@ class npc_rotting_frost_giant : public CreatureScript
                     instance->SetData(DATA_ROTTING_FROST_GIANT_STATE, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->setActive(true);
                 DoZoneInCombat();
@@ -999,9 +999,9 @@ class boss_sister_svalna : public CreatureScript
                     crok->m_Events.Schedule(delay + 3000, [crok]() { crok->GetMotionMaster()->MovePoint(POINT_CROK_FINAL, 4335.371094f, 2484.422363f, 358.441711f); });
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CROK_SCOURGEBANE)))
                     crok->AI()->Talk(SAY_CROK_COMBAT_SVALNA);
                 events.ScheduleEvent(EVENT_SVALNA_COMBAT, 1);
@@ -1542,7 +1542,7 @@ struct npc_argent_captainAI : public ScriptedAI
             }
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             me->SetHomePosition(*me);
             if (IsUndead)
@@ -2463,9 +2463,9 @@ class npc_sindragosas_ward : public CreatureScript
                             DoZoneInCombat(me, 150.0f);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 _isEventInProgressOrDone = true;
                 _spawnCountToBeSummonedInWave = 32;
                 _waveNumber = 1;
@@ -2695,7 +2695,7 @@ class npc_icc_sindragosa_gauntlet_frostwarden : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 DoZoneInCombat(nullptr, 150.0f);
             }
@@ -2804,7 +2804,7 @@ class npc_icc_sindragosa_gauntlet_nerubar : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 DoZoneInCombat(nullptr, 150.0f);
             }

@@ -437,13 +437,13 @@ class boss_mimiron : public CreatureScript
                 me->DespawnOrUnsummon(30*IN_MILLISECONDS);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 _gotEncounterFinished = _gotEncounterFinished || (instance && instance->GetBossState(BOSS_MIMIRON) == DONE);
                 if (_gotEncounterFinished)
                     return;
 
-                _EnterCombat();
+                _JustEngagedWith();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);
                 _phase = PHASE_INTRO;
                 events.SetPhase(_phase);
@@ -854,7 +854,7 @@ class boss_mimiron : public CreatureScript
                         events.SetPhase(PHASE_V0L7R0N_ACTIVATION);
                         events.ScheduleEvent(EVENT_STEP_1, 1*IN_MILLISECONDS, 0, PHASE_V0L7R0N_ACTIVATION);
                         break;
-                    case DO_ACTIVATE_HARD_MODE:     // Cannot be done infight, since the button gets locked on EnterCombat() with Mimiron.
+                    case DO_ACTIVATE_HARD_MODE:     // Cannot be done infight, since the button gets locked on JustEngagedWith() with Mimiron.
                         me->GetMap()->SetWorldState(WORLDSTATE_FIRE_FIGHTER, 1);
                         _gotHardMode = true;
                         DoZoneInCombat();
@@ -1069,7 +1069,7 @@ class boss_leviathan_mk : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (Creature* Mimiron = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(BOSS_MIMIRON) : 0))
                     _gotMimironHardMode = Mimiron->AI()->GetData(DATA_GET_HARD_MODE);
@@ -1423,7 +1423,7 @@ class boss_vx_001 : public CreatureScript
                     }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (Creature* Mimiron = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(BOSS_MIMIRON) : 0))
                     _mimironHardMode = Mimiron->AI()->GetData(DATA_GET_HARD_MODE);
@@ -1846,7 +1846,7 @@ class boss_aerial_unit : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (Creature* Mimiron = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(BOSS_MIMIRON) : 0))
                     _gotMimironHardMode = Mimiron->AI()->GetData(DATA_GET_HARD_MODE);
@@ -2543,7 +2543,7 @@ class npc_mimiron_db_target : public CreatureScript
                 damage = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void EnterEvadeMode() override { }
             void UpdateAI(uint32 /*diff*/) override { }
         };

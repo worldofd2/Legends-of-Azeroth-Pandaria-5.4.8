@@ -259,7 +259,7 @@ class boss_hex_lord_malacrass : public CreatureScript
                 me->SetSheath(SHEATH_STATE_MELEE);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_SPIRIT_BOLTS, 10000);
                 events.ScheduleEvent(EVENT_DRAIN_POWER, 6000);

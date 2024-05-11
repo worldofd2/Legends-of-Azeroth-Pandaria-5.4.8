@@ -252,9 +252,9 @@ struct boss_conclave_of_wind : public BossAI
                 rohash->AI()->EnterEvadeMode();
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
-        _EnterCombat();
+        _JustEngagedWith();
         summons.DespawnAll(); // Just in case
 
         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);

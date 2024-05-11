@@ -242,7 +242,7 @@ class npc_voljin_ancient_enemy : public CreatureScript
             events.ScheduleEvent(EVENT_INTRO, 10000);
         }
 
-        void EnterCombat(Unit * /*who*/) override
+        void JustEngagedWith(Unit * /*who*/) override
         {
             events.ScheduleEvent(EVENT_SHOOT, 2000);
             events.ScheduleEvent(EVENT_SHADOW_SHOCK, 5000);
@@ -371,7 +371,7 @@ class npc_zarjira : public CreatureScript
                 player->KilledMonsterCredit(NPC_ZARJIRA, 0);
         }
 
-        void EnterCombat(Unit *) override
+        void JustEngagedWith(Unit *) override
         {
             events.ScheduleEvent(EVENT_FROSTBOLT, 3000);
             events.ScheduleEvent(EVENT_MANIFESTATION, 10000);
