@@ -914,7 +914,8 @@ enum PlayerDelayedOperations
 
 // Player summoning auto-decline time (in secs)
 #define MAX_PLAYER_SUMMON_DELAY                   (2*MINUTE)
-#define MAX_MONEY_AMOUNT               (UI64LIT(9999999999)) // TODO: Move this restriction to worldserver.conf, default to this value, hardcap at uint64.max
+// Maximum money amount : 2^31 - 1
+TC_GAME_API extern uint64 const MAX_MONEY_AMOUNT;
 
 struct InstancePlayerBind
 {
@@ -1893,15 +1894,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         m_weaponChangeTimer = time;
     }
 
-    uint64 GetMoney() const
-    {
-        return GetUInt64Value(PLAYER_FIELD_COINAGE);
-    }
+    uint64 GetMoney() const { return GetUInt64Value(PLAYER_FIELD_COINAGE); }
     bool ModifyMoney(int64 amount, bool sendError = true);
-    bool HasEnoughMoney(uint64 amount) const
-    {
-        return (GetMoney() >= amount);
-    }
+    bool HasEnoughMoney(uint64 amount) const { return (GetMoney() >= amount); }
     bool HasEnoughMoney(int64 amount) const;
     void SetMoney(uint64 value);
 
