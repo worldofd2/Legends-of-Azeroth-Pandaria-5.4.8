@@ -1745,7 +1745,7 @@ public:
     void BuildTeleportUpdateData(WorldPacket* data);
     virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
     // returns true if unit's position really changed
-    bool UpdatePosition(const Position &pos, bool teleport = false);
+    virtual bool UpdatePosition(const Position &pos, bool teleport = false);
     void UpdateOrientation(float orientation);
     void UpdateHeight(float newZ);
 
@@ -2603,32 +2603,14 @@ public:
         return m_duringRemoveFromWorld;
     }
 
-    Pet* ToPet()
-    {
-        if (IsPet()) return reinterpret_cast<Pet*>(this); else return NULL;
-    }
-    Pet const* ToPet() const
-    {
-        if (IsPet()) return reinterpret_cast<Pet const*>(this); else return NULL;
-    }
+    Pet* ToPet() { if (IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; }
+    Pet const* ToPet() const { if (IsPet()) return reinterpret_cast<Pet const*>(this); else return nullptr; }
 
-    Totem* ToTotem()
-    {
-        if (IsTotem()) return reinterpret_cast<Totem*>(this); else return NULL;
-    }
-    Totem const* ToTotem() const
-    {
-        if (IsTotem()) return reinterpret_cast<Totem const*>(this); else return NULL;
-    }
+    Totem* ToTotem() { if (IsTotem()) return reinterpret_cast<Totem*>(this); else return nullptr; }
+    Totem const* ToTotem() const { if (IsTotem()) return reinterpret_cast<Totem const*>(this); else return nullptr; }
 
-    TempSummon* ToTempSummon()
-    {
-        if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL;
-    }
-    TempSummon const* ToTempSummon() const
-    {
-        if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return NULL;
-    }
+    TempSummon* ToTempSummon() { if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return nullptr; }
+    TempSummon const* ToTempSummon() const { if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return nullptr; }
 
     uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
     virtual void SetTarget(uint64 /*guid*/) = 0;
