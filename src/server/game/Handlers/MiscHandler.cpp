@@ -25,6 +25,7 @@
 #include "BattlegroundMgr.h"
 #include "BigNumber.h"
 #include "CellImpl.h"
+#include "CharacterPackets.h"
 #include "Chat.h"
 #include "CinematicMgr.h"
 #include "Common.h"
@@ -33,6 +34,7 @@
 #include "DB2Stores.h"
 #include "DBCEnums.h"
 #include "GameObjectAI.h"
+#include "GameTime.h"
 #include "GossipDef.h"
 #include "Group.h"
 #include "GuildMgr.h"
@@ -574,15 +576,14 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket& /*recvData*/)
     else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
         reason = 2;                                         // FIXME - Need the correct value
 
-    WorldPacket data(SMSG_LOGOUT_RESPONSE, 1+4);
-    data << uint32(reason);
-    data.WriteBit(instantLogout);
-    data.FlushBits();
-    SendPacket(&data);
+    WorldPackets::Character::LogoutResponse logoutResponse;
+    logoutResponse.LogoutResult = reason;
+    logoutResponse.Instant = instantLogout;
+    SendPacket(logoutResponse.Write());
 
     if (reason)
     {
-        LogoutRequest(0);
+        SetLogoutStartTime(0);
         return;
     }
 
@@ -601,7 +602,7 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket& /*recvData*/)
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    LogoutRequest(time(NULL));
+    SetLogoutStartTime(GameTime::GetGameTime());
 }
 
 void WorldSession::HandlePlayerLogoutOpcode(WorldPacket& /*recvData*/)
@@ -617,7 +618,7 @@ void WorldSession::HandleLogoutCancelOpcode(WorldPacket& /*recvData*/)
     if (!GetPlayer())
         return;
 
-    LogoutRequest(0);
+    SetLogoutStartTime(0);
 
     WorldPacket data(SMSG_LOGOUT_CANCEL_ACK, 0);
     SendPacket(&data);
