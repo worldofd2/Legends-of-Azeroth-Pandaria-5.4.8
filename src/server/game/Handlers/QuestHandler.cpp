@@ -169,7 +169,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
 
     if (prevQuestInChain)
     {
-        if (object == _player && !prevQuestInChain->HasFlag(QUEST_FLAGS_AUTOCOMPLETE))
+        if (object == _player && !prevQuestInChain->HasFlag(QUEST_FLAGS_AUTO_COMPLETE))
             return;
     }
     else
@@ -290,16 +290,16 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
                         // Prevent destroying the item if it should have been added as a source item for the quest, but failed because of uniqueness
                         if (quest->GetSrcItemId() == item->GetEntry())
                             destroyItem = false;
-                        for (uint8 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT && destroyItem; ++i)
-                            if (quest->RequiredSourceItemId[i] == item->GetEntry())
+                        for (uint8 i = 0; i < QUEST_ITEM_DROP_COUNT && destroyItem; ++i)
+                            if (quest->ItemDrop[i] == item->GetEntry())
                                 destroyItem = false;
 
                         // Prevent destroying the item if it is required for the quest
                         if (destroyItem)
                         {
-                            for (auto&& objective : quest->m_questObjectives)
+                            for (auto&& objective : quest->Objectives)
                             {
-                                if (objective->Type == QUEST_OBJECTIVE_TYPE_ITEM && objective->ObjectId == item->GetEntry())
+                                if (objective.Type == QUEST_OBJECTIVE_ITEM && objective.ObjectID == item->GetEntry())
                                 {
                                     destroyItem = false;
                                     break;
@@ -389,7 +389,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
             return;
         }
 
-        // not sure here what should happen to quests with QUEST_FLAGS_AUTOCOMPLETE
+        // not sure here what should happen to quests with QUEST_FLAGS_AUTO_COMPLETE
         // if this breaks them, add && object->GetTypeId() == TYPEID_ITEM to this check
         // item-started quests never have that flag
         if (!_player->CanTakeQuest(quest, true))
@@ -398,7 +398,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         if (quest->IsAutoAccept() && _player->CanAddQuest(quest, true))
             _player->AddQuestAndCheckCompletion(quest, object);
 
-        if (!sWorld->getBoolConfig(CONFIG_QUEST_IGNORE_AUTO_COMPLETE) && quest->GetQuestMethod() == 0)
+        if (!sWorld->getBoolConfig(CONFIG_QUEST_IGNORE_AUTO_COMPLETE) && quest->GetQuestType() == QUEST_TYPE_TURNIN)
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, object->GetGUID(), _player->CanCompleteQuest(quest->GetQuestId()), true);
         else
             _player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, object->GetGUID(), true);
@@ -475,7 +475,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
     if (!object)
         return;
 
-    if (!quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE) && !object->hasInvolvedQuest(questId))
+    if (!quest->HasFlag(QUEST_FLAGS_AUTO_COMPLETE) && !object->hasInvolvedQuest(questId))
         return;
 
     // some kind of WPE protection
@@ -483,7 +483,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
         return;
 
     if ((!_player->CanSeeStartQuest(quest) &&  _player->GetQuestStatus(questId) == QUEST_STATUS_NONE) ||
-        (_player->GetQuestStatus(questId) != QUEST_STATUS_COMPLETE && !quest->IsAutoComplete()))
+        (_player->GetQuestStatus(questId) != QUEST_STATUS_COMPLETE && !quest->IsTurnIn()))
     {
         TC_LOG_ERROR("network", "Error in QUEST_STATUS_COMPLETE: player %s (guid %u) tried to complete quest %u, but is not allowed to do so (possible packet-hacking or high latency)",
             _player->GetName().c_str(), _player->GetGUIDLow(), questId);
@@ -542,7 +542,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
 
     // HACKALERT
     // I fucking dunno why client does not send query for quest status.
-    if (quest->IsAutoComplete())
+    if (quest->IsTurnIn())
         HandleQuestgiverStatusMultipleQuery(recvData);
 }
 
@@ -580,7 +580,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket& recvData)
 
     Object* object = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_PLAYER | TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
 
-    if (!quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE))
+    if (!quest->HasFlag(QUEST_FLAGS_AUTO_COMPLETE))
     {
         if (!object || !object->hasInvolvedQuest(questId))
             return;
@@ -737,7 +737,7 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
 
     if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
     {
-        if (autoCompleteMode && !quest->HasFlag(QUEST_FLAGS_AUTO_SUBMIT) && !quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE))
+        if (autoCompleteMode && !quest->HasFlag(QUEST_FLAGS_AUTO_SUBMIT) && !quest->HasFlag(QUEST_FLAGS_AUTO_COMPLETE))
         {
             TC_LOG_ERROR("network", "Possible hacking attempt: Player %s [playerGuid: %u] tried to complete questId [entry: %u] by auto-submit flag for quest witch not suport it.",
                 _player->GetName().c_str(), _player->GetGUIDLow(), questId);
@@ -768,7 +768,7 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
         }
         else
         {
-            if (quest->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM))
+            if (quest->HasQuestObjectiveType(QUEST_OBJECTIVE_ITEM))
                 _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, playerGuid, _player->CanRewardQuest(quest, false), false);
             else
                 _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, playerGuid, true);
@@ -851,7 +851,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
         if (quest->IsAutoAccept() && receiver->CanAddQuest(quest, true) && receiver->CanTakeQuest(quest, true))
             receiver->AddQuestAndCheckCompletion(quest, sender);
 
-        if ((quest->IsAutoComplete() && quest->IsRepeatable() && !quest->IsDailyOrWeekly()) || quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE))
+        if ((quest->IsTurnIn() && quest->IsRepeatable() && !quest->IsDailyOrWeekly()) || quest->HasFlag(QUEST_FLAGS_AUTO_COMPLETE))
             receiver->PlayerTalkClass->SendQuestGiverRequestItems(quest, sender->GetGUID(), receiver->CanCompleteRepeatableQuest(quest), true);
         else
         {

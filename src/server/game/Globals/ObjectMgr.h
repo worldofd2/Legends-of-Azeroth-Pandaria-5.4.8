@@ -506,7 +506,7 @@ struct GossipMenuItemsLocale
 
 typedef std::unordered_map<std::pair<uint32, uint32>, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef std::unordered_map<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
-typedef std::unordered_map<uint32, QuestObjectiveLocale> QuestObjectiveLocaleContainer;
+typedef std::unordered_map<uint32, QuestObjectivesLocale> QuestObjectivesLocaleContainer;
 
 typedef std::multimap<uint32, uint32> QuestRelations; // unit/go -> quest
 typedef std::multimap<uint32, uint32> QuestRelationsReverse; // quest -> unit/go
@@ -1155,7 +1155,6 @@ class ObjectMgr
         }
 
         void LoadQuests();
-        void LoadQuestObjectives();
         void LoadQuestObjectiveVisualEffects();
         void LoadQuestStartersAndEnders();
         void LoadGameobjectQuestStarters();
@@ -1414,7 +1413,7 @@ class ObjectMgr
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
 
-        ExclusiveQuestGroups mExclusiveQuestGroups;
+        ExclusiveQuestGroups _exclusiveQuestGroups;
 
         MailLevelReward const* GetMailLevelReward(uint32 level, uint32 raceMask)
         {
