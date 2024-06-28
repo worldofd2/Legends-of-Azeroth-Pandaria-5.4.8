@@ -16323,6 +16323,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     // if not exist then created with set uState == NEW and rewarded=false
     QuestStatusData& questStatusData = m_QuestStatus[questId];
+    QuestStatus oldStatus = questStatusData.Status;
 
     // check for repeatable quests status reset
     questStatusData.Status = QUEST_STATUS_INCOMPLETE;
@@ -16404,6 +16405,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     SendQuestUpdate(questId);
 
+    sScriptMgr->OnQuestStatusChange(this, quest, oldStatus, questStatusData.Status);
     sScriptMgr->OnPlayerQuestAdded(this, quest);
 }
 
@@ -16553,6 +16555,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     SetCanDelayTeleport(true);
 
     uint32 quest_id = quest->GetQuestId();
+    QuestStatus oldStatus = GetQuestStatus(quest_id);
 
     for (auto const& questObjective : quest->GetObjectives())
     {
@@ -16788,6 +16791,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
 
+    sScriptMgr->OnQuestStatusChange(this, quest, oldStatus, QUEST_STATUS_REWARDED);
     sScriptMgr->OnPlayerQuestRewarded(this, quest);
 
     SetSaveTimer(1);
@@ -17284,10 +17288,13 @@ bool Player::CanShareQuest(uint32 quest_id) const
 
 void Player::SetQuestStatus(uint32 quest_id, QuestStatus status, bool update /*= true*/)
 {
-    if (sObjectMgr->GetQuestTemplate(quest_id))
+    if (Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id))
     {
+        QuestStatus oldStatus = m_QuestStatus[quest_id].Status;
         m_QuestStatus[quest_id].Status = status;
         m_QuestStatusSave[quest_id] = true;
+
+        sScriptMgr->OnQuestStatusChange(this, quest, oldStatus, status);
     }
 
     PhaseUpdateData phaseUpdateData;
