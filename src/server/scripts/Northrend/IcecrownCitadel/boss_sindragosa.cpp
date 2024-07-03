@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1472,8 +1472,7 @@ class spell_sindragosa_ice_tomb_trap : public SpellScriptLoader
                 if (!unit || !caster)
                     return;
 
-                Position pos;
-                unit->GetPosition(&pos);
+                Position pos = unit->GetPosition();
 
                 if (TempSummon* summon = caster->SummonCreature(NPC_ICE_TOMB, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
                 {
@@ -1830,8 +1829,8 @@ class FrostBombTargetSelector
             if (object->ToUnit()->HasAura(SPELL_ICE_TOMB_DAMAGE))
                 return true;
 
-            float oldOrientation = _caster->m_orientation;
-            _caster->m_orientation = _caster->GetAngle(object);
+            float oldOrientation = _caster->GetOrientation();
+            _caster->SetOrientation(_caster->GetAngle(object));
 
             float distToTarget = _caster->GetExactDist2dSq(object);
 
@@ -1840,7 +1839,7 @@ class FrostBombTargetSelector
                 if ((*itr)->IsAlive() && distToTarget > _caster->GetExactDist2dSq(*itr) && _caster->HasInArc(0.0f, *itr, 2.0f))
                     result = true;
 
-            _caster->m_orientation = oldOrientation;
+            _caster->SetOrientation(oldOrientation);
 
             return result;
         }
@@ -1889,8 +1888,10 @@ class spell_sindragosa_tail_smash : public SpellScriptLoader
 
             void TargetSelect(SpellDestination& dest)
             {
-                if (Unit* caster = GetCaster())
-                    caster->GetNearPosition(dest._position, 40.0f, M_PI);
+                if (Unit* caster = GetCaster()){
+                    Position pos = caster->GetNearPosition(40.0f, M_PI);
+                    dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+                }
             }
 
             void Register() override

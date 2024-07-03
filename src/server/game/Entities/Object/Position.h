@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -27,7 +27,10 @@ class WorldObject;
 
 struct TC_GAME_API Position
 {
-    Position(float x = 0, float y = 0, float z = 0, float o = 0)
+    Position()
+        : m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f) { }
+
+    Position(float x, float y, float z = 0.0f, float o = 0.0f)
         : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)) { }
 
     struct PositionXYZStreamer
@@ -46,9 +49,9 @@ struct TC_GAME_API Position
     float m_positionY;
     float m_positionZ;
 // Better to limit access to m_orientation field, but this will be hard to achieve with many scripts using array initialization for this structure
-//private:
+private:
     float m_orientation;
-//public:
+public:
 
     bool operator==(Position const &a);
 
@@ -65,6 +68,7 @@ struct TC_GAME_API Position
     
     void RelocateOffset(Position const &offset);
     void RelocateOffset(float angle, float distance, float offsetZ = 0.0f);
+
     void SetOrientation(float orientation) { m_orientation = NormalizeOrientation(orientation); }
 
     float GetPositionX() const { return m_positionX; }
@@ -78,15 +82,9 @@ struct TC_GAME_API Position
         { x = m_positionX; y = m_positionY; z = m_positionZ; }
     void GetPosition(float &x, float &y, float &z, float &o) const
         { x = m_positionX; y = m_positionY; z = m_positionZ; o = m_orientation; }
-    Position GetPosition() const
-    {
-        return *this;
-    }
-    void GetPosition(Position* pos) const
-    {
-        if (pos)
-            pos->Relocate(m_positionX, m_positionY, m_positionZ, m_orientation);
-    }
+
+    Position GetPosition() const { return *this; }
+
 
     Position::PositionXYZStreamer PositionXYZStream()
     {
@@ -165,20 +163,8 @@ struct TC_GAME_API Position
     bool HasInLine(WorldObject const* target, float width) const;
     std::string ToString() const;
 
-    // modulos a radian orientation to the range of 0..2PI
-    static float NormalizeOrientation(float o)
-    {
-        // fmod only supports positive numbers. Thus we have
-        // to emulate negative numbers
-        if (o < 0)
-        {
-            float mod = o *-1;
-            mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
-            mod = -mod + 2.0f * static_cast<float>(M_PI);
-            return mod;
-        }
-        return fmod(o, 2.0f * static_cast<float>(M_PI));
-    }
+    // constrain arbitrary radian orientation to interval [0,2*PI)
+    static float NormalizeOrientation(float o);
 
     // (-PI, PI)
     static float NormalizePitch(float o)
@@ -204,8 +190,20 @@ class WorldLocation : public Position
             : m_mapId(_mapid) { Relocate(_x, _y, _z, _o); }
         WorldLocation(const WorldLocation &loc) { WorldRelocate(loc); }
 
-        void WorldRelocate(const WorldLocation &loc)
-            { m_mapId = loc.GetMapId(); Relocate(loc); }
+        WorldLocation(uint32 mapId, Position const& position)
+            : Position(position), m_mapId(mapId) { }
+
+        void WorldRelocate(WorldLocation const& loc) { m_mapId = loc.GetMapId(); Relocate(loc); }
+        void WorldRelocate(WorldLocation const* loc) { m_mapId = loc->GetMapId(); Relocate(loc); }
+        void WorldRelocate(uint32 mapId, Position const& pos) { m_mapId = mapId; Relocate(pos); }
+        void WorldRelocate(uint32 mapId = MAPID_INVALID, float x = 0.f, float y = 0.f, float z = 0.f, float o = 0.f)
+        {
+            m_mapId = mapId;
+            Relocate(x, y, z, o);
+        }
+
+        WorldLocation GetWorldLocation() const { return *this; }
+
         uint32 GetMapId() const { return m_mapId; }
 
         uint32 m_mapId;
