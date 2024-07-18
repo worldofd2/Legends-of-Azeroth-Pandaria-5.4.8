@@ -66,7 +66,7 @@ public:
                 case 0:
                     spawnCreatureID = 17681;
                     if (Player* player = killer->ToPlayer())
-                        player->KilledMonsterCredit(spawnCreatureID, 0);
+                        player->KilledMonsterCredit(spawnCreatureID, ObjectGuid::Empty);
                     break;
                 case 1:
                 case 2:

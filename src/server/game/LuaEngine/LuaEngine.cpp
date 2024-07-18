@@ -136,27 +136,22 @@ void StartEluna(bool restart)
     {
         //! Iterate over every supported source type (creature and gameobject)
         //! Not entirely sure how this will affect units in non-loaded grids.
+        sMapMgr->DoForAllMaps([](Map* map)
         {
-            //HashMapHolder<Creature>::ReadGuard g(HashMapHolder<Creature>::GetLock());
-            HashMapHolder<Creature>::MapType& m = HashMapHolder<Creature>::GetContainer();
-            for (HashMapHolder<Creature>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
+            for (auto itr : map->GetCreatureBySpawnIdStore())
             {
-                if (itr->second->IsInWorld()) // must check?
-                     if(sEluna->CreatureEventBindings->GetBindMap(itr->second->GetEntry())) // update all AI or just Eluna?
-                        itr->second->AIM_Initialize();
+                if (itr.second->IsInWorld())
+                    if(sEluna->CreatureEventBindings->GetBindMap(itr.second->GetEntry())) // update all AI or just Eluna?
+                        itr.second->AIM_Initialize();
             }
-        }
 
-        {
-            //HashMapHolder<GameObject>::ReadGuard g(HashMapHolder<GameObject>::GetLock());
-            HashMapHolder<GameObject>::MapType& m = HashMapHolder<GameObject>::GetContainer();
-            for (HashMapHolder<GameObject>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
+            for (auto itr : map->GetGameObjectBySpawnIdStore())
             {
-                if (itr->second->IsInWorld()) // must check?
-                     if(sEluna->GameObjectEventBindings->GetBindMap(itr->second->GetEntry())) // update all AI or just Eluna?
-                        itr->second->AIM_Initialize();
+                if (itr.second->IsInWorld())
+                    if(sEluna->GameObjectEventBindings->GetBindMap(itr.second->GetEntry())) // update all AI or just Eluna?
+                        itr.second->AIM_Initialize();
             }
-        }
+        });
     }
     
     

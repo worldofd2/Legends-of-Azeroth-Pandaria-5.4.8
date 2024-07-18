@@ -230,14 +230,14 @@ enum AchievementWorldStates
 
 
 // Set values in reset of mob_empyreal_focus
-uint64 empyrealFocus[6] =
+ObjectGuid empyrealFocus[6] =
 {
-    0, // South-West
-    0, // North-West
-    0, // South
-    0, // North
-    0, // South-East
-    0  // North-East
+    ObjectGuid::Empty, // South-West
+    ObjectGuid::Empty, // North-West
+    ObjectGuid::Empty, // South
+    ObjectGuid::Empty, // North
+    ObjectGuid::Empty, // South-East
+    ObjectGuid::Empty  // North-East
 };
 // Elegon - 60410
 class boss_elegon : public CreatureScript
@@ -347,7 +347,7 @@ class boss_elegon : public CreatureScript
                 BossAI::EnterEvadeMode();
                 if (instance)
                 {
-                    if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetData64(GO_ENERGY_PLATFORM)))
+                    if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetGuidData(GO_ENERGY_PLATFORM)))
                         energyPlatform->SetGoState(GO_STATE_READY);
 
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_THE_TITANS);
@@ -591,10 +591,10 @@ class boss_elegon : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_TOUCH_OF_THE_TITANS);
                 Talk(TALK_DEATH);
 
-                if (Creature* infiniteEnergy = instance->instance->GetCreature(instance->GetData64(NPC_INFINITE_ENERGY)))
+                if (Creature* infiniteEnergy = instance->instance->GetCreature(instance->GetGuidData(NPC_INFINITE_ENERGY)))
                     infiniteEnergy->AI()->DoAction(ACTION_INFINITE_LOOT);
 
-                if (GameObject* door = instance->instance->GetGameObject(instance->GetData64(GO_ELEGON_DOOR_ENTRANCE)))
+                if (GameObject* door = instance->instance->GetGameObject(instance->GetGuidData(GO_ELEGON_DOOR_ENTRANCE)))
                     if (door->GetGoState() == GO_STATE_READY)
                         door->SetGoState(GO_STATE_ACTIVE);
             }
@@ -740,7 +740,7 @@ class boss_elegon : public CreatureScript
 
                                 if (instance)
                                 {
-                                    if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetData64(GO_ENERGY_PLATFORM)))
+                                    if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetGuidData(GO_ENERGY_PLATFORM)))
                                         energyPlatform->SetGoState(GO_STATE_ACTIVE);
 
                                     std::list<GameObject*> titanCircles1;
@@ -792,7 +792,7 @@ class boss_elegon : public CreatureScript
 
                                 if (instance)
                                 {
-                                    if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetData64(GO_ENERGY_PLATFORM)))
+                                    if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetGuidData(GO_ENERGY_PLATFORM)))
                                         energyPlatform->SetGoState(GO_STATE_READY);
 
                                     std::list<GameObject*> titanCircles1;
@@ -917,7 +917,7 @@ class npc_empyreal_focus : public CreatureScript
             EventMap events;
             bool activationDone;
             InstanceScript* instance;
-            uint64 targetfocusGUID;
+            ObjectGuid targetfocusGUID;
             uint16 CheckTimer;
             bool active;
 
@@ -954,7 +954,7 @@ class npc_empyreal_focus : public CreatureScript
                         me->CastSpell(me, SPELL_FOCUS_ACTIVATION_VISUAL, true);
 
                         if (instance && !activationDone)
-                            if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                            if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                                 elegon->AI()->DoAction(ACTION_DESPAWN_ENERGY_CHARGES);
 
                             activationDone = true;
@@ -1007,7 +1007,7 @@ class npc_empyreal_focus : public CreatureScript
 
                     if (instance)
                     {
-                        if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                        if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                         {
                             me->CastSpell(elegon, SPELL_OVERLOADED_MISSILE, false);
                             elegon->AI()->DoAction(ACTION_EMPYREAL_FOCUS_KILLED);
@@ -1090,7 +1090,7 @@ class npc_empyreal_focus : public CreatureScript
                             }
                         }        
 
-                        if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                        if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                         {
                             if (Creature* empyrealfocus = instance->instance->GetCreature(empyrealFocus[0]))
                             {
@@ -1408,7 +1408,7 @@ class npc_energy_charge : public CreatureScript
                 {
                     case POINT_EMPYEREAN_FOCUS:
                     {
-                        if (Unit* focus = ObjectAccessor::FindUnit(me->GetUInt64Value(UNIT_FIELD_TARGET)))
+                        if (Unit* focus = ObjectAccessor::GetUnit(*me, me->GetGuidValue(UNIT_FIELD_TARGET)))
                         {
                             Position pos = focus->GetPosition();
 
@@ -1427,7 +1427,7 @@ class npc_energy_charge : public CreatureScript
                 {
                     case ACTION_ENERGIZE_EMPYREAL_FOCUS:
                     {
-                        if (Unit* focus = ObjectAccessor::FindUnit(me->GetUInt64Value(UNIT_FIELD_TARGET)))
+                        if (Unit* focus = ObjectAccessor::GetUnit(*me, me->GetGuidValue(UNIT_FIELD_TARGET)))
                             if (focus->GetAI())
                                 focus->GetAI()->DoAction(ACTION_ACTIVATE_EMPYREAL_FOCUS);
 
@@ -1537,7 +1537,7 @@ class npc_infinite_energy : public CreatureScript
                     {
                         if (instance)
                         {
-                            if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetData64(GO_ENERGY_PLATFORM)))
+                            if (GameObject* energyPlatform = instance->instance->GetGameObject(instance->GetGuidData(GO_ENERGY_PLATFORM)))
                                 energyPlatform->SetGoState(GO_STATE_READY);
 
                             std::list<GameObject*> titanCircles1;
@@ -1572,7 +1572,7 @@ class npc_infinite_energy : public CreatureScript
                     {
                         if (instance)
                         {
-                            if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                            if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                             {
                                 elegon->RestoreDisplayId();
                                 elegon->AI()->Talk(TALK_INTRO);
@@ -1626,7 +1626,7 @@ class npc_infinite_energy : public CreatureScript
                     {
                         if (instance)
                         {
-                            if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                            if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                             {
                                 elegon->OverrideInhabitType(INHABIT_GROUND);
                                 elegon->UpdateMovementFlags();
@@ -1639,7 +1639,7 @@ class npc_infinite_energy : public CreatureScript
                     case EVENT_BOSS_INTRO_2:
                     {
                         if (instance)
-                            if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                            if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                                 elegon->AI()->Talk(TALK_INTRO_2);
                             break;
                     }
@@ -1668,10 +1668,10 @@ class go_celestial_control_console : public GameObjectScript
                 if (!instance->CheckRequiredBosses(DATA_ELEGON, player) && !player->IsGameMaster())
                     return false;
 
-                if (Creature* infiniteEnergy = instance->instance->GetCreature(instance->GetData64(NPC_INFINITE_ENERGY)))
+                if (Creature* infiniteEnergy = instance->instance->GetCreature(instance->GetGuidData(NPC_INFINITE_ENERGY)))
                     infiniteEnergy->AI()->DoAction(ACTION_INFINITE_GO_DOWN);
 
-                if (GameObject* titanDisk = instance->instance->GetGameObject(instance->GetData64(GO_ENERGY_TITAN_DISK)))
+                if (GameObject* titanDisk = instance->instance->GetGameObject(instance->GetGuidData(GO_ENERGY_TITAN_DISK)))
                     titanDisk->SetGoState(GO_STATE_READY);
 
                 go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_NOT_SELECTABLE);
@@ -2217,7 +2217,7 @@ public:
                 else
                 {
                     InstanceScript* instance = GetCaster()->GetInstanceScript();
-                    if (Creature* elegon = instance->instance->GetCreature(instance->GetData64(NPC_ELEGON)))
+                    if (Creature* elegon = instance->instance->GetCreature(instance->GetGuidData(NPC_ELEGON)))
                         if (elegon->GetExactDist2d(GetCaster()) < 42.7f)
                         {
                             if (target->HasAura(117878))

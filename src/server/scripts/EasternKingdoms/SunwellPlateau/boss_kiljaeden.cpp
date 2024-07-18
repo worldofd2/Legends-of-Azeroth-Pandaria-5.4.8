@@ -264,13 +264,13 @@ class boss_kalecgos_kj : public CreatureScript
                 switch (index)
                 {
                     case 0:
-                        return instance->instance->GetGameObject(instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_1));
+                        return instance->instance->GetGameObject(instance->GetGuidData(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_1));
                     case 1:
-                        return instance->instance->GetGameObject(instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_2));
+                        return instance->instance->GetGameObject(instance->GetGuidData(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_2));
                     case 2:
-                        return instance->instance->GetGameObject(instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_3));
+                        return instance->instance->GetGameObject(instance->GetGuidData(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_3));
                     case 3:
-                        return instance->instance->GetGameObject(instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_4));
+                        return instance->instance->GetGameObject(instance->GetGuidData(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_4));
                 }
 
                 return nullptr;
@@ -381,7 +381,7 @@ class npc_kiljaeden_controller : public CreatureScript
                 phase = PHASE_DECEIVERS;
 
                 if (instance)
-                    if (Creature* kalecKJ = Unit::GetCreature((*me), instance->GetData64(DATA_KALECGOS_KJ)))
+                    if (Creature* kalecKJ = Unit::GetCreature((*me), instance->GetGuidData(DATA_KALECGOS_KJ)))
                         CAST_AI(boss_kalecgos_kj::boss_kalecgos_kjAI, kalecKJ->AI())->ResetOrbs();
                 deceiverDeathCount = 0;
                 summonedDeceivers = false;
@@ -526,7 +526,7 @@ class boss_kiljaeden : public CreatureScript
 
                 if (instance)
                 {
-                    if (Creature* pKalec = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_KJ)))
+                    if (Creature* pKalec = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_KJ)))
                         pKalec->RemoveDynObject(SPELL_RING_OF_BLUE_FLAMES);
                 }
                 ChangeTimers(false, 0);
@@ -576,10 +576,10 @@ class boss_kiljaeden : public CreatureScript
                 {
                     instance->SetData(DATA_KILJAEDEN_EVENT, DONE);
 
-                    if (Creature* control = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+                    if (Creature* control = Unit::GetCreature(*me, instance->GetGuidData(DATA_KILJAEDEN_CONTROLLER)))
                         control->m_Events.Schedule(30000, [control]() { control->CastSpell(control, SPELL_SUNWELL_IGNITION, true); });
 
-                    if (Creature* kalecKJ = Unit::GetCreature((*me), instance->GetData64(DATA_KALECGOS_KJ)))
+                    if (Creature* kalecKJ = Unit::GetCreature((*me), instance->GetGuidData(DATA_KALECGOS_KJ)))
                         CAST_AI(boss_kalecgos_kj::boss_kalecgos_kjAI, kalecKJ->AI())->ResetOrbs();
                 }
             }
@@ -598,7 +598,7 @@ class boss_kiljaeden : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(DATA_KILJAEDEN_EVENT, NOT_STARTED);
-                    if (Creature* control = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+                    if (Creature* control = Unit::GetCreature(*me, instance->GetGuidData(DATA_KILJAEDEN_CONTROLLER)))
                         CAST_AI(npc_kiljaeden_controller::npc_kiljaeden_controllerAI, control->AI())->Reset();
                 }
             }
@@ -692,10 +692,10 @@ class boss_kiljaeden : public CreatureScript
                                 {
                                     SpeechTimer = 0;
                                     if (instance)
-                                        if (Creature* speechCreature = Unit::GetCreature(*me, instance->GetData64(Speeches[speechCount].creature)))
+                                        if (Creature* speechCreature = Unit::GetCreature(*me, instance->GetGuidData(Speeches[speechCount].creature)))
                                             Talk(Speeches[speechCount].textid, speechCreature);
                                     if (speechCount == 12)
-                                        if (Creature* pAnveena =  Unit::GetCreature(*me, instance->GetData64(DATA_ANVEENA)))
+                                        if (Creature* pAnveena =  Unit::GetCreature(*me, instance->GetGuidData(DATA_ANVEENA)))
                                             pAnveena->CastSpell(me, SPELL_SACRIFICE_OF_ANVEENA, false);
                                             //   ChangeTimers(true, 10000); // Kil should do an emote while screaming without attacking for 10 seconds
                                     if (speechCount == speechPhaseEnd)
@@ -797,7 +797,7 @@ class boss_kiljaeden : public CreatureScript
                                 break;
                             case TIMER_ORBS_EMPOWER: //phase 3
                                 if (instance)
-                                    if (Creature* pKalec = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_KJ)))
+                                    if (Creature* pKalec = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_KJ)))
                                      {
                                         switch (phase)
                                         {
@@ -940,7 +940,7 @@ class npc_hand_of_the_deceiver : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
-                    //if (Creature* сontrol = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+                    //if (Creature* сontrol = Unit::GetCreature(*me, instance->GetGuidData(DATA_KILJAEDEN_CONTROLLER)))
                     //    сontrol->AddThreat(who, 1.0f);
                 }
                 me->InterruptNonMeleeSpells(true);
@@ -951,7 +951,7 @@ class npc_hand_of_the_deceiver : public CreatureScript
                 if (!instance)
                     return;
 
-                if (Creature* control = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+                if (Creature* control = Unit::GetCreature(*me, instance->GetGuidData(DATA_KILJAEDEN_CONTROLLER)))
                     ++(CAST_AI(npc_kiljaeden_controller::npc_kiljaeden_controllerAI, control->AI())->deceiverDeathCount);
             }
 
@@ -1269,7 +1269,7 @@ class npc_sinster_reflection : public CreatureScript
                 {
                     if (instance->GetData(DATA_KILJAEDEN_EVENT) != IN_PROGRESS)
                         me->DespawnOrUnsummon(1);
-                    else if (Creature* kiljaeden = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN)))
+                    else if (Creature* kiljaeden = Unit::GetCreature(*me, instance->GetGuidData(DATA_KILJAEDEN)))
                         kiljaeden->AI()->JustSummoned(me);
                 }
 
@@ -1520,7 +1520,7 @@ class spell_power_of_the_blue_flight : public SpellScriptLoader
 
                 GameObject* orb = nullptr;
                 for (uint8 i = 0; i < 4 && !orb; ++i)
-                    if (GameObject* temp = ObjectAccessor::GetGameObject(*target, instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_1 + i)))
+                    if (GameObject* temp = ObjectAccessor::GetGameObject(*target, instance->GetGuidData(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_1 + i)))
                         if (target->GetExactDist(temp) <= 20.0f)
                             orb = temp;
 
@@ -1534,7 +1534,7 @@ class spell_power_of_the_blue_flight : public SpellScriptLoader
                 target->CastSpell(target, SPELL_SUMMON_BLUE_DRAKE, true);
                 target->CastSpell(target, SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT, true);
 
-                if (Creature* kalecgos = ObjectAccessor::GetCreature(*target, instance->GetData64(DATA_KALECGOS_KJ)))
+                if (Creature* kalecgos = ObjectAccessor::GetCreature(*target, instance->GetGuidData(DATA_KALECGOS_KJ)))
                     CAST_AI(boss_kalecgos_kj::boss_kalecgos_kjAI, kalecgos->AI())->SetRingOfBlueFlames();
             }
 

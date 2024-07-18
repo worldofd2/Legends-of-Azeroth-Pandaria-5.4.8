@@ -113,7 +113,7 @@ public:
 
             if (instance)
             {
-                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ICHORON_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetGuidData(DATA_ICHORON_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -391,7 +391,7 @@ class npc_ichor_globule : public CreatureScript
                 {
                     DoCast(me, SPELL_WATER_GLOBULE_AURA, true);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NOT_SELECTABLE);
-                    if (Creature* ichoron = Unit::GetCreature(*me, instance->GetData64(DATA_ICHORON)))
+                    if (Creature* ichoron = Unit::GetCreature(*me, instance->GetGuidData(DATA_ICHORON)))
                         me->GetMotionMaster()->MoveFollow(ichoron, 0.01f, 0);
                 }
             }
@@ -407,7 +407,7 @@ class npc_ichor_globule : public CreatureScript
                 {
                     if (instance)
                     {
-                        if (Creature* pIchoron = Unit::GetCreature(*me, instance->GetData64(DATA_ICHORON)))
+                        if (Creature* pIchoron = Unit::GetCreature(*me, instance->GetGuidData(DATA_ICHORON)))
                         {
                             if (me->IsWithinDist(pIchoron, 2.0f , false))
                             {
@@ -429,7 +429,7 @@ class npc_ichor_globule : public CreatureScript
             void JustDied(Unit* /*killer*/) override
             {
                 DoCast(me, SPELL_SPLASH);
-                if (Creature* pIchoron = Unit::GetCreature(*me, instance->GetData64(DATA_ICHORON)))
+                if (Creature* pIchoron = Unit::GetCreature(*me, instance->GetGuidData(DATA_ICHORON)))
                     if (pIchoron->AI())
                         pIchoron->AI()->DoAction(ACTION_WATER_ELEMENT_KILLED);
             }

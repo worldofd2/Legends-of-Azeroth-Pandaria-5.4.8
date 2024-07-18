@@ -274,12 +274,12 @@ class boss_magmaw : public CreatureScript
                     {
                         /*case EVENT_HEAD_START:
                             SetGrounded(true, 0);
-                            if (Creature* pMagmawhead = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW_HEAD)))
+                            if (Creature* pMagmawhead = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW_HEAD)))
                                 pMagmawhead->AI()->DoAction(ACTION_HEAD_START);
                             events.ScheduleEvent(EVENT_HEAD_END, 20000);
                             break;
                         case EVENT_HEAD_END:
-                            if (Creature* pMagmawhead = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW_HEAD)))
+                            if (Creature* pMagmawhead = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW_HEAD)))
                                 pMagmawhead->AI()->DoAction(ACTION_HEAD_END);
                             SetGrounded(false, 0);
                             events.ScheduleEvent(EVENT_MELEE_CHECK, 6000);
@@ -430,7 +430,7 @@ class npc_magmaw_head : public CreatureScript
                     case ACTION_HEAD_START:
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW)))
+                        if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW)))
                         {
                             me->SetMaxHealth(pMagmaw->GetMaxHealth());
                             me->SetHealth(pMagmaw->GetHealth());
@@ -449,7 +449,7 @@ class npc_magmaw_head : public CreatureScript
 
             void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
-                if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW)))
+                if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW)))
                 {
                     if (me->GetHealth() > damage && pMagmaw->GetHealth() > damage)
                         pMagmaw->SetHealth(pMagmaw->GetHealth() - damage);
@@ -547,7 +547,7 @@ class npc_pillar_of_flame : public CreatureScript
 
             void JustSummoned(Creature* summon) override
             {
-                if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW)))
+                if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW)))
                     if (pMagmaw->IsInCombat())
                         summon->SetInCombatWithZone();
             }

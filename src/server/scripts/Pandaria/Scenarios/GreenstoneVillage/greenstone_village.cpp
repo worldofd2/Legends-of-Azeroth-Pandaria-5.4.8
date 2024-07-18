@@ -625,7 +625,7 @@ class npc_greenstone_village_brewmaster_tzu : public CreatureScript
                         // Select any monstrosity
                         uint32 m_uiMonstrosity = urand(0, 1) ? NPC_BEAST_OF_JADE : NPC_JADE_DESTROYER;
 
-                        if (Creature* monstrosity = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(m_uiMonstrosity) : 0))
+                        if (Creature* monstrosity = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(m_uiMonstrosity) : ObjectGuid::Empty))
                         {
                             monstrosity->SetVisible(true);
                             monstrosity->SetFaction(16);
@@ -1203,25 +1203,25 @@ class AreaTrigger_at_greenstone_village : public AreaTriggerScript
                 switch (trigger->ID)
                 {
                     case AT_INTRO:
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_COWARDLY_ZUE));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_COWARDLY_ZUE));
                         break;
                     case AT_BEFORE_SHUNG:
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_PORTLY_SHUNG));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_PORTLY_SHUNG));
                         break;
                     case AT_BEFORE_LIUPO:
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_WOODCARVER_LIUPO));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_WOODCARVER_LIUPO));
                         break;
                     case AT_BEFORE_LIN:
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_MAYOR_LIN));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_MAYOR_LIN));
                         break;
                     case AT_BEFORE_MEILA:
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_MEILA));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_MEILA));
                         break;
                     case AT_BEFORE_SWAN:
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_GRACEFUL_SWAN));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_GRACEFUL_SWAN));
                         break;
                     case AT_BEFORE_RINJI: 
-                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_SCRIBE_RINJI));
+                        m_owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_SCRIBE_RINJI));
                         break;
                 }
 
@@ -1247,7 +1247,7 @@ class AreaTrigger_at_behind_tzu : public AreaTriggerScript
                 {
                     player->CastSpell(player->GetVehicleBase(), SPELL_KEG_DELIVERY_CREDIT, false);
 
-                    Creature* owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_BREWMASTER_TZU));
+                    Creature* owner = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_BREWMASTER_TZU));
 
                     if (owner && owner->AI())
                         owner->AI()->DoAction(ACTION_SPECIAL_1);

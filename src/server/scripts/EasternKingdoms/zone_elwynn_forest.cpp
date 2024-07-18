@@ -680,7 +680,7 @@ class npc_varian_wrynn_alliance_way_quest : public CreatureScript
         {
             npc_varian_wrynn_alliance_way_questAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay;
 
             void IsSummonedBy(Unit* summoner) override
@@ -889,7 +889,7 @@ class npc_ayisa_jojo_alliance_way_quest : public CreatureScript
         {
             npc_ayisa_jojo_alliance_way_questAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay;
             uint8 point;
             bool follow;
@@ -1181,7 +1181,7 @@ struct npc_hogger : public ScriptedAI
 
 private:
     EventMap events;
-    uint64 trigger_meat_guid;
+    ObjectGuid trigger_meat_guid;
     uint8 phase = 0;
 };
 

@@ -78,7 +78,7 @@ class boss_armsmaster_harlan : public CreatureScript
             boss_armsmaster_harlanAI(Creature* creature) : BossAI(creature, BOSS_ARMSMASTER_HARLAN) { }
 
             bool bers;
-            uint64 targetGuid;
+            ObjectGuid targetGuid;
             uint32 wp, m_bSeats;
 
             void Reset() override
@@ -89,7 +89,7 @@ class boss_armsmaster_harlan : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
 
                 bers       = false;
-                targetGuid = 0;
+                targetGuid = ObjectGuid::Empty;
                 wp         = 0;
                 m_bSeats   = 1;
             }
@@ -392,7 +392,7 @@ class spell_harlan_light_blades_eff : public SpellScript
                 // Delay last hit
                 target->m_Events.Schedule(200, [=]()
                 {
-                    if (Creature* harlan = ObjectAccessor::GetCreature(*target, target->GetInstanceScript() ? target->GetInstanceScript()->GetData64(BOSS_ARMSMASTER_HARLAN) : 0))
+                    if (Creature* harlan = ObjectAccessor::GetCreature(*target, target->GetInstanceScript() ? target->GetInstanceScript()->GetGuidData(BOSS_ARMSMASTER_HARLAN) : ObjectGuid::Empty))
                         harlan->CastSpell(target, SPELL_LIGHT_BLADES, true);
                 });
             }

@@ -19,7 +19,7 @@
 #include "deadmines.h"
 #include "Vehicle.h"
 
-// todo: реализовать прыжки хеликса, сделать получше бомбы
+// todo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 
 enum ScriptTexts
 {
@@ -180,7 +180,7 @@ class boss_helix_gearbreaker : public CreatureScript
 
                 Talk(SAY_DEATH);
 
-                if (Creature* Oaf = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_OAF)))
+                if (Creature* Oaf = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_OAF)))
                     me->Kill(Oaf);
             }
 
@@ -478,7 +478,7 @@ class npc_sticky_bomb : public CreatureScript
                 events.ScheduleEvent(EVENT_ARMING_YELLOW, 1000);
             }
 
-            uint64 GetTarget()
+            ObjectGuid GetTarget()
             {
                 ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
 
@@ -487,7 +487,7 @@ class npc_sticky_bomb : public CreatureScript
                         if (target->GetTypeId() == TYPEID_PLAYER && me->GetExactDist2dSq(target) < 4 && !target->GetVehicle())
                             return target->GetGUID();
 
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             void UpdateAI(uint32 diff) override

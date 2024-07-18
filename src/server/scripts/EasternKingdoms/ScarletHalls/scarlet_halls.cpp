@@ -418,7 +418,7 @@ class npc_commander_lindon : public CreatureScript
             {
                 if (instance)
                     if (GameObject* Idoor = GetClosestGameObjectWithEntry(me, GO_COMANDER_LINDON_EXIT, 150.0f))
-                        instance->HandleGameObject(0, reset, Idoor);
+                        instance->HandleGameObject(ObjectGuid::Empty, reset, Idoor);
             }
 
             void JustDied(Unit* /*killer*/) override 
@@ -826,7 +826,7 @@ class npc_scarlet_cannoneer : public CreatureScript
 
             EventMap events;
             bool triggered;
-            uint64 CannonGuid;
+            ObjectGuid CannonGuid;
 
             void IsSummonedBy(Unit* summoner) override 
             {
@@ -1501,7 +1501,7 @@ class AreaTrigger_at_commander_lindon : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) override
         {
-            if (Creature* lindon = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetData64(DATA_COMANDER_LINDON) : 0))
+            if (Creature* lindon = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetGuidData(DATA_COMANDER_LINDON) : ObjectGuid::Empty))
                 lindon->AI()->DoAction(ACTION_GROUND_EXPLOSION);
 
             if (player->HasAura(SPELL_HEROIC_DEFENSE) && player->GetPositionX() > 950.0f)

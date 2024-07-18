@@ -229,7 +229,7 @@ class npc_setesh_chaos_portal : public CreatureScript
 
             void SeteshSummon(SeteshSummonTypes type)
             {
-                if (Creature* pSetesh = instance->instance->GetCreature(instance->GetData64(DATA_SETESH)))
+                if (Creature* pSetesh = instance->instance->GetCreature(instance->GetGuidData(DATA_SETESH)))
                 {    
                     switch (type)
                     {

@@ -124,7 +124,7 @@ class boss_commander_durand : public CreatureScript
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 
                     // Quest Ender 
-                    if (Creature* HoodedCrusader = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_HOODED_CRUSADER_OUTRO)))
+                    if (Creature* HoodedCrusader = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_HOODED_CRUSADER_OUTRO)))
                     {
                         HoodedCrusader->SetVisible(true);
                         HoodedCrusader->GetMotionMaster()->MovePoint(0, Whitemane_intro);
@@ -138,7 +138,7 @@ class boss_commander_durand : public CreatureScript
                 {
 
                     //On first death, fake death and open door, as well as initiate whitemane if exist
-                    if (Creature* Whitemane = Unit::GetCreature(*me, instance->GetData64(BOSS_WHITEMANE)))
+                    if (Creature* Whitemane = Unit::GetCreature(*me, instance->GetGuidData(BOSS_WHITEMANE)))
                     {
                         damage = 0;
                         Whitemane->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -347,7 +347,7 @@ class boss_high_inqusitior_whitemane : public CreatureScript
                     DoCast(me, SPELL_POWER_WORD_SHIELD);
                     InRessurection = true;
 
-                    if (Unit* Durand = ObjectAccessor::GetUnit(*me, instance->GetData64(BOSS_DURAND)))
+                    if (Unit* Durand = ObjectAccessor::GetUnit(*me, instance->GetGuidData(BOSS_DURAND)))
                         me->GetMotionMaster()->MovePoint(1, Durand->GetPositionX() + frand(-1.5f, 1.5f), Durand->GetPositionY() + frand(-0.8f, 0.8f), Durand->GetPositionZ(), Durand->GetOrientation());
 
                     // sometimes it stuck, and she doesn`t appear to durand near (stuck on half of path if distance too long, in result MovementInForm not called)
@@ -356,7 +356,7 @@ class boss_high_inqusitior_whitemane : public CreatureScript
                     {
                         Talk(WHITEMANE_TALK_RESSURETION);
 
-                        if (Unit* Durand = Unit::GetCreature(*me, instance->GetData64(BOSS_DURAND)))
+                        if (Unit* Durand = Unit::GetCreature(*me, instance->GetGuidData(BOSS_DURAND)))
                         {
                             me->SetFacingTo(me->GetAngle(Durand));
                             DoCast(Durand, SPELL_REVIVE);
@@ -450,7 +450,7 @@ class boss_high_inqusitior_whitemane : public CreatureScript
                     else
                     {
                         BossAI::EnterEvadeMode();
-                        if (Unit* Whitemane = Unit::GetCreature(*me, instance->GetData64(BOSS_WHITEMANE)))
+                        if (Unit* Whitemane = Unit::GetCreature(*me, instance->GetGuidData(BOSS_WHITEMANE)))
                             Whitemane->GetAI()->DoAction(ACTION_DURAND);
                     }
                 }
@@ -506,7 +506,7 @@ class boss_high_inqusitior_whitemane : public CreatureScript
                                     me->CastSpell(me, SPELL_HEAL, false);
                                     break;
                                 case 2:
-                                    if (Unit* Durand = Unit::GetCreature(*me, instance->GetData64(BOSS_DURAND)))
+                                    if (Unit* Durand = Unit::GetCreature(*me, instance->GetGuidData(BOSS_DURAND)))
                                         me->CastSpell(Durand, SPELL_HEAL, false);
                                     break;
                                 default:

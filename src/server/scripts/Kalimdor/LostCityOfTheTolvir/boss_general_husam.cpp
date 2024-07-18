@@ -406,7 +406,7 @@ class npc_shockwave_stalker : public CreatureScript
             }
 
             InstanceScript* instance;
-            std::list<uint64> lSummonedGUID;
+            std::list<ObjectGuid> lSummonedGUID;
             Position pos;
             uint32 uiCheckTimer;
             bool CanCheck;
@@ -417,10 +417,10 @@ class npc_shockwave_stalker : public CreatureScript
                 summon->SetInCombatWithZone();
                 summon->AddAura(SPELL_SHOCKWAVE_STALKER_VISUAL, summon);
 
-                if (Creature* husam = Unit::GetCreature(*me, instance->GetData64(DATA_GENERAL_HUSAM)))
+                if (Creature* husam = Unit::GetCreature(*me, instance->GetGuidData(DATA_GENERAL_HUSAM)))
                     husam->AI()->JustSummoned(summon);
 
-                if (uint64 uiGUID = summon->GetGUID())
+                if (ObjectGuid uiGUID = summon->GetGUID())
                     lSummonedGUID.push_back(uiGUID);
             }
 
@@ -435,7 +435,7 @@ class npc_shockwave_stalker : public CreatureScript
                     if (lSummonedGUID.empty())
                         return;
 
-                    for (std::list<uint64>::const_iterator itr = lSummonedGUID.begin(); itr != lSummonedGUID.end(); ++itr)
+                    for (std::list<ObjectGuid>::const_iterator itr = lSummonedGUID.begin(); itr != lSummonedGUID.end(); ++itr)
                         if (Creature* shockwave = Unit::GetCreature(*me, (*itr)))
                         {
                             shockwave->CastSpell(shockwave, SPELL_SHOCKWAVE_DAMAGE, true);

@@ -561,7 +561,7 @@ class npc_feral_defender : public CreatureScript
             InstanceScript* instance;
             EventMap events;
             bool firstPounce;
-            std::set<uint64> rushTargets;
+            std::set<ObjectGuid> rushTargets;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

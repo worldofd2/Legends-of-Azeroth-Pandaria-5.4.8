@@ -2791,7 +2791,7 @@ class spell_warl_soul_swap_aura : public AuraScript
     PrepareAuraScript(spell_warl_soul_swap_aura);
 
     std::vector<AuraData> auras;
-    uint64 targetGuid = 0;
+    uint64 targetGuid = ObjectGuid::Empty;
 
     void CopyDots(AuraEffect const*, AuraEffectHandleModes)
     {

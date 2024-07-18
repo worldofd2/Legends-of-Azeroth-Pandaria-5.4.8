@@ -206,7 +206,7 @@ class npc_apothecary_hummel : public CreatureScript
 
                 instance->SetData(DATA_CROWN, NOT_STARTED);
 
-                if (Creature* baxter = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_BAXTER)))
+                if (Creature* baxter = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_BAXTER)))
                 {
                     if (baxter->IsAlive())
                         baxter->AI()->EnterEvadeMode();
@@ -214,7 +214,7 @@ class npc_apothecary_hummel : public CreatureScript
                         baxter->Respawn();
                 }
 
-                if (Creature* frye = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_FRYE)))
+                if (Creature* frye = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_FRYE)))
                 {
                     if (frye->IsAlive())
                         frye->AI()->EnterEvadeMode();
@@ -229,9 +229,9 @@ class npc_apothecary_hummel : public CreatureScript
                 {
                     case START_INTRO:
                     {
-                        if (Creature* baxter = ObjectAccessor::GetCreature(*me, instance? instance->GetData64(DATA_BAXTER) : 0))
+                        if (Creature* baxter = ObjectAccessor::GetCreature(*me, instance? instance->GetGuidData(DATA_BAXTER) : ObjectGuid::Empty))
                             baxter->AI()->DoAction(START_INTRO);
-                        if (Creature* frye = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_FRYE) : 0))
+                        if (Creature* frye = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_FRYE) : ObjectGuid::Empty))
                             frye->AI()->DoAction(START_INTRO);
 
                         _phase = PHASE_INTRO;
@@ -415,7 +415,7 @@ class npc_apothecary_baxter : public CreatureScript
                 _chainReactionTimer = urand (10000, 25000);
                 _phase = PHASE_NORMAL;
 
-                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_HUMMEL) : 0))
+                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_HUMMEL) : ObjectGuid::Empty))
                 {
                     if (hummel->IsAlive())
                         hummel->AI()->EnterEvadeMode();
@@ -435,7 +435,7 @@ class npc_apothecary_baxter : public CreatureScript
                     }
                     case START_FIGHT:
                     {
-                        if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_HUMMEL) : 0))
+                        if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_HUMMEL) : ObjectGuid::Empty))
                             hummel->AI()->Talk(SAY_CALL_BAXTER);
 
                         _phase = PHASE_NORMAL;
@@ -497,7 +497,7 @@ class npc_apothecary_baxter : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_HUMMEL) : 0))
+                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_HUMMEL) : ObjectGuid::Empty))
                     hummel->AI()->DoAction(APOTHECARY_DIED);
             }
 
@@ -537,7 +537,7 @@ class npc_apothecary_frye : public CreatureScript
                 _targetSwitchTimer = urand(1000, 2000);
                 _phase = PHASE_NORMAL;
 
-                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_HUMMEL) : 0))
+                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_HUMMEL) : ObjectGuid::Empty))
                 {
                     if (hummel->IsAlive())
                         hummel->AI()->EnterEvadeMode();
@@ -557,7 +557,7 @@ class npc_apothecary_frye : public CreatureScript
                     }
                     case START_FIGHT:
                     {
-                        if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_HUMMEL) : 0))
+                        if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_HUMMEL) : ObjectGuid::Empty))
                             hummel->AI()->Talk(SAY_CALL_FRYE);
 
                         _phase = PHASE_NORMAL;
@@ -646,7 +646,7 @@ class npc_apothecary_frye : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_HUMMEL) : 0))
+                if (Creature* hummel = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_HUMMEL) : ObjectGuid::Empty))
                     hummel->AI()->DoAction(APOTHECARY_DIED);
             }
 
@@ -1226,7 +1226,7 @@ class npc_high_warlord_cromush : public CreatureScript
                             Talk(TALK_SPECIAL_5);
 
                             if (instance)
-                                if (Creature* m_follower = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_FOLLOWER)))
+                                if (Creature* m_follower = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_FOLLOWER)))
                                     m_follower->AI()->DoAction(ACTION_SPECIAL_3);
                             break;
                     }
@@ -1576,7 +1576,7 @@ class AreaTrigger_at_shadowfang_keep_godfrey : public AreaTriggerScript
             if (InstanceScript* instance = player->GetInstanceScript())
             {
                 // we can`t select this creature with findnearest cuz dist between this creature > then dist between creature at walden
-                if (Creature* m_follower = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_FOLLOWER)))
+                if (Creature* m_follower = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_FOLLOWER)))
                     m_follower->AI()->DoAction(ACTION_PREGODFREY);
             }
 

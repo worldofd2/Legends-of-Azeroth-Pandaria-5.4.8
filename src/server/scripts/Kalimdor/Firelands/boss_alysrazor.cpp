@@ -326,7 +326,7 @@ class boss_alysrazor : public CreatureScript
 
             void IsSummonedBy(Unit* summoner) override
             {
-                if (GameObject* volcano = ObjectAccessor::GetGameObject(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_VOLCANO) : 0))
+                if (GameObject* volcano = ObjectAccessor::GetGameObject(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_VOLCANO) : ObjectGuid::Empty))
                 {
                     volcano->SetDestructibleState(GO_DESTRUCTIBLE_DESTROYED);
                     volcano->setActive(true);

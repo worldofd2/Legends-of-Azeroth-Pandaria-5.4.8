@@ -116,7 +116,7 @@ void Warden::Update()
     }
 }
 
-void Warden::SendPacket(Opcodes opcode, void const *data, size_t dataSize)
+void Warden::SendPacket(OpcodeServer opcode, void const *data, size_t dataSize)
 {
     WorldPacket packet(opcode, sizeof(uint32) + dataSize);
     packet << uint32(dataSize);

@@ -323,7 +323,7 @@ class boss_feng : public CreatureScript
                     availablePos[i - 1] = i;
 
                 // Desactivate old statue
-                if (GameObject* oldStatue = instance->instance->GetGameObject(instance->GetData64(statueEntryInOrder[actualPhase - 1])))
+                if (GameObject* oldStatue = instance->instance->GetGameObject(instance->GetGuidData(statueEntryInOrder[actualPhase - 1])))
                 {
                     oldStatue->SetLootState(GO_READY);
                     oldStatue->UseDoorOrButton();
@@ -349,10 +349,10 @@ class boss_feng : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WILDFIRE_INFUSION_AURA);
                 instance->DoRemoveBloodLustDebuffSpellOnPlayers();
 
-                if (GameObject* inversionGob = instance->instance->GetGameObject(instance->GetData64(GO_INVERSION)))
+                if (GameObject* inversionGob = instance->instance->GetGameObject(instance->GetGuidData(GO_INVERSION)))
                     inversionGob->Delete();
 
-                if (GameObject* cancelGob = instance->instance->GetGameObject(instance->GetData64(GO_CANCEL)))
+                if (GameObject* cancelGob = instance->instance->GetGameObject(instance->GetGuidData(GO_CANCEL)))
                     cancelGob->Delete();
 
                 if (Creature* Cho = GetClosestCreatureWithEntry(me, NPC_LOREWALKER_CHO, 200.0f, true))
@@ -390,10 +390,10 @@ class boss_feng : public CreatureScript
                     instance->SetBossState(DATA_FENG, FAIL);
                     summons.DespawnAll();
 
-                    if (GameObject* inversionGob = instance->instance->GetGameObject(instance->GetData64(GO_INVERSION)))
+                    if (GameObject* inversionGob = instance->instance->GetGameObject(instance->GetGuidData(GO_INVERSION)))
                         inversionGob->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
 
-                    if (GameObject* cancelGob = instance->instance->GetGameObject(instance->GetData64(GO_CANCEL)))
+                    if (GameObject* cancelGob = instance->instance->GetGameObject(instance->GetGuidData(GO_CANCEL)))
                         cancelGob->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
 
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WILDFIRE_INFUSION_AURA);
@@ -450,14 +450,14 @@ class boss_feng : public CreatureScript
                 if (actualPhase != PHASE_NONE)
                 {
                     // Desactivate old statue and enable the new one
-                    if (GameObject* oldStatue = instance->instance->GetGameObject(instance->GetData64(statueEntryInOrder[actualPhase - 1])))
+                    if (GameObject* oldStatue = instance->instance->GetGameObject(instance->GetGuidData(statueEntryInOrder[actualPhase - 1])))
                     {
                         oldStatue->SetLootState(GO_READY);
                         oldStatue->UseDoorOrButton();
                     }
                 }
 
-                if (GameObject* newStatue = instance->instance->GetGameObject(instance->GetData64(statueEntryInOrder[newPhase - 1])))
+                if (GameObject* newStatue = instance->instance->GetGameObject(instance->GetGuidData(statueEntryInOrder[newPhase - 1])))
                 {
                     newStatue->SetLootState(GO_READY);
                     newStatue->UseDoorOrButton();
@@ -878,7 +878,7 @@ class npc_siphon_shield : public CreatureScript
                 // Set invisible
                 me->SetDisplayId(DISPLAYID_SHIELD);
 
-                if (Creature* feng = instance->instance->GetCreature(instance->GetData64(NPC_FENG)))
+                if (Creature* feng = instance->instance->GetCreature(instance->GetGuidData(NPC_FENG)))
                     me->SetFacingToObject(feng);
 
                 events.Reset();
@@ -894,7 +894,7 @@ class npc_siphon_shield : public CreatureScript
             void DoAction(int32 actionId) override
             {
                 if (actionId == ACTION_SOUL_HOME)
-                    if (Creature* feng = instance->instance->GetCreature(instance->GetData64(NPC_FENG)))
+                    if (Creature* feng = instance->instance->GetCreature(instance->GetGuidData(NPC_FENG)))
                         feng->SetHealth(feng->GetHealth() + (uint32)feng->GetMaxHealth()*(Is25ManRaid() ? 0.05f : 0.1f)); // 10% at 10 mode for each soul and 5% at 25 
             }
 
@@ -967,7 +967,7 @@ class npc_siphon_shield : public CreatureScript
                         }
                         case EVENT_SHIELD_BACK:
                         {
-                            if (Creature* feng = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_FENG)))
+                            if (Creature* feng = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_FENG)))
                             {
                                 // Making Feng moves his arm
                                 feng->CastSpell(me, SPELL_BACK_TO_FENG, true);
@@ -1028,7 +1028,7 @@ class npc_soul_fragment : public CreatureScript
                 // Display with display of player
                 me->SetDisplayId(bound->GetDisplayId());
 
-                if (Creature* shield = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_SIPHONING_SHIELD)))
+                if (Creature* shield = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_SIPHONING_SHIELD)))
                     shield->CastSpell(me, SPELL_SOUL_FRAGMENT, false);
 
                 events.ScheduleEvent(EVENT_SOUL_WALK, 2000);
@@ -1050,7 +1050,7 @@ class npc_soul_fragment : public CreatureScript
             void JustDied(Unit* /*killer*/) override
             {
                 // We send negative guid to tell shield the soul has been killed
-                if (Creature* shield = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_SIPHONING_SHIELD)))
+                if (Creature* shield = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_SIPHONING_SHIELD)))
                     shield->AI()->DoAction(ACTION_SOUL_KILLED);
             }
 
@@ -1075,7 +1075,7 @@ class npc_soul_fragment : public CreatureScript
                 if (!CanMove)
                     return;
 
-                if (Creature* shield = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_SIPHONING_SHIELD)))
+                if (Creature* shield = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_SIPHONING_SHIELD)))
                 {
                     if (shield->IsWithinDist(me, 1.5f, false))
                     {
@@ -1158,7 +1158,7 @@ class npc_wild_spark : public CreatureScript
                 {
                     if (InstanceScript* instance = me->GetInstanceScript())
                     {
-                        if (Creature* feng = instance->instance->GetCreature(instance->GetData64(NPC_FENG)))
+                        if (Creature* feng = instance->instance->GetCreature(instance->GetGuidData(NPC_FENG)))
                         {
                             feng->AI()->DoAction(ACTION_SPARK);
                             me->DespawnOrUnsummon(500);

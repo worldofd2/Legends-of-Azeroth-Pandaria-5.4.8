@@ -28,6 +28,7 @@
 #include "Corpse.h"
 #include "QuestDef.h"
 #include "ItemPrototype.h"
+#include "IteratorPair.h"
 #include "NPCHandler.h"
 #include "Mail.h"
 #include "Map.h"
@@ -458,12 +459,10 @@ struct BroadcastText
 typedef std::unordered_map<uint32, BroadcastText> BroadcastTextContainer;
 
 typedef std::set<uint32> CellGuidSet;
-typedef std::map<uint32/*player guid*/, uint32/*instance*/> CellCorpseSet;
 struct CellObjectGuids
 {
     CellGuidSet creatures;
     CellGuidSet gameobjects;
-    CellCorpseSet corpses;
 };
 typedef std::unordered_map<uint32/*cell_id*/, CellObjectGuids> CellObjectGuidsMap;
 typedef std::unordered_map<uint32/*(mapid, spawnMode) pair*/, CellObjectGuidsMap> MapObjectGuids;
@@ -482,7 +481,7 @@ struct TrinityStringLocale
     std::vector<std::string> Content;
 };
 
-typedef std::map<uint64, uint64> LinkedRespawnContainer;
+typedef std::map<ObjectGuid, ObjectGuid> LinkedRespawnContainer;
 typedef std::unordered_map<uint32, CreatureData> CreatureDataContainer;
 typedef std::unordered_map<uint32, GameObjectData> GameObjectDataContainer;
 typedef std::map<TempSummonGroupKey, std::vector<TempSummonData> > TempSummonDataContainer;
@@ -507,11 +506,6 @@ struct GossipMenuItemsLocale
 typedef std::unordered_map<std::pair<uint32, uint32>, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef std::unordered_map<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
 typedef std::unordered_map<uint32, QuestObjectivesLocale> QuestObjectivesLocaleContainer;
-
-typedef std::multimap<uint32, uint32> QuestRelations; // unit/go -> quest
-typedef std::multimap<uint32, uint32> QuestRelationsReverse; // quest -> unit/go
-typedef std::pair<QuestRelations::const_iterator, QuestRelations::const_iterator> QuestRelationBounds;
-typedef std::pair<QuestRelationsReverse::const_iterator, QuestRelationsReverse::const_iterator> QuestRelationReverseBounds;
 
 struct PetLevelInfo
 {
@@ -644,6 +638,60 @@ struct QuestPOIData
 };
 
 typedef std::unordered_map<uint32, QuestPOIData> QuestPOIContainer;
+
+typedef std::multimap<uint32, uint32> QuestRelations; // unit/go -> quest
+typedef std::multimap<uint32, uint32> QuestRelationsReverse; // quest -> unit/go
+
+struct QuestRelationResult
+{
+public:
+    struct Iterator
+    {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = QuestRelations::mapped_type;
+        using pointer = value_type const*;
+        using reference = value_type const&;
+        using difference_type = void;
+
+        Iterator(QuestRelations::const_iterator it, QuestRelations::const_iterator end, bool onlyActive)
+                : _it(it), _end(end), _onlyActive(onlyActive)
+        {
+            skip();
+        }
+
+        bool operator==(Iterator const& other) const { return _it == other._it; }
+        bool operator!=(Iterator const& other) const { return _it != other._it; }
+
+        Iterator& operator++() { ++_it; skip(); return *this; }
+        Iterator operator++(int) { Iterator t = *this; ++*this; return t; }
+
+        value_type operator*() const { return _it->second; }
+
+    private:
+        void skip() { if (_onlyActive) _skip(); }
+        void _skip();
+
+        QuestRelations::const_iterator _it, _end;
+        bool _onlyActive;
+    };
+
+    QuestRelationResult() : _onlyActive(false) {}
+    QuestRelationResult(std::pair<QuestRelations::const_iterator, QuestRelations::const_iterator> range, bool onlyActive)
+            : _begin(range.first), _end(range.second), _onlyActive(onlyActive) {}
+
+    Iterator begin() const { return { _begin, _end, _onlyActive }; }
+    Iterator end() const { return { _end, _end, _onlyActive }; }
+
+    bool HasQuest(uint32 questId) const;
+
+private:
+    QuestRelations::const_iterator _begin, _end;
+    bool _onlyActive;
+};
+
+typedef std::multimap<int32, uint32> ExclusiveQuestGroups; // exclusiveGroupId -> quest
+typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
 
 struct PlayerCreateInfoItem
 {
@@ -865,11 +913,11 @@ struct RealmCompletedChallenge
     {
         ChallengeMember()
         {
-            Guid = 0;
+            Guid = ObjectGuid::Empty;
             SpecId = 0;
         }
 
-        uint64 Guid;
+        ObjectGuid Guid;
         uint32 SpecId;
     };
 
@@ -1030,7 +1078,7 @@ class ObjectMgr
 
         void GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, PlayerLevelInfo* info) const;
 
-        uint64 GetPlayerGUIDByName(std::string const& name) const;
+        ObjectGuid GetPlayerGUIDByName(std::string const& name) const;
 
         /**
         * Retrieves the player name by guid.
@@ -1045,9 +1093,9 @@ class ObjectMgr
         *
         * @return true if player was found, false otherwise
         */
-        bool GetPlayerNameByGUID(uint64 guid, std::string& name) const;
-        uint32 GetPlayerTeamByGUID(uint64 guid) const;
-        uint32 GetPlayerAccountIdByGUID(uint64 guid) const;
+        bool GetPlayerNameByGUID(ObjectGuid guid, std::string& name) const;
+        uint32 GetPlayerTeamByGUID(ObjectGuid guid) const;
+        uint32 GetPlayerAccountIdByGUID(ObjectGuid guid) const;
         uint32 GetPlayerAccountIdByPlayerName(std::string const& name) const;
 
         uint32 GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team);
@@ -1165,44 +1213,18 @@ class ObjectMgr
         void LoadCreatureQuestStarters();
         void LoadCreatureQuestEnders();
 
-        QuestRelations* GetGOQuestRelationMap()
-        {
-            return &_goQuestRelations;
-        }
+        QuestRelations* GetGOQuestRelationMapHACK() { return &_goQuestRelations; }
+        QuestRelationResult GetGOQuestRelations(uint32 entry) const { return GetQuestRelationsFrom(_goQuestRelations, entry, true); }
+        QuestRelationResult GetGOQuestInvolvedRelations(uint32 entry) const { return GetQuestRelationsFrom(_goQuestInvolvedRelations, entry, false); }
+        Trinity::IteratorPair<QuestRelationsReverse::const_iterator> GetGOQuestInvolvedRelationReverseBounds(uint32 questId) const { return _goQuestInvolvedRelationsReverse.equal_range(questId); }
+        QuestRelations* GetCreatureQuestRelationMapHACK() { return &_creatureQuestRelations; }
+        QuestRelationResult GetCreatureQuestRelations(uint32 entry) const { return GetQuestRelationsFrom(_creatureQuestRelations, entry, true); }
+        QuestRelationResult GetCreatureQuestInvolvedRelations(uint32 entry) const { return GetQuestRelationsFrom(_creatureQuestInvolvedRelations, entry, false); }
+        Trinity::IteratorPair<QuestRelationsReverse::const_iterator> GetCreatureQuestInvolvedRelationReverseBounds(uint32 questId) const { return _creatureQuestInvolvedRelationsReverse.equal_range(questId); }
 
-        QuestRelationBounds GetGOQuestRelationBounds(uint32 go_entry)
+        ExclusiveQuestGroupsBounds GetExclusiveQuestGroupBounds(int32 exclusiveGroupId) const
         {
-            return _goQuestRelations.equal_range(go_entry);
-        }
-
-        QuestRelationBounds GetGOQuestInvolvedRelationBounds(uint32 go_entry)
-        {
-            return _goQuestInvolvedRelations.equal_range(go_entry);
-        }
-
-        QuestRelationReverseBounds GetGOQuestInvolvedRelationReverseBounds(uint32 questId)
-        {
-            return _goQuestInvolvedRelationsReverse.equal_range(questId);
-        }
-
-        QuestRelations* GetCreatureQuestRelationMap()
-        {
-            return &_creatureQuestRelations;
-        }
-
-        QuestRelationBounds GetCreatureQuestRelationBounds(uint32 creature_entry)
-        {
-            return _creatureQuestRelations.equal_range(creature_entry);
-        }
-
-        QuestRelationBounds GetCreatureQuestInvolvedRelationBounds(uint32 creature_entry)
-        {
-            return _creatureQuestInvolvedRelations.equal_range(creature_entry);
-        }
-
-        QuestRelationReverseBounds GetCreatureQuestInvolvedRelationReverseBounds(uint32 questId)
-        {
-            return _creatureQuestInvolvedRelationsReverse.equal_range(questId);
+            return _exclusiveQuestGroups.equal_range(exclusiveGroupId);
         }
 
         void LoadEventScripts();
@@ -1272,7 +1294,6 @@ class ObjectMgr
         void LoadExplorationBaseXP();
         void LoadPetNames();
         void LoadPetNumber();
-        void LoadCorpses();
         void LoadFishingBaseSkillLevel();
 
         void LoadReputationRewardRate();
@@ -1404,19 +1425,21 @@ class ObjectMgr
         CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
 
         void SetHighestGuids();
-        uint32 GenerateLowGuid(HighGuid guidhigh);
+
+        template<HighGuid type>
+        inline ObjectGuidGeneratorBase& GetGenerator()
+        {
+            static_assert(ObjectGuidTraits<type>::Global, "Only global guid can be generated in ObjectMgr context");
+            return GetGuidSequenceGenerator<type>();
+        }
+
         uint32 GenerateAuctionID();
         uint64 GenerateEquipmentSetGuid();
         uint32 GenerateMailID();
-        uint32 GenerateMuteID();
         uint32 GeneratePetNumber();
-        uint64 GenerateVoidStorageItemId();
+        uint32 GenerateMuteID();
         uint64 GenerateBattlePetId();
-
-        typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
-        typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
-
-        ExclusiveQuestGroups _exclusiveQuestGroups;
+        uint64 GenerateVoidStorageItemId();
 
         MailLevelReward const* GetMailLevelReward(uint32 level, uint32 raceMask)
         {
@@ -1475,10 +1498,10 @@ class ObjectMgr
         }
         CreatureData& NewOrExistCreatureData(uint32 guid) { return _creatureDataStore[guid]; }
         void DeleteCreatureData(uint32 guid);
-        uint64 GetLinkedRespawnGuid(uint64 guid) const
+        ObjectGuid GetLinkedRespawnGuid(ObjectGuid guid) const
         {
             LinkedRespawnContainer::const_iterator itr = _linkedRespawnStore.find(guid);
-            if (itr == _linkedRespawnStore.end()) return 0;
+            if (itr == _linkedRespawnStore.end()) return ObjectGuid::Empty;
             return itr->second;
         }
         CreatureLocale const* GetCreatureLocale(uint32 entry) const
@@ -1579,9 +1602,6 @@ class ObjectMgr
         const char *GetTrinityStringForDBCLocale(int32 entry) const { return GetTrinityString(entry, DBCLocaleIndex); }
         LocaleConstant GetDBCLocaleIndex() const { return DBCLocaleIndex; }
         void SetDBCLocaleIndex(LocaleConstant locale) { DBCLocaleIndex = locale; }
-
-        void AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance);
-        void DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid);
 
         // grid objects
         void AddCreatureToGrid(uint32 guid, CreatureData const* data);
@@ -1766,11 +1786,6 @@ class ObjectMgr
         bool CanTransmogrifyItemWithItem(ItemTemplate const* transmogrified, ItemTemplate const* transmogrifier);
         bool HasStats(ItemTemplate const* proto) const;
 
-        uint32 GenerateNewVignetteGUID()
-        {
-            return _HiVignetteGuid++;
-        }
-
         void LoadCreatureScaling();
         CreatureScalingInfo const* GetCreatureScalingData(uint32 entry, uint32 groupSize) const
         {
@@ -1800,19 +1815,21 @@ class ObjectMgr
         std::atomic<uint64> _voidItemId{ 1 };
         std::atomic<uint32> _battlePetId{ 1 };
 
+        ObjectGuid::LowType _creatureSpawnId;
+        ObjectGuid::LowType _gameObjectSpawnId;
+
         // first free low guid for selected guid type
-        std::atomic<uint32> _hiCharGuid{ 1 };
-        std::atomic<uint32> _hiCreatureGuid{ 1 };
-        std::atomic<uint32> _hiPetGuid{ 1 };
-        std::atomic<uint32> _hiVehicleGuid{ 1 };
-        std::atomic<uint32> _hiItemGuid{ 1 };
-        std::atomic<uint32> _hiGoGuid{ 1 };
-        std::atomic<uint32> _hiDoGuid{ 1 };
-        std::atomic<uint32> _hiCorpseGuid{ 1 };
-        std::atomic<uint32> _hiAreaTriggerGuid{ 1 };
-        std::atomic<uint32> _hiTransGuid{ 1 };
-        std::atomic<uint32> _hiMoTransGuid{ 1 };
-        std::atomic<uint32> _HiVignetteGuid{ 1 };
+        template<HighGuid high>
+        inline ObjectGuidGeneratorBase& GetGuidSequenceGenerator()
+        {
+            auto itr = _guidGenerators.find(high);
+            if (itr == _guidGenerators.end())
+                itr = _guidGenerators.insert(std::make_pair(high, std::unique_ptr<ObjectGuidGenerator<high>>(new ObjectGuidGenerator<high>()))).first;
+
+            return *itr->second;
+        }
+
+        std::map<HighGuid, std::unique_ptr<ObjectGuidGeneratorBase>> _guidGenerators;
 
         QuestMap _questTemplates;
         QuestObjectivesByIdContainer _questObjectives;
@@ -1848,6 +1865,8 @@ class ObjectMgr
         QuestRelations _creatureQuestRelations;
         QuestRelations _creatureQuestInvolvedRelations;
         QuestRelationsReverse _creatureQuestInvolvedRelationsReverse;
+
+        ExclusiveQuestGroups _exclusiveQuestGroups;
 
         //character reserved names
         typedef std::set<std::wstring> ReservedNamesContainer;
@@ -1888,7 +1907,8 @@ class ObjectMgr
 
     private:
         void LoadScripts(ScriptsType type);
-        void LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reversedMap, std::string const& table, bool starter, bool go);
+        void LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reverseMap, std::string const& table);
+        QuestRelationResult GetQuestRelationsFrom(QuestRelations const& map, uint32 key, bool onlyActive) const { return { map.equal_range(key), onlyActive }; }
         void PlayerCreateInfoAddItemHelper(uint32 race_, uint32 class_, uint32 itemId, int32 count);
 
         MailLevelRewardContainer _mailLevelRewardStore;

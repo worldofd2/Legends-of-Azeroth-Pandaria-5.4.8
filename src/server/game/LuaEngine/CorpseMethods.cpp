@@ -38,10 +38,4 @@ namespace LuaCorpse
         corpse->SaveToDB();
         return 0;
     }
-
-    int DeleteBonesFromWorld(lua_State* L, Corpse* corpse)
-    {
-        corpse->DeleteBonesFromWorld();
-        return 0;
-    }
 };

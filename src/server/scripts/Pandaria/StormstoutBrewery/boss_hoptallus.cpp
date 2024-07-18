@@ -97,9 +97,9 @@ static const Position nibblerWaypints[] =
 static const uint32 hoplings[5] = { 59461, 56631, 59459, 59458,  59460 };
 static const uint32 hoppers[2] = { 56718, 59426 };
 
-void InitPathForHopplings(uint64 hoppGUID)
+void InitPathForHopplings(Creature* me, ObjectGuid hoppGUID)
 {
-    Unit* hoppler = ObjectAccessor::FindUnit(hoppGUID);
+    Unit* hoppler = ObjectAccessor::GetUnit(*me, hoppGUID);
     if (!hoppler)
         return;
 
@@ -144,8 +144,8 @@ class npc_nibbler : public CreatureScript
 
             uint32 waypoint;
             uint32 pandaPoint;
-            std::vector<uint64> pandaGuidsVector;
-            std::vector<uint64>::const_iterator pandaItr;
+            std::vector<ObjectGuid> pandaGuidsVector;
+            std::vector<ObjectGuid>::const_iterator pandaItr;
             EventMap events;
             InstanceScript* instance;
 
@@ -579,7 +579,7 @@ class npc_hammer_bopper : public CreatureScript
                     case EVENT_JUMP:
                         if (instance && (instance->GetBossState(DATA_HOPTALLUS) != SPECIAL || instance->GetBossState(DATA_HOPTALLUS) != IN_PROGRESS))
                         {
-                            InitPathForHopplings(me->GetGUID());
+                            InitPathForHopplings(me, me->GetGUID());
                             events.ScheduleEvent(EVENT_MOVE, me->GetSplineDuration());
                         }
                         break;
@@ -681,7 +681,7 @@ class npc_explosive_hopper : public CreatureScript
                     case EVENT_JUMP:
                         if (instance && (instance->GetBossState(DATA_HOPTALLUS) != SPECIAL || instance->GetBossState(DATA_HOPTALLUS) != IN_PROGRESS))
                         {
-                            InitPathForHopplings(me->GetGUID());
+                            InitPathForHopplings(me, me->GetGUID());
                             cosmeticEvents.ScheduleEvent(EVENT_MOVE, me->GetSplineDuration());
                         }
                         break;
@@ -823,9 +823,9 @@ class npc_carrot_breath_stalker : public CreatureScript
                 me->SetDisableGravity(true);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                if (Creature* hoppy = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HOPTALLUS)))
+                if (Creature* hoppy = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_HOPTALLUS)))
                 {
-                    hoppy->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, me->GetGUID());
+                    hoppy->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, me->GetGUID());
                     hoppy->SetTarget(me->GetGUID());
                 }
             }
@@ -855,9 +855,9 @@ class npc_carrot_breath_stalker : public CreatureScript
 
                             arcPoint++;
 
-                            if (Creature* hoppy = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetData64(DATA_HOPTALLUS)))
+                            if (Creature* hoppy = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetGuidData(DATA_HOPTALLUS)))
                             {
-                                hoppy->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, me->GetGUID());
+                                hoppy->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, me->GetGUID());
                                 hoppy->SetTarget(me->GetGUID());
                                 hoppy->UpdateOrientation(hoppy->GetAngle(me));
                             }
@@ -901,7 +901,7 @@ class npc_sb_hopling : public CreatureScript
 
             void Move()
             {
-                InitPathForHopplings(me->GetGUID());
+                InitPathForHopplings(me, me->GetGUID());
                 events.ScheduleEvent(EVENT_MOVE, me->GetSplineDuration());
             }
 

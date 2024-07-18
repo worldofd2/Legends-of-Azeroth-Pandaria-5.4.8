@@ -266,7 +266,7 @@ class boss_lady_deathwhisper : public CreatureScript
 
         struct boss_lady_deathwhisperAI : public BossAI
         {
-            boss_lady_deathwhisperAI(Creature* creature) : BossAI(creature, DATA_LADY_DEATHWHISPER), _dominateMindCount(RAID_MODE<uint8>(0, 1, 1, 3)), _introDone(false), _darnavanGUID(0) { }
+            boss_lady_deathwhisperAI(Creature* creature) : BossAI(creature, DATA_LADY_DEATHWHISPER), _dominateMindCount(RAID_MODE<uint8>(0, 1, 1, 3)), _introDone(false), _darnavanGUID() { }
 
             void Reset() override
             {
@@ -277,13 +277,13 @@ class boss_lady_deathwhisper : public CreatureScript
                 me->SetPower(POWER_MANA, me->GetMaxPower(POWER_MANA));
                 events.SetPhase(PHASE_ONE);
                 _waveCounter = 0;
-                _nextVengefulShadeTargetGUID = 0;
-                _lastEmpoweredCultistGUID = 0;
-                _lastReanimatedCultistGUID = 0;
+                _nextVengefulShadeTargetGUID = ObjectGuid::Empty;
+                _lastEmpoweredCultistGUID = ObjectGuid::Empty;
+                _lastReanimatedCultistGUID = ObjectGuid::Empty;
                 if (Creature* darnavan = ObjectAccessor::GetCreature(*me, _darnavanGUID))
                 {
                     darnavan->DespawnOrUnsummon();
-                    _darnavanGUID = 0;
+                    _darnavanGUID = ObjectGuid::Empty;
                 }
                 DoCast(me, SPELL_SHADOW_CHANNELING);
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
@@ -397,10 +397,10 @@ class boss_lady_deathwhisper : public CreatureScript
                             {
                                 for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
                                     if (Player* member = itr->GetSource())
-                                        member->KilledMonsterCredit(NPC_DARNAVAN_CREDIT, 0);
+                                        member->KilledMonsterCredit(NPC_DARNAVAN_CREDIT, ObjectGuid::Empty);
                             }
                             else
-                                owner->KilledMonsterCredit(NPC_DARNAVAN_CREDIT, 0);
+                                owner->KilledMonsterCredit(NPC_DARNAVAN_CREDIT, ObjectGuid::Empty);
                         }
                     }
                 }
@@ -461,7 +461,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 {
                     target = ObjectAccessor::GetUnit(*me, _nextVengefulShadeTargetGUID);
                     summon->AddThreat(target, 100000000.0f);
-                    _nextVengefulShadeTargetGUID = 0;
+                    _nextVengefulShadeTargetGUID = ObjectGuid::Empty;
                 }
                 else
                     target = SelectTarget(SELECT_TARGET_RANDOM);
@@ -926,14 +926,14 @@ class boss_lady_deathwhisper : public CreatureScript
 
             private:
                 Unit* _dominateMindTargets[3];
-                uint64 _nextVengefulShadeTargetGUID;
-                uint64 _darnavanGUID;
+                ObjectGuid _nextVengefulShadeTargetGUID;
+                ObjectGuid _darnavanGUID;
                 std::deque<uint64> _reanimationQueue;
                 uint32 _waveCounter;
                 uint8 const _dominateMindCount;
                 bool _introDone;
-                uint64 _lastEmpoweredCultistGUID;
-                uint64 _lastReanimatedCultistGUID;
+                ObjectGuid _lastEmpoweredCultistGUID;
+                ObjectGuid _lastReanimatedCultistGUID;
 
                 bool _useInternalPlayerAI = true;
         };
@@ -1451,7 +1451,7 @@ class at_lady_deathwhisper_entrance : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* ladyDeathwhisper = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_LADY_DEATHWHISPER)))
+                if (Creature* ladyDeathwhisper = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_LADY_DEATHWHISPER)))
                     ladyDeathwhisper->AI()->DoAction(ACTION_START_INTRO);
 
             return true;

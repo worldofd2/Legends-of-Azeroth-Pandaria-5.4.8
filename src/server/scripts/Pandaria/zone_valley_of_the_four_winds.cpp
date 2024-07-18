@@ -600,7 +600,7 @@ class npc_q29982 : public CreatureScript
 
             if (action == GOSSIP_ACTION_INFO_DEF + 1)
             {
-                uint64 playerGuid = player->GetGUID();
+                ObjectGuid playerGuid = player->GetGUID();
                 uint32 delay = 0;
                 switch (creature->GetEntry())
                 {
@@ -673,12 +673,12 @@ class npc_q29982 : public CreatureScript
                         haiyunSum->SetFacingToObject(player);
                         haiyunSum->AI()->Talk(0);
 
-                        uint64 haiyunGuid = haiyun->GetGUID();
-                        uint64 yingGuid = ying->GetGUID();
-                        uint64 huizhongGuid = huizhong->GetGUID();
-                        uint64 yingSumGuid = yingSum->GetGUID();
-                        uint64 haiyunSumGuid = haiyunSum->GetGUID();
-                        uint64 huizhongSumGuid = huizhongSum->GetGUID();
+                        ObjectGuid haiyunGuid = haiyun->GetGUID();
+                        ObjectGuid yingGuid = ying->GetGUID();
+                        ObjectGuid huizhongGuid = huizhong->GetGUID();
+                        ObjectGuid yingSumGuid = yingSum->GetGUID();
+                        ObjectGuid haiyunSumGuid = haiyunSum->GetGUID();
+                        ObjectGuid huizhongSumGuid = huizhongSum->GetGUID();
 
                         haiyunSum->m_Events.Schedule(delay += 3000, [haiyunSum, huizhongSumGuid, yingSumGuid]()
                         {
@@ -985,11 +985,11 @@ struct npc_liang_thunderfoot : public ScriptedAI
 
     void JustSummoned(Creature* summoned) override
     {
-        uint64 guid = playerGUID;
+        ObjectGuid guid = playerGUID;
         uint32 delay = 0;
         summoned->m_Events.Schedule(delay += 1000, [this, summoned, guid]()
         {
-            if (Player* player = sObjectAccessor->GetPlayer(*me, guid))
+            if (Player* player = ObjectAccessor::GetPlayer(*me, guid))
             {
                 summoned->SetOwnerGUID(player->GetGUID());
                 summoned->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, M_PI);
@@ -998,7 +998,7 @@ struct npc_liang_thunderfoot : public ScriptedAI
     }
 
 private:
-    uint64 playerGUID;
+    ObjectGuid playerGUID;
 };
 
 struct npc_francis_the_shepherd_boy : public ScriptedAI
@@ -1820,7 +1820,7 @@ struct npc_vfw_barrel_of_fireworks : public ScriptedAI
     npc_vfw_barrel_of_fireworks(Creature* creature) : ScriptedAI(creature) { }
     
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {
@@ -1886,16 +1886,16 @@ struct npc_vfw_ik_thik_wing_commander : public customCreatureAI
     npc_vfw_ik_thik_wing_commander(Creature* creature) : customCreatureAI(creature), summons(me) { }
 
     SummonList summons;
-    uint64 maskApplyGUID;
+    ObjectGuid maskApplyGUID;
 
     void Reset() override
     {
         events.Reset();
         me->SetReactState(REACT_AGGRESSIVE);
-        maskApplyGUID = 0;
+        maskApplyGUID = ObjectGuid::Empty;
     }
 
-    void SetGUID(uint64 guid, int32 /*type*/) override
+    void SetGUID(ObjectGuid guid, int32 /*type*/) override
     {
         maskApplyGUID = guid;
     }
@@ -2018,8 +2018,8 @@ struct npc_vfw_krungko_fingerlicker : public customCreatureAI
     npc_vfw_krungko_fingerlicker(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
-    uint64 helperGUID;
+    ObjectGuid summonerGUID;
+    ObjectGuid helperGUID;
     bool hasTriggered;
 
     void IsSummonedBy(Unit* summoner) override
@@ -2136,7 +2136,7 @@ struct npc_vfw_unbarreled_pandaren : public customCreatureAI
     npc_vfw_unbarreled_pandaren(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {

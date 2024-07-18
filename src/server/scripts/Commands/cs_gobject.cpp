@@ -149,7 +149,7 @@ public:
         Map* map = player->GetMap();
 
         GameObject* object = new GameObject;
-        uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+        uint32 guidLow = map->GenerateLowGuid<HighGuid::GameObject>();
 
         if (!object->Create(guidLow, objectInfo->entry, map, player->GetPhaseMgr().GetPhaseMaskForSpawn(), x, y, z, o, { }, 0, GO_STATE_READY))
         {
@@ -295,7 +295,7 @@ public:
             mapId =   fields[6].GetUInt16();
             phase =   fields[7].GetUInt32();
             poolId =  sPoolMgr->IsPartOfAPool<GameObject>(guidLow);
-            if (!poolId || sPoolMgr->IsSpawnedObject<GameObject>(guidLow))
+            if (!poolId || sPoolMgr->IsSpawnedObject<GameObject>(handler->GetSession()->GetPlayer()->GetMap()->GetPoolData(), guidLow))
                 found = true;
         } while (result->NextRow() && !found);
 
@@ -313,7 +313,7 @@ public:
             return false;
         }
 
-        GameObject* target = handler->GetSession()->GetPlayer()->GetMap()->GetGameObject(MAKE_NEW_GUID(guidLow, id, HIGHGUID_GAMEOBJECT));
+        GameObject* target = handler->GetSession()->GetPlayer()->GetMap()->GetGameObject(ObjectGuid(HighGuid::GameObject, id, guidLow));
 
         handler->PSendSysMessage(LANG_GAMEOBJECT_DETAIL, guidLow, objectInfo->name.c_str(), guidLow, id, x, y, z, mapId, o, phase);
 
@@ -356,13 +356,13 @@ public:
             return false;
         }
 
-        uint64 ownerGuid = object->GetOwnerGUID();
+        ObjectGuid ownerGuid = object->GetOwnerGUID();
         if (ownerGuid)
         {
             Unit* owner = ObjectAccessor::GetUnit(*handler->GetSession()->GetPlayer(), ownerGuid);
-            if (!owner || !IS_PLAYER_GUID(ownerGuid))
+            if (!owner || !ownerGuid.IsPlayer())
             {
-                handler->PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(ownerGuid), object->GetGUIDLow());
+                handler->PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, ownerGuid.GetCounter(), object->GetGUID().GetCounter());
                 handler->SetSentErrorMessage(true);
                 return false;
             }
@@ -374,7 +374,7 @@ public:
         object->Delete();
         object->DeleteFromDB();
 
-        handler->PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, object->GetGUIDLow());
+        handler->PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, object->GetGUID().GetCounter());
 
         return true;
     }
@@ -422,7 +422,7 @@ public:
         object->SaveToDB();
         object->Refresh();
 
-        handler->PSendSysMessage(LANG_COMMAND_TURNOBJMESSAGE, object->GetGUIDLow(), object->GetGOInfo()->name.c_str(), object->GetGUIDLow(), o);
+        handler->PSendSysMessage(LANG_COMMAND_TURNOBJMESSAGE, object->GetGUID().GetCounter(), object->GetGOInfo()->name.c_str(), object->GetGUID().GetCounter(), o);
 
         return true;
     }
@@ -487,7 +487,7 @@ public:
         object->SaveToDB();
         object->Refresh();
 
-        handler->PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, object->GetGUIDLow(), object->GetGOInfo()->name.c_str(), object->GetGUIDLow());
+        handler->PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, object->GetGUID().GetCounter(), object->GetGOInfo()->name.c_str(), object->GetGUID().GetCounter());
 
         return true;
     }

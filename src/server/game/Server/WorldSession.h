@@ -23,6 +23,7 @@
 #define __WORLDSESSION_H
 
 #include <atomic>
+#include "AllPackets.h"
 #include "Common.h"
 #include "SharedDefines.h"
 #include "AddonMgr.h"
@@ -309,7 +310,7 @@ class TC_GAME_API WorldSession
         uint32 GetCurrentVendor() const { return m_currentVendorEntry; }
         void SetCurrentVendor(uint32 vendorEntry) { m_currentVendorEntry = vendorEntry; }
 
-        uint32 GetGUID() const;
+        ObjectGuid GetGUID() const;
         uint32 GetGuidLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() { return m_Address; }
@@ -353,9 +354,9 @@ class TC_GAME_API WorldSession
 
         void SendRealmNameQueryOpcode(uint32 realmId);
 
-        void SendTrainerList(uint64 guid);
-        void SendTrainerList(uint64 guid, std::string const& strTitle, bool multiple = false, uint32 mTrainer = 0);
-        void SendListInventory(uint64 guid, uint32 vendorEntry = 0);
+        void SendTrainerList(ObjectGuid guid);
+        void SendTrainerList(ObjectGuid guid, std::string const& strTitle, bool multiple = false, uint32 mTrainer = 0);
+        void SendListInventory(ObjectGuid guid, uint32 vendorEntry = 0);
         void SendShowBank(ObjectGuid guid);
         void SendShowMailBox(ObjectGuid guid);
         void SendTabardVendorActivate(ObjectGuid guid);
@@ -364,13 +365,13 @@ class TC_GAME_API WorldSession
 
         void SendAttackStop(Unit const* enemy);
 
-        void SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId = BATTLEGROUND_RB);
+        void SendBattleGroundList(ObjectGuid guid, BattlegroundTypeId bgTypeId = BATTLEGROUND_RB);
 
         void SendTradeStatus(TradeStatus status);
         void SendUpdateTrade(bool trader_data = true);
         void SendCancelTrade();
 
-        void SendPetitionQueryOpcode(uint64 petitionguid);
+        void SendPetitionQueryOpcode(ObjectGuid petitionguid);
 
         void SendPlayerChoice(uint32 choiceId);
 
@@ -379,9 +380,9 @@ class TC_GAME_API WorldSession
 
         // Pet
         void SendPetNameQuery(ObjectGuid guid, uint64 petNumber);
-        void SendPetList(uint64 guid, uint8 first, uint8 last);
+        void SendPetList(ObjectGuid guid, uint8 first, uint8 last);
         void SendStableResult(uint8 guid);
-        bool CheckStableMaster(uint64 guid);
+        bool CheckStableMaster(ObjectGuid guid);
 
         // Account Data
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
@@ -407,16 +408,16 @@ class TC_GAME_API WorldSession
         //auction
         void SendAuctionHello(ObjectGuid guid, Creature* unit);
         void SendAuctionCommandResult(AuctionEntry* auction, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
-        void SendAuctionBidderNotification(uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
+        void SendAuctionBidderNotification(uint32 location, uint32 auctionId, ObjectGuid bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification(AuctionEntry* auction);
         //void SendAuctionRemovedNotification(uint32 auctionId, uint32 itemEntry, int32 randomPropertyId);
 
         //Item Enchantment
-        void SendEnchantmentLog(uint64 target, uint64 caster, uint64 item, uint32 itemId, uint32 enchantId, uint8 slot);
+        void SendEnchantmentLog(ObjectGuid target, ObjectGuid caster, ObjectGuid item, uint32 itemId, uint32 enchantId, uint8 slot);
         void SendItemEnchantTimeUpdate(ObjectGuid Playerguid, ObjectGuid Itemguid, uint32 slot, uint32 Duration);
 
         //Taxi
-        void SendTaxiStatus(uint64 guid);
+        void SendTaxiStatus(ObjectGuid guid);
         void SendTaxiMenu(Creature* unit);
         void SendDoFlight(uint32 mountDisplayId, uint32 path, uint32 pathNode = 0);
         bool SendLearnNewTaxiNode(Creature* unit);
@@ -425,11 +426,11 @@ class TC_GAME_API WorldSession
         // Guild/Arena Team
         void SendArenaTeamCommandResult(uint32 team_action, std::string const& team, std::string const& player, uint32 error_id = 0);
         void SendNotInArenaTeamPacket(uint8 type);
-        void SendPetitionShowList(uint64 guid);
+        void SendPetitionShowList(ObjectGuid guid);
 
         void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data, uint32 mask, ObjectGuid guid, bool full = false);
 
-        void DoLootRelease(uint64 lguid);
+        void DoLootRelease(ObjectGuid lguid);
         void DoLootReleaseAll();
 
         // Account mute time
@@ -482,6 +483,7 @@ class TC_GAME_API WorldSession
         void Handle_NULL(WorldPacket& recvPacket);          // not used
         void Handle_EarlyProccess(WorldPacket& recvPacket); // just mark packets processed in WorldSocket::OnRead
         void Handle_Deprecated(WorldPacket& recvPacket);    // never used anymore by client
+        void LogUnprocessedTail(WorldPacket const* packet);
 
         void HandleCharEnumOpcode(WorldPacket& recvPacket);
         void HandleCharDeleteOpcode(WorldPacket& recvPacket);
@@ -608,7 +610,7 @@ class TC_GAME_API WorldSession
         void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
 
         void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
-        void HandleMoveWorldportAckOpcode();                // for server-side calls
+        void HandleMoveWorldportAck();
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
         void HandleSetActiveMoverOpcode(WorldPacket& recvData);
@@ -813,7 +815,7 @@ class TC_GAME_API WorldSession
         void HandleArcheologyRequestHistory(WorldPacket& recvPacket);
 
         void HandleQuestgiverStatusQueryOpcode(WorldPacket& recvPacket);
-        void HandleQuestgiverStatusMultipleQuery(WorldPacket& recvPacket);
+        void HandleQuestgiverStatusMultipleQuery(WorldPackets::Quest::QuestGiverStatusMultipleQuery& packet);
         void HandleQuestgiverHelloOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverQueryQuestOpcode(WorldPacket& recvPacket);
@@ -882,7 +884,7 @@ class TC_GAME_API WorldSession
         //Pet
         void HandlePetAction(WorldPacket& recvData);
         void HandlePetStopAttack(WorldPacket& recvData);
-        void HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid, uint16 flag, uint64 guid2, float x, float y, float z);
+        void HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spellid, uint16 flag, ObjectGuid guid2, float x, float y, float z);
         void HandlePetNameQuery(WorldPacket& recvData);
         void HandlePetSetAction(WorldPacket& recvData);
         void HandlePetAbandon(WorldPacket& recvData);
@@ -897,7 +899,7 @@ class TC_GAME_API WorldSession
 
         void HandleCharRenameOpcode(WorldPacket& recvData);
         void HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult result, std::string const& newName);
-        void SendRenameResult(uint8 result, ObjectGuid guid = 0, std::string name = "");
+        void SendRenameResult(uint8 result, ObjectGuid guid = ObjectGuid::Empty, std::string name = "");
         void HandleSetPlayerDeclinedNames(WorldPacket& recvData);
         void HandeSetTalentSpecialization(WorldPacket& recvData);
 
@@ -936,11 +938,11 @@ class TC_GAME_API WorldSession
         void HandleInstanceLockResponse(WorldPacket& recvPacket);
 
         // Battlefield
-        void SendBfInvitePlayerToWar(uint64 guid, uint32 zoneId, uint32 time);
-        void SendBfInvitePlayerToQueue(uint64 guid);
-        void SendBfQueueInviteResponse(uint64 guid, uint32 zoneId, bool canQueue = true, bool full = false);
-        void SendBfEntered(uint64 guid);
-        void SendBfLeaveMessage(uint64 guid, BFLeaveReason reason = BF_LEAVE_REASON_EXITED);
+        void SendBfInvitePlayerToWar(ObjectGuid guid, uint32 zoneId, uint32 time);
+        void SendBfInvitePlayerToQueue(ObjectGuid guid);
+        void SendBfQueueInviteResponse(ObjectGuid guid, uint32 zoneId, bool canQueue = true, bool full = false);
+        void SendBfEntered(ObjectGuid guid);
+        void SendBfLeaveMessage(ObjectGuid guid, BFLeaveReason reason = BF_LEAVE_REASON_EXITED);
         void HandleBfQueueInviteResponse(WorldPacket& recvData);
         void HandleBfEntryInviteResponse(WorldPacket& recvData);
         void HandleBfQueueRequest(WorldPacket& recvData);
@@ -962,7 +964,7 @@ class TC_GAME_API WorldSession
         void HandleSetLfgBonusFactionId(WorldPacket& recvData);
 
         void SendLfgUpdateStatus(lfg::LfgUpdateType updateType, lfg::PlayerQueueData const& queueData);
-        void SendLfgRoleChosen(uint64 guid, uint8 roles);
+        void SendLfgRoleChosen(ObjectGuid guid, uint8 roles);
         void SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& pRoleCheck);
         void SendLfgJoinResult(uint32 queueId, lfg::LfgJoinResultData const& joinData);
         void SendLfgQueueStatus(lfg::LfgQueueStatusData const& queueData);
@@ -1221,17 +1223,16 @@ class TC_GAME_API WorldSession
 
         // logging helper
         void LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason);
-        void LogUnprocessedTail(WorldPacket* packet);
 
         // EnumData helpers
-        bool IsLegitCharacterForAccount(uint32 lowGUID)
+        bool IsLegitCharacterForAccount(ObjectGuid guid)
         {
-            return _legitCharacters.find(lowGUID) != _legitCharacters.end();
+            return _legitCharacters.find(guid) != _legitCharacters.end();
         }
 
         // this stores the GUIDs of the characters who can login
         // characters who failed on Player::BuildEnumData shouldn't login
-        std::set<uint32> _legitCharacters;
+        GuidSet _legitCharacters;
 
         uint32 m_GUIDLow;                                   // set loggined or recently logout player (while m_playerRecentlyLogout set)
         Player* _player;

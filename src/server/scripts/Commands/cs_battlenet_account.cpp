@@ -84,7 +84,7 @@ public:
                 {
                     TC_LOG_INFO("entities.player.character", "Battle.net account: %u (IP: %s) Character:[%s] (" UI64FMTD ") created Account %s",
                         handler->GetSession()->GetAccountId(), handler->GetSession()->GetRemoteAddress().c_str(),
-                        handler->GetSession()->GetPlayer()->GetName().c_str(), handler->GetSession()->GetPlayer()->GetGUID(),
+                        handler->GetSession()->GetPlayer()->GetName().c_str(), handler->GetSession()->GetPlayer()->GetGUID().GetRawValue(),
                         accountName);
                 }
                 break;
@@ -331,7 +331,7 @@ public:
                 {
                     TC_LOG_INFO("entities.player.character", "Account: %u (IP: %s) Character:[%s] (" UI64FMTD ") created Account %s (Email: '%s')",
                         handler->GetSession()->GetAccountId(), handler->GetSession()->GetRemoteAddress().c_str(),
-                        handler->GetSession()->GetPlayer()->GetName().c_str(), handler->GetSession()->GetPlayer()->GetGUID(),
+                        handler->GetSession()->GetPlayer()->GetName().c_str(), handler->GetSession()->GetPlayer()->GetGUID().GetRawValue(),
                         accountName.c_str(), bnetAccountName.c_str());
                 }
                 break;

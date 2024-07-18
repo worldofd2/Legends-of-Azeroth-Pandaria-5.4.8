@@ -58,19 +58,19 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     uint32 targetStringLength = 0;
     float elevation = 0.0f;
     float missileSpeed = 0.0f;
-    ObjectGuid itemGuid = 0;
-    ObjectGuid targetGuid = 0;
-    ObjectGuid itemTargetGuid = 0;
-    ObjectGuid destTransportGuid = 0;
-    ObjectGuid srcTransportGuid = 0;
+    ObjectGuid itemGuid = ObjectGuid::Empty;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    ObjectGuid itemTargetGuid = ObjectGuid::Empty;
+    ObjectGuid destTransportGuid = ObjectGuid::Empty;
+    ObjectGuid srcTransportGuid = ObjectGuid::Empty;
     Position srcPos;
     Position destPos;
     std::string targetString;
 
     // Movement data
     MovementInfo movementInfo;
-    ObjectGuid movementTransportGuid = 0;
-    ObjectGuid movementGuid = 0;
+    ObjectGuid movementTransportGuid = ObjectGuid::Empty;
+    ObjectGuid movementGuid = ObjectGuid::Empty;
     bool hasTransport = false;
     bool hasTransportTime2 = false;
     bool hasTransportTime3 = false;
@@ -532,7 +532,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     {
         pUser->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT, item, NULL);
         TC_LOG_ERROR("network", "Possible hacking attempt: Player %s [guid: %u] tried to open item [guid: %u, entry: %u] which is not openable!",
-                pUser->GetName().c_str(), pUser->GetGUIDLow(), item->GetGUIDLow(), proto->ItemId);
+                pUser->GetName().c_str(), pUser->GetGUID().GetCounter(), item->GetGUID().GetCounter(), proto->ItemId);
         return;
     }
 
@@ -545,7 +545,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         if (!lockInfo)
         {
             pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, item, NULL);
-            TC_LOG_ERROR("network", "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", item->GetGUIDLow(), lockId);
+            TC_LOG_ERROR("network", "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", item->GetGUID().GetCounter(), lockId);
             return;
         }
 
@@ -561,7 +561,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     {
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_GIFT_BY_ITEM);
 
-        stmt->setUInt32(0, item->GetGUIDLow());
+        stmt->setUInt32(0, item->GetGUID().GetCounter());
 
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -571,21 +571,21 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
             uint32 entry = fields[0].GetUInt32();
             uint32 flags = fields[1].GetUInt32();
 
-            item->SetUInt64Value(ITEM_FIELD_GIFT_CREATOR, 0);
+            item->SetGuidValue(ITEM_FIELD_GIFT_CREATOR, ObjectGuid::Empty);
             item->SetEntry(entry);
             item->SetUInt32Value(ITEM_FIELD_DYNAMIC_FLAGS, flags);
             item->SetState(ITEM_CHANGED, pUser);
         }
         else
         {
-            TC_LOG_ERROR("network", "Wrapped item %u don't have record in character_gifts table and will deleted", item->GetGUIDLow());
+            TC_LOG_ERROR("network", "Wrapped item %u don't have record in character_gifts table and will deleted", item->GetGUID().GetCounter());
             pUser->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
             return;
         }
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GIFT);
 
-        stmt->setUInt32(0, item->GetGUIDLow());
+        stmt->setUInt32(0, item->GetGUID().GetCounter());
 
         CharacterDatabase.Execute(stmt);
     }
@@ -615,7 +615,7 @@ void WorldSession::HandleGameObjectUseOpcode(WorldPacket& recvData)
     recvData.ReadByteSeq(guid[5]);
     recvData.ReadByteSeq(guid[7]);
 
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", GUID_LOPART(guid));
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", guid.GetCounter());
 
     GetPlayer()->ResetEmoteStateIfNeed();
 
@@ -652,7 +652,7 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
     recvPacket.ReadByteSeq(guid[2]);
     recvPacket.ReadByteSeq(guid[4]);
 
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_GAMEOBJ_REPORT_USE Message [in game guid: %u]", GUID_LOPART(guid));
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_GAMEOBJ_REPORT_USE Message [in game guid: %u]", guid.GetCounter());
 
     // ignore for remote control state
     if (_player->m_mover != _player)
@@ -702,18 +702,18 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     uint32 targetStringLength = 0;
     float elevation = 0.0f;
     float missileSpeed = 0.0f;
-    ObjectGuid targetGuid = 0;
-    ObjectGuid itemTargetGuid = 0;
-    ObjectGuid destTransportGuid = 0;
-    ObjectGuid srcTransportGuid = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    ObjectGuid itemTargetGuid = ObjectGuid::Empty;
+    ObjectGuid destTransportGuid = ObjectGuid::Empty;
+    ObjectGuid srcTransportGuid = ObjectGuid::Empty;
     Position srcPos;
     Position destPos;
     std::string targetString;
 
     // Movement data
     MovementInfo movementInfo;
-    ObjectGuid movementTransportGuid = 0;
-    ObjectGuid movementGuid = 0;
+    ObjectGuid movementTransportGuid = ObjectGuid::Empty;
+    ObjectGuid movementGuid = ObjectGuid::Empty;
     bool hasTransport = false;
     bool hasTransportTime2 = false;
     bool hasTransportTime3 = false;
@@ -1138,7 +1138,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellInfo = actualSpellInfo;
     }
 
-    Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE, 0, false);
+    Spell* spell = new Spell(caster, spellInfo, TRIGGERED_NONE, ObjectGuid::Empty, false);
     spell->m_cast_count = castCount;                       // set count of casts
     spell->m_glyphIndex = glyphIndex;
 
@@ -1242,14 +1242,28 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     }
 
     // maybe should only remove one buff when there are multiple?
-    _player->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
+    _player->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 }
 
 void WorldSession::HandleCancelModSpeedNoControlAuras(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
-    recvPacket.ReadGuidMask(guid, 3, 2, 5, 0, 7, 1, 6, 4);
-    recvPacket.ReadGuidBytes(guid, 6, 7, 3, 5, 0, 4, 1, 2);
+    guid[3] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[0]);
+    recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[2]);
 
     if (!GetPlayer()->HasAuraType(SPELL_AURA_MOD_SPEED_NO_CONTROL))
     {
@@ -1282,8 +1296,22 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
     uint32 spellId = recvPacket.read<uint32>();
-    recvPacket.ReadGuidMask(guid, 0, 3, 1, 4, 6, 2, 7, 5);
-    recvPacket.ReadGuidBytes(guid, 0, 5, 3, 4, 7, 2, 6, 1);
+    guid[0] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+    recvPacket.ReadByteSeq(guid[0]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[1]);
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1296,13 +1324,13 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
 
     if (!pet)
     {
-        TC_LOG_ERROR("network", "HandlePetCancelAura: Attempt to cancel an aura for non-existant pet %u by player '%s'", uint32(GUID_LOPART(guid)), GetPlayer()->GetName().c_str());
+        TC_LOG_ERROR("network", "HandlePetCancelAura: Attempt to cancel an aura for non-existant pet %u by player '%s'", guid.GetCounter(), GetPlayer()->GetName().c_str());
         return;
     }
 
     if (pet != GetPlayer()->GetGuardianPet() && pet != GetPlayer()->GetCharm())
     {
-        TC_LOG_ERROR("network", "HandlePetCancelAura: Pet %u is not a pet of player '%s'", uint32(GUID_LOPART(guid)), GetPlayer()->GetName().c_str());
+        TC_LOG_ERROR("network", "HandlePetCancelAura: Pet %u is not a pet of player '%s'", guid.GetCounter(), GetPlayer()->GetName().c_str());
         return;
     }
 
@@ -1312,7 +1340,7 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    pet->RemoveOwnedAura(spellId, 0, 0, AURA_REMOVE_BY_CANCEL);
+    pet->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 
     pet->AddCreatureSpellCooldown(spellId);
 }
@@ -1464,7 +1492,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     recvData.ReadByteSeq(guid[7]);
 
     // Get unit for which data is needed by client
-    Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)NULL);
+    Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
     if (!unit)
         return;
 
@@ -1472,19 +1500,19 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
         return;
 
     // Get creator of the unit (SPELL_AURA_CLONE_CASTER does not stack)
-    uint64 casterGuid = unit->GetAuraEffectsByType(SPELL_AURA_CLONE_CASTER).front()->GetCasterGUID();
+    ObjectGuid casterGuid = unit->GetAuraEffectsByType(SPELL_AURA_CLONE_CASTER).front()->GetCasterGUID();
     Unit* creator = ObjectAccessor::GetUnit(*GetPlayer(), casterGuid);
     Player* player = creator ? creator->ToPlayer() : nullptr;
 
     // Idk, but without response player will be invisible
-    if (!player && IS_PLAYER_GUID(casterGuid))
+    if (!player && casterGuid.IsPlayer())
         player = unit->ToPlayer();
 
     if (player && player->GetDisplayId() == player->GetNativeDisplayId())
     {
         WorldPacket data(SMSG_MIRROR_IMAGE_COMPONENTED_DATA, 8 + 4 + 8 * 1 + 8 + 11 * 4);
         Guild* guild = player->GetGuild();
-        ObjectGuid guildGuid = guild ? guild->GetGUID() : 0;
+        ObjectGuid guildGuid = guild ? guild->GetGUID() : ObjectGuid::Empty;
 
         data.WriteBit(guid[4]);
         data.WriteBit(guildGuid[3]);
@@ -1597,7 +1625,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 
         SendPacket(&data);
 
-        if (!creator && IS_PLAYER_GUID(casterGuid))
+        if (!creator && casterGuid.IsPlayer())
             TC_LOG_ERROR("spells", "Can't find player caster for SPELL_AURA_CLONE_CASTER");
     }
 }
@@ -1613,8 +1641,22 @@ void WorldSession::HandleMissileTrajectoryCollision(WorldPacket& recvPacket)
     float y = recvPacket.read<float>();
     float x = recvPacket.read<float>();
     uint32 spellId = recvPacket.read<uint32>();;
-    recvPacket.ReadGuidMask(casterGuid, 5, 0, 2, 6, 7, 3, 1, 4);
-    recvPacket.ReadGuidBytes(casterGuid, 1, 5, 3, 2, 7, 0, 6, 4);
+    casterGuid[5] = recvPacket.ReadBit();
+    casterGuid[0] = recvPacket.ReadBit();
+    casterGuid[2] = recvPacket.ReadBit();
+    casterGuid[6] = recvPacket.ReadBit();
+    casterGuid[7] = recvPacket.ReadBit();
+    casterGuid[3] = recvPacket.ReadBit();
+    casterGuid[1] = recvPacket.ReadBit();
+    casterGuid[4] = recvPacket.ReadBit();
+    recvPacket.ReadByteSeq(casterGuid[1]);
+    recvPacket.ReadByteSeq(casterGuid[5]);
+    recvPacket.ReadByteSeq(casterGuid[3]);
+    recvPacket.ReadByteSeq(casterGuid[2]);
+    recvPacket.ReadByteSeq(casterGuid[7]);
+    recvPacket.ReadByteSeq(casterGuid[0]);
+    recvPacket.ReadByteSeq(casterGuid[6]);
+    recvPacket.ReadByteSeq(casterGuid[4]);
 
     Unit* caster = ObjectAccessor::GetUnit(*_player, casterGuid);
     if (!caster)
@@ -1629,14 +1671,26 @@ void WorldSession::HandleMissileTrajectoryCollision(WorldPacket& recvPacket)
     spell->m_targets.ModDst(pos);
 
     WorldPacket data(SMSG_NOTIFY_MISSILE_TRAJECTORY_COLLISION, 20);
-    data.WriteGuidMask(casterGuid, 2, 7, 3, 0, 5, 6, 4, 1);
-    data.WriteGuidBytes(casterGuid, 6, 5, 4);
+    data.WriteBit(casterGuid[2]);
+    data.WriteBit(casterGuid[7]);
+    data.WriteBit(casterGuid[3]);
+    data.WriteBit(casterGuid[0]);
+    data.WriteBit(casterGuid[5]);
+    data.WriteBit(casterGuid[6]);
+    data.WriteBit(casterGuid[4]);
+    data.WriteBit(casterGuid[1]);
+    data.WriteByteSeq(casterGuid[6]);
+    data.WriteByteSeq(casterGuid[5]);
+    data.WriteByteSeq(casterGuid[4]);
     data << float(y);
-    data.WriteGuidBytes(casterGuid, 2, 0, 3, 7);
+    data.WriteByteSeq(casterGuid[2]);
+    data.WriteByteSeq(casterGuid[0]);
+    data.WriteByteSeq(casterGuid[3]);
+    data.WriteByteSeq(casterGuid[7]);
     data << uint8(castCount);
     data << float(x);
     data << float(z);
-    data.WriteGuidBytes(casterGuid, 1);
+    data.WriteByteSeq(casterGuid[1]);
 
     caster->SendMessageToSet(&data, true);
 }

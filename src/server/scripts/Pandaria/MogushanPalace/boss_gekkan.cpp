@@ -70,7 +70,7 @@ class boss_gekkan : public CreatureScript
         {
             boss_gekkan_AI(Creature* creature) : BossAI(creature, DATA_GEKKAN) {}
 
-            std::list<uint64> m_uilGekkanAdds;
+            std::list<ObjectGuid> m_uilGekkanAdds;
             bool m_bYelled, m_FeignDeath;
 
             void InitializeAI() override
@@ -312,7 +312,7 @@ class boss_gekkan : public CreatureScript
             }
 
             private:
-                bool VictimOnBalcony(uint64 vict) // If someone try to taunt us at balcony, not at our battle area
+                bool VictimOnBalcony(ObjectGuid vict) // If someone try to taunt us at balcony, not at our battle area
                 {
                     if (Unit* victim = ObjectAccessor::GetUnit(*me, vict))
                         return victim->GetPositionZ() > -50.0f ? true : false;

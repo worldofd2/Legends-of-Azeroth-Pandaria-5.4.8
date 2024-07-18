@@ -352,8 +352,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         // For spells with Cone targets
         void PrepareChanneledCast(float facing, uint32 spellId = 0, bool triggered = false);
-        void RemoveChanneledCast(uint64 target = 0);
-        void FixateOnTarget(uint64 targetGUID, uint32 timer = 0);
+        void RemoveChanneledCast(ObjectGuid target = ObjectGuid::Empty);
+        void FixateOnTarget(ObjectGuid targetGUID, uint32 timer = 0);
 
         bool HasSpell(uint32 spellID) const override;
 
@@ -423,14 +423,14 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void ResetPickPocketRefillTimer() { m_pickpocketLootRestore = TimeValue::zero(); }
         Player* GetLootRecipient() const;
         Group* GetLootRecipientGroup() const;
-        bool IsLootRecipientGroupMember(uint64 guid) const { return m_lootRecipientGroupMembers.empty() || m_lootRecipientGroupMembers.find(guid) != m_lootRecipientGroupMembers.end(); }
-        std::set<uint64> const& GetLootRecipients() const { return m_lootRecipients; }
+        bool IsLootRecipientGroupMember(ObjectGuid guid) const { return m_lootRecipientGroupMembers.empty() || m_lootRecipientGroupMembers.find(guid) != m_lootRecipientGroupMembers.end(); }
+        std::set<ObjectGuid> const& GetLootRecipients() const { return m_lootRecipients; }
         bool HasLootRecipient() const { return m_lootRecipient || m_lootRecipientGroup; }
         bool HasLootRecipient(Player const* player) const;
         bool IsTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
 
         void SetLootRecipient(Unit* unit);
-        void AddLootRecipient(uint64 guid) { m_lootRecipients.insert(guid); } // Additional loot recipients, for rare mobs on Timeless Isle in generally
+        void AddLootRecipient(ObjectGuid guid) { m_lootRecipients.insert(guid); } // Additional loot recipients, for rare mobs on Timeless Isle in generally
         void AllLootRemovedFromCorpse();
 
         uint16 GetLootMode() { return m_LootMode; }
@@ -564,7 +564,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool m_isTempWorldObject; //true when possessed
 
         // Handling caster facing during spellcast
-        void SetTarget(uint64 guid);
+        void SetTarget(ObjectGuid guid);
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
 
@@ -593,10 +593,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         static float _GetHealthMod(int32 Rank);
 
-        uint64 m_lootRecipient;
+        ObjectGuid m_lootRecipient;
         uint32 m_lootRecipientGroup;
-        std::set<uint64> m_lootRecipients;
-        std::set<uint64> m_lootRecipientGroupMembers;
+        std::set<ObjectGuid> m_lootRecipients;
+        std::set<ObjectGuid> m_lootRecipientGroupMembers;
 
         /// Timers
         time_t m_corpseRemoveTime;                          // (msecs)timer for death or corpse disappearance
@@ -666,16 +666,16 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 class AssistDelayEvent : public BasicEvent
 {
     public:
-        AssistDelayEvent(uint64 victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
+        AssistDelayEvent(ObjectGuid victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
 
         bool Execute(uint64 e_time, uint32 p_time);
-        void AddAssistant(uint64 guid) { m_assistants.push_back(guid); }
+        void AddAssistant(ObjectGuid guid) { m_assistants.push_back(guid); }
     private:
         AssistDelayEvent();
 
-        uint64            m_victim;
-        std::list<uint64> m_assistants;
-        Unit&             m_owner;
+        ObjectGuid            m_victim;
+        std::list<ObjectGuid> m_assistants;
+        Unit&                 m_owner;
 };
 
 class ForcedDespawnDelayEvent : public BasicEvent

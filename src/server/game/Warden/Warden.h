@@ -115,7 +115,7 @@ struct ClientWardenModule
 
 struct WardenRequestContext
 {
-    uint64 ResponseReceiverGUID = 0;
+    ObjectGuid ResponseReceiverGUID = ObjectGuid::Empty;
     std::vector<uint16> MemCheckIDs;
     std::vector<uint16> OtherCheckIDs;
     uint32 CheckCount = 0;
@@ -182,7 +182,7 @@ class Warden
         std::string Penalty(WardenCheck* check = nullptr);
 
     private:
-        void SendPacket(Opcodes opcode, void const *data, size_t dataSize);
+        void SendPacket(OpcodeServer opcode, void const *data, size_t dataSize);
     private:
         WorldSession* _session;
         uint8 _inputKey[16];
@@ -198,7 +198,7 @@ class Warden
         bool _initialized;
         bool _enabled = true;
 
-        uint64 _responseReceiverGUID = 0;
+        ObjectGuid _responseReceiverGUID = ObjectGuid::Empty;
         uint32 _customChecks = 0;
         std::map<std::string, WardenFailedCheckGroupRecord> _failedCheckGroups;
 };

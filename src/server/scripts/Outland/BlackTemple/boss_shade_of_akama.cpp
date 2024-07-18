@@ -125,10 +125,10 @@ class npc_ashtongue_channeler : public CreatureScript
         {
             npc_ashtongue_channelerAI(Creature* creature) : ScriptedAI(creature)
             {
-                ShadeGUID = 0;
+                ShadeGUID = ObjectGuid::Empty;
             }
 
-            uint64 ShadeGUID;
+            ObjectGuid ShadeGUID;
 
             void Reset() override 
             {
@@ -157,10 +157,10 @@ class npc_ashtongue_sorcerer : public CreatureScript
         {
             npc_ashtongue_sorcererAI(Creature* creature) : ScriptedAI(creature)
             {
-                ShadeGUID = 0;
+                ShadeGUID = ObjectGuid::Empty;
             }
 
-            uint64 ShadeGUID;
+            ObjectGuid ShadeGUID;
             uint32 CheckTimer;
             bool StartBanishing;
 
@@ -216,16 +216,16 @@ class boss_shade_of_akama : public CreatureScript
             boss_shade_of_akamaAI(Creature* creature) : ScriptedAI(creature), summons(me), HasKilledAkamaAndReseting(false)
             {
                 instance = creature->GetInstanceScript();
-                AkamaGUID = instance ? instance->GetData64(DATA_AKAMA_SHADE) : 0;
+                AkamaGUID = instance ? instance->GetGuidData(DATA_AKAMA_SHADE) : ObjectGuid::Empty;
                 me->setActive(true); // if view distance is too low
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
             }
 
             InstanceScript* instance;
-            std::list<uint64> Channelers;
-            std::list<uint64> Sorcerers;
-            uint64 AkamaGUID;
+            std::list<ObjectGuid> Channelers;
+            std::list<ObjectGuid> Sorcerers;
+            ObjectGuid AkamaGUID;
             uint32 SorcererCount;
             uint32 DeathCount;
             uint32 ReduceHealthTimer;
@@ -310,7 +310,7 @@ class boss_shade_of_akama : public CreatureScript
 
                     if (!Channelers.empty())
                     {
-                        for (std::list<uint64>::const_iterator itr = Channelers.begin(); itr != Channelers.end(); ++itr)
+                        for (std::list<ObjectGuid>::const_iterator itr = Channelers.begin(); itr != Channelers.end(); ++itr)
                         {
                             Creature* Channeler = (Unit::GetCreature(*me, *itr));
                             if (Channeler)
@@ -347,7 +347,7 @@ class boss_shade_of_akama : public CreatureScript
                     DoStartMovement(who);
             }
 
-            void IncrementDeathCount(uint64 guid = 0)               // If guid is set, will remove it from list of sorcerer
+            void IncrementDeathCount(ObjectGuid guid = ObjectGuid::Empty)               // If guid is set, will remove it from list of sorcerer
             {
                 if (reseting)
                     return;
@@ -358,7 +358,7 @@ class boss_shade_of_akama : public CreatureScript
                 if (guid)
                 {
                     if (Sorcerers.empty())
-                        TC_LOG_ERROR("misc", "SD2 ERROR: Shade of Akama - attempt to remove guid " UI64FMTD " from Sorcerers list but list is already empty", guid);
+                        TC_LOG_ERROR("misc", "SD2 ERROR: Shade of Akama - attempt to remove guid " UI64FMTD " from Sorcerers list but list is already empty", guid.GetRawValue());
                     else
                         Sorcerers.remove(guid);
                 }
@@ -417,7 +417,7 @@ class boss_shade_of_akama : public CreatureScript
                     {
                         CAST_AI(npc_ashtongue_channeler::npc_ashtongue_channelerAI, (*itr)->AI())->ShadeGUID = me->GetGUID();
                         Channelers.push_back((*itr)->GetGUID());
-                        TC_LOG_DEBUG("misc", "TSCR: Shade of Akama Grid Search found channeler " UI64FMTD ". Adding to list", (*itr)->GetGUID());
+                        TC_LOG_DEBUG("misc", "TSCR: Shade of Akama Grid Search found channeler " UI64FMTD ". Adding to list", (*itr)->GetGUID().GetRawValue());
                     }
                 }
                 else
@@ -432,12 +432,12 @@ class boss_shade_of_akama : public CreatureScript
                     return;
                 }
 
-                for (std::list<uint64>::const_iterator itr = Channelers.begin(); itr != Channelers.end(); ++itr)
+                for (std::list<ObjectGuid>::const_iterator itr = Channelers.begin(); itr != Channelers.end(); ++itr)
                     if (Creature* Channeler = (Unit::GetCreature(*me, *itr)))
                         Channeler->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            void SetAkamaGUID(uint64 guid) { AkamaGUID = guid; }
+            void SetAkamaGUID(ObjectGuid guid) { AkamaGUID = guid; }
 
             void UpdateAI(uint32 diff) override
             {
@@ -609,9 +609,9 @@ class npc_akama_shade : public CreatureScript
                 StartCombat = false;
                 instance = creature->GetInstanceScript();
                 if (instance)
-                    ShadeGUID = instance->GetData64(DATA_SHADE_OF_AKAMA);
+                    ShadeGUID = instance->GetGuidData(DATA_SHADE_OF_AKAMA);
                 else
-                    ShadeGUID = NOT_STARTED;
+                    ShadeGUID = ObjectGuid(uint64(NOT_STARTED));
                 me->setActive(true);
                 EventBegun = false;
                 CastSoulRetrieveTimer = 0;
@@ -625,7 +625,7 @@ class npc_akama_shade : public CreatureScript
             }
 
             InstanceScript* instance;
-            uint64 ShadeGUID;
+            ObjectGuid ShadeGUID;
             uint32 DestructivePoisonTimer;
             uint32 LightningBoltTimer;
             uint32 CheckTimer;
@@ -635,7 +635,7 @@ class npc_akama_shade : public CreatureScript
             uint32 EndingTalkCount;
             uint32 WayPointId;
             uint32 BrokenSummonIndex;
-            std::list<uint64> BrokenList;
+            std::list<ObjectGuid> BrokenList;
             bool EventBegun;
             bool ShadeHasDied;
             bool StartCombat;
@@ -678,7 +678,7 @@ class npc_akama_shade : public CreatureScript
                 if (!instance)
                     return;
 
-                ShadeGUID = instance->GetData64(DATA_SHADE_OF_AKAMA);
+                ShadeGUID = instance->GetGuidData(DATA_SHADE_OF_AKAMA);
                 if (!ShadeGUID)
                     return;
 
@@ -859,7 +859,7 @@ class npc_akama_shade : public CreatureScript
                                 if (!BrokenList.empty())
                                 {
                                     bool yelled = false;
-                                    for (std::list<uint64>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
+                                    for (std::list<ObjectGuid>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
                                         if (Creature* unit = Unit::GetCreature(*me, *itr))
                                         {
                                             if (!yelled)
@@ -876,7 +876,7 @@ class npc_akama_shade : public CreatureScript
                             case 3:
                                 if (!BrokenList.empty())
                                 {
-                                    for (std::list<uint64>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
+                                    for (std::list<ObjectGuid>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
                                         if (Creature* unit = Unit::GetCreature(*me, *itr))
                                             unit->CastSpell(unit, 39656, true); // This is the incorrect spell, but can't seem to find the right one.
                                 }
@@ -886,7 +886,7 @@ class npc_akama_shade : public CreatureScript
                             case 4:
                                 if (!BrokenList.empty())
                                 {
-                                    for (std::list<uint64>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
+                                    for (std::list<ObjectGuid>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
                                         if (Creature* unit = Unit::GetCreature(*me, *itr))
                                             unit->AI()->Talk(SAY_BROKEN_FREE_1);
                                 }

@@ -77,7 +77,7 @@ class boss_hydromancer_thespia : public CreatureScript
                     instance->SetBossState(DATA_HYDROMANCER_THESPIA, DONE);
 
                     if (instance)
-                        if (GameObject* goHydroDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_ACCESS_PANEL_HYDRO)))
+                        if (GameObject* goHydroDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_ACCESS_PANEL_HYDRO)))
                             goHydroDoor->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 }
             }

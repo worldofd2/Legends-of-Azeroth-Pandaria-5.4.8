@@ -318,7 +318,7 @@ public:
                 {
                     if (who->HasAura(SPELL_SUBDUED_LITHE_STALKER))
                         {
-                            owner->ToPlayer()->KilledMonsterCredit(NPC_GEIST_RETURN_BUNNY_KC, 0);
+                            owner->ToPlayer()->KilledMonsterCredit(NPC_GEIST_RETURN_BUNNY_KC, ObjectGuid::Empty);
                             who->ToCreature()->DisappearAndDie();
 
                     }
@@ -602,10 +602,10 @@ public:
 
         SummonList Summons;
 
-        uint64 guidDalfors;
-        uint64 guidPriest[3];
-        uint64 guidMason[3];
-        uint64 guidHalof;
+        ObjectGuid guidDalfors;
+        ObjectGuid guidPriest[3];
+        ObjectGuid guidMason[3];
+        ObjectGuid guidHalof;
 
         void Reset() override
         {
@@ -996,7 +996,7 @@ class npc_margrave_dhakar : public CreatureScript
 
         struct npc_margrave_dhakarAI : public ScriptedAI
         {
-            npc_margrave_dhakarAI(Creature* creature) : ScriptedAI(creature) , _summons(me), _lichKingGuid(0) { }
+            npc_margrave_dhakarAI(Creature* creature) : ScriptedAI(creature) , _summons(me), _lichKingGuid() { }
 
             void Reset() override
             {
@@ -1111,7 +1111,7 @@ class npc_margrave_dhakar : public CreatureScript
         private:
             EventMap _events;
             SummonList _summons;
-            uint64 _lichKingGuid;
+            ObjectGuid _lichKingGuid;
     };
 
     CreatureAI* GetAI(Creature* creature) const override

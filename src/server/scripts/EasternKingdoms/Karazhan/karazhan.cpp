@@ -163,17 +163,17 @@ class npc_barnes : public CreatureScript
                 case GOSSIP_ACTION_INFO_DEF + 3:
                     player->CLOSE_GOSSIP_MENU();
                     barnesAI->m_uiEventId = EVENT_OZ;
-                    TC_LOG_DEBUG("scripts", "TSCR: player (GUID " UI64FMTD ") manually set Opera event to EVENT_OZ", player->GetGUID());
+                    TC_LOG_DEBUG("scripts", "TSCR: player (%s) manually set Opera event to EVENT_OZ", player->GetGUID().ToString().c_str());
                     break;
                 case GOSSIP_ACTION_INFO_DEF + 4:
                     player->CLOSE_GOSSIP_MENU();
                     barnesAI->m_uiEventId = EVENT_HOOD;
-                    TC_LOG_DEBUG("scripts", "TSCR: player (GUID " UI64FMTD ") manually set Opera event to EVENT_HOOD", player->GetGUID());
+                    TC_LOG_DEBUG("scripts", "TSCR: player (%s) manually set Opera event to EVENT_HOOD", player->GetGUID().ToString().c_str());
                     break;
                 case GOSSIP_ACTION_INFO_DEF + 5:
                     player->CLOSE_GOSSIP_MENU();
                     barnesAI->m_uiEventId = EVENT_RAJ;
-                    TC_LOG_DEBUG("scripts", "TSCR: player (GUID " UI64FMTD ") manually set Opera event to EVENT_RAJ", player->GetGUID());
+                    TC_LOG_DEBUG("scripts", "TSCR: player (%s) manually set Opera event to EVENT_RAJ", player->GetGUID().ToString().c_str());
                     break;
             }
 
@@ -191,7 +191,7 @@ class npc_barnes : public CreatureScript
 
             InstanceScript* instance;
 
-            uint64 m_uiSpotlightGUID;
+            ObjectGuid m_uiSpotlightGUID;
 
             uint32 TalkCount;
             uint32 TalkTimer;
@@ -203,7 +203,7 @@ class npc_barnes : public CreatureScript
 
             void Reset() override
             {
-                m_uiSpotlightGUID = 0;
+                m_uiSpotlightGUID = ObjectGuid::Empty;
 
                 TalkCount = 0;
                 TalkTimer = 2000;
@@ -240,7 +240,7 @@ class npc_barnes : public CreatureScript
                 {
                     case 0:
                         DoCast(me, SPELL_TUXEDO, false);
-                        instance->DoUseDoorOrButton(instance->GetData64(DATA_GO_STAGEDOORLEFT));
+                        instance->DoUseDoorOrButton(instance->GetGuidData(DATA_GO_STAGEDOORLEFT));
                         break;
                     case 4:
                         TalkCount = 0;
@@ -254,12 +254,12 @@ class npc_barnes : public CreatureScript
                         }
                         break;
                     case 8:
-                        instance->DoUseDoorOrButton(instance->GetData64(DATA_GO_STAGEDOORLEFT));
+                        instance->DoUseDoorOrButton(instance->GetGuidData(DATA_GO_STAGEDOORLEFT));
                         PerformanceReady = true;
                         break;
                     case 9:
                         PrepareEncounter();
-                        instance->DoUseDoorOrButton(instance->GetData64(DATA_GO_CURTAINS));
+                        instance->DoUseDoorOrButton(instance->GetGuidData(DATA_GO_CURTAINS));
                         break;
                 }
             }
@@ -499,7 +499,7 @@ class npc_image_of_medivh : public CreatureScript
 
             InstanceScript* instance;
 
-            uint64 ArcanagosGUID;
+            ObjectGuid ArcanagosGUID;
 
             uint32 YellTimer;
             uint32 Step;
@@ -510,9 +510,9 @@ class npc_image_of_medivh : public CreatureScript
 
             void Reset() override
             {
-                ArcanagosGUID = 0;
+                ArcanagosGUID = ObjectGuid::Empty;
 
-                if (instance && instance->GetData64(DATA_IMAGE_OF_MEDIVH) == 0)
+                if (instance && instance->GetGuidData(DATA_IMAGE_OF_MEDIVH) == 0)
                 {
                     instance->SetData64(DATA_IMAGE_OF_MEDIVH, me->GetGUID());
                     me->GetMotionMaster()->MovePoint(1, MedivPos[0], MedivPos[1], MedivPos[2]);

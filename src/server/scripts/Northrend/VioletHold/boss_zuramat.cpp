@@ -110,7 +110,7 @@ class boss_zuramat : public CreatureScript
 
                 if (instance)
                 {
-                    if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ZURAMAT_CELL)))
+                    if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetGuidData(DATA_ZURAMAT_CELL)))
                         if (pDoor->GetGoState() == GO_STATE_READY)
                         {
                             EnterEvadeMode();

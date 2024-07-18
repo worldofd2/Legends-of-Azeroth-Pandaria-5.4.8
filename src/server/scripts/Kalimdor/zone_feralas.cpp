@@ -78,12 +78,12 @@ struct npc_feralas_wisp : public ScriptedAI
 
     EventMap _events;
     bool _isFollowing;
-    uint64 _playerGUID;
+    ObjectGuid _playerGUID;
 
     void Reset() override
     {
         _isFollowing = false;
-        _playerGUID = 0;
+        _playerGUID = ObjectGuid::Empty;
     }
 
     void SpellHit(Unit* caster, SpellInfo const* spell) override
@@ -146,7 +146,7 @@ struct npc_feralas_hippogryph : public ScriptedAI
     npc_feralas_hippogryph(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap _events;
-    uint64 _playerGUID;
+    ObjectGuid _playerGUID;
     bool _hippogryph_called;
 
     uint32 _timer_spell_air_blast;
@@ -155,7 +155,7 @@ struct npc_feralas_hippogryph : public ScriptedAI
 
     void Reset() override
     {
-        _playerGUID = 0;
+        _playerGUID = ObjectGuid::Empty;
         _hippogryph_called = false;
 
         _timer_spell_air_blast = urand(2000, 3000);
@@ -271,7 +271,7 @@ struct npc_feralas_wandering_forest_walker : public ScriptedAI
     npc_feralas_wandering_forest_walker(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap _events;
-    uint64 _playerGUID;
+    ObjectGuid _playerGUID;
     bool _treant_called;
 
     uint32 _timer_spell_regrowth;
@@ -279,7 +279,7 @@ struct npc_feralas_wandering_forest_walker : public ScriptedAI
 
     void Reset() override
     {
-        _playerGUID = 0;
+        _playerGUID = ObjectGuid::Empty;
         _treant_called = false;
 
         _timer_spell_regrowth = urand(2000, 3000);
@@ -374,7 +374,7 @@ struct npc_feralas_horde_poacher : public ScriptedAI
     npc_feralas_horde_poacher(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap _events;
-    uint64 _playerGUID;
+    ObjectGuid _playerGUID;
     bool _cd_spell_net;
     bool _cd_spell_shot;
     bool _cd_spell_aimed_shot;
@@ -382,7 +382,7 @@ struct npc_feralas_horde_poacher : public ScriptedAI
 
     void Reset() override
     {
-        _playerGUID = 0;
+        _playerGUID = ObjectGuid::Empty;
         _cd_spell_net = false;
         _cd_spell_shot = false;
         _cd_spell_aimed_shot = false;

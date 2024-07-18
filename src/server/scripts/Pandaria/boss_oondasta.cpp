@@ -75,7 +75,7 @@ class boss_oondasta : public CreatureScript
             SummonList summons;
             TaskScheduler scheduler;
             EventMap events;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint32 spiritFireCount;
 
             void Reset() override
@@ -84,7 +84,7 @@ class boss_oondasta : public CreatureScript
                 summons.DespawnAll();
                 events.Reset();
                 me->SetReactState(REACT_DEFENSIVE);
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 spiritFireCount = 0;
 
                 scheduler

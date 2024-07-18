@@ -614,7 +614,7 @@ class npc_azure_saboteur : public CreatureScript
             {
                 me->CastSpell(me, SABOTEUR_SHIELD_DISRUPTION, false);
                 me->DisappearAndDie();
-                Creature* pSaboPort = Unit::GetCreature(*me, instance->GetData64(DATA_SABOTEUR_PORTAL));
+                Creature* pSaboPort = Unit::GetCreature(*me, instance->GetGuidData(DATA_SABOTEUR_PORTAL));
                 if (pSaboPort)
                     pSaboPort->DisappearAndDie();
                 instance->SetData(DATA_START_BOSS_ENCOUNTER, 1);
@@ -690,7 +690,7 @@ class npc_teleportation_portal_vh : public CreatureScript
                                     DoSummon(entry, me, 2.0f, 20000, TEMPSUMMON_DEAD_DESPAWN);
                                 }
 
-                                if (Creature* sinclariTrigger = instance->instance->GetCreature(instance->GetData64(DATA_SINCLARI_TRIGGER)))
+                                if (Creature* sinclariTrigger = instance->instance->GetCreature(instance->GetGuidData(DATA_SINCLARI_TRIGGER)))
                                     sinclariTrigger->AI()->Talk(SAY_SINCLARI_ELITE_SQUAD);
 
                                 me->SetVisible(false);
@@ -729,7 +729,7 @@ class npc_teleportation_portal_vh : public CreatureScript
                                     me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
                                 }
 
-                                if (Creature* sinclariTrigger = instance->instance->GetCreature(instance->GetData64(DATA_SINCLARI_TRIGGER)))
+                                if (Creature* sinclariTrigger = instance->instance->GetCreature(instance->GetGuidData(DATA_SINCLARI_TRIGGER)))
                                     sinclariTrigger->AI()->Talk(entry == NPC_PORTAL_GUARDIAN ? SAY_SINCLARI_PORTAL_GUARDIAN : SAY_SINCLARI_PORTAL_KEEPER);
                             }
                             uiSpawnTimer = SPAWN_TIME;

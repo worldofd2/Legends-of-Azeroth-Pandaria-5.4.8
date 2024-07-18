@@ -40,7 +40,7 @@ void RatedPvpMgr::LoadFromDB()
         RecalcuateRank(itr);
 }
 
-RatedPvpInfo* RatedPvpMgr::GetOrCreateInfo(RatedPvpSlot slot, uint64 guid)
+RatedPvpInfo* RatedPvpMgr::GetOrCreateInfo(RatedPvpSlot slot, ObjectGuid guid)
 {
     ASSERT(slot < PVP_SLOT_MAX);
     auto it = m_store[slot].find(guid);
@@ -128,7 +128,7 @@ void RatedPvpMgr::SaveToDB(RatedPvpInfo const* info)
     stmt->setUInt16(i++, info->SeasonGames);
     stmt->setUInt16(i++, info->SeasonWins);
     stmt->setUInt32(i++, info->WinStreak);
-    stmt->setUInt32(i++, GUID_LOPART(info->Guid));
+    stmt->setUInt32(i++, info->Guid.GetCounter());
     stmt->setUInt8 (i++, info->Slot);
     stmt->setUInt16(i++, sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID));
     CharacterDatabase.Execute(stmt);
@@ -151,8 +151,8 @@ void RatedPvpMgr::SendBonusRewardIfNeed(RatedPvpInfo* info)
             MailDraft draft{ reward.MailTitle, body };
             item->SaveToDB(trans);
             draft.AddItem(item);
-            draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindPlayerInOrOutOfWorld(info->Guid), GUID_LOPART(info->Guid) },
-                MailSender{ MAIL_NORMAL, GUID_LOPART(info->Guid), MAIL_STATIONERY_GM });
+            draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindPlayer(info->Guid), info->Guid.GetCounter() },
+                MailSender{ MAIL_NORMAL, info->Guid.GetCounter(), MAIL_STATIONERY_GM });
         }
     }
 
@@ -165,8 +165,8 @@ void RatedPvpMgr::SendBonusRewardIfNeed(RatedPvpInfo* info)
                 MailDraft draft{ sObjectMgr->GetTrinityString(LANG_BG_REWARD_TITLE_RICH, LOCALE_ruRU), body };
                 item->SaveToDB(trans);
                 draft.AddItem(item);
-                draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindPlayerInOrOutOfWorld(info->Guid), GUID_LOPART(info->Guid) },
-                    MailSender{ MAIL_NORMAL, GUID_LOPART(info->Guid), MAIL_STATIONERY_GM });
+                draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindPlayer(info->Guid), info->Guid.GetCounter() },
+                    MailSender{ MAIL_NORMAL, info->Guid.GetCounter(), MAIL_STATIONERY_GM });
             }
         }
     }
@@ -175,7 +175,7 @@ void RatedPvpMgr::SendBonusRewardIfNeed(RatedPvpInfo* info)
     if (!sWorld->getBoolConfig(CONFIG_RBG_REWARDS_FOR_ARENA_ENABLED))
         return;
 
-    Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(info->Guid);
+    Player* player = ObjectAccessor::FindPlayer(info->Guid);
     if (!player)
         return;
     //if (info->Slot == PVP_SLOT_RATED_BG)
@@ -516,7 +516,7 @@ void RatedPvpMgr::LoadPvpInfoStore(uint32 season)
         {
             Field* fields = result->Fetch();
             uint8 slot = fields[1].GetInt8();
-            uint64 guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+            ObjectGuid guid(HighGuid::Player, fields[0].GetUInt32());
             auto& info = m_store[slot][guid];
             info.reset(new RatedPvpInfo{});
             info->Guid              = guid;

@@ -154,7 +154,7 @@ class boss_corborus : public CreatureScript
                 {
                     me->SetHomePosition(*me);
 
-                    if (Creature* Manastorm = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_MILLHOUSE_MANASTORM)))
+                    if (Creature* Manastorm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_MILLHOUSE_MANASTORM)))
                         Manastorm->AI()->DoAction(ACTION_MANASTORM_PULL);
                 }
             }

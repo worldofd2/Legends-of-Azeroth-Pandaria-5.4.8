@@ -85,8 +85,8 @@ class TC_GAME_API PathGenerator
 
         void VisualizePath(uint32 duration);
         void VisualizeNavmesh(uint32 duration);
-        std::vector<uint64>* visualizePathWaypointGUIDs = nullptr;
-        std::vector<uint64>* visualizeNavmeshWaypointGUIDs = nullptr;
+        std::vector<ObjectGuid>* visualizePathWaypointGUIDs = nullptr;
+        std::vector<ObjectGuid>* visualizeNavmeshWaypointGUIDs = nullptr;
         Map* visualizePathMap = nullptr;
 
     private:

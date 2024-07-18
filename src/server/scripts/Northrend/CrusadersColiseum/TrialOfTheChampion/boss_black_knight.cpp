@@ -139,9 +139,9 @@ class boss_black_knight : public CreatureScript
                 isSummoningArmy = false;
                 isDeathArmySummoned = false;
 
-                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetData64(DATA_MAIN_GATE)))
+                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetGuidData(DATA_MAIN_GATE)))
                     _instance->HandleGameObject(go->GetGUID(), true);
-                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetData64(DATA_PORTCULLIS)))
+                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetGuidData(DATA_PORTCULLIS)))
                     _instance->HandleGameObject(go->GetGUID(), false);
 
                 if (isAttacked)
@@ -186,9 +186,9 @@ class boss_black_knight : public CreatureScript
                 DoZoneInCombat(me, 150.0f);
                 SetEquipmentSlots(false, EQUIP_SWORD, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
 
-                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetData64(DATA_MAIN_GATE)))
+                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetGuidData(DATA_MAIN_GATE)))
                     _instance->HandleGameObject(go->GetGUID(), false);
-                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetData64(DATA_PORTCULLIS)))
+                if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetGuidData(DATA_PORTCULLIS)))
                     _instance->HandleGameObject(go->GetGUID(), false);
 
                 if (_instance)
@@ -243,7 +243,7 @@ class boss_black_knight : public CreatureScript
                 DoCast(me, SPELL_BLACK_KNIGHT_CREDIT, true);
                 Talk(SAY_DEATH);
 
-                if (GameObject* go = GameObject::GetGameObject(*me, _instance ? _instance->GetData64(DATA_PORTCULLIS) : 0))
+                if (GameObject* go = GameObject::GetGameObject(*me, _instance ? _instance->GetGuidData(DATA_PORTCULLIS) : ObjectGuid::Empty))
                     _instance->HandleGameObject(go->GetGUID(), true);
 
                 if (_instance)
@@ -513,7 +513,7 @@ class npc_black_knight_skeletal_gryphon : public CreatureScript
         {
             npc_black_knight_skeletal_gryphonAI(Creature* creature) : npc_escortAI(creature)
             {
-                Start(false, true, 0, NULL);
+                Start(false, true, ObjectGuid::Empty, NULL);
                 instance = creature->GetInstanceScript();
             }
 
@@ -600,7 +600,7 @@ class npc_gr : public CreatureScript
 
             npc_grAI(Creature* creature) : npc_escortAI(creature)
             {
-                Start(false, true, 0, NULL);
+                Start(false, true, ObjectGuid::Empty, NULL);
                 instance = creature->GetInstanceScript();
             }
 

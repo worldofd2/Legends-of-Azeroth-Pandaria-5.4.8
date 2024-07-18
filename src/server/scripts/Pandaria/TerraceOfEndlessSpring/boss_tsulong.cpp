@@ -163,7 +163,7 @@ class boss_tsulong : public CreatureScript
 
             EventMap m_oocEvents, berserkEvents;
             uint8 phase;
-            uint64 victimGUID;
+            ObjectGuid victimGUID;
             bool firstSpecialEnabled;
             bool secondSpecialEnabled;
             bool inFly;
@@ -217,7 +217,7 @@ class boss_tsulong : public CreatureScript
                 m_oocEvents.RescheduleEvent(1, 2000);
 
                 dayPhaseOri = 0.0f;
-                victimGUID  = 0;
+                victimGUID = ObjectGuid::Empty;
                 _Reset();
                 events.Reset();
                 berserkEvents.Reset();
@@ -407,7 +407,7 @@ class boss_tsulong : public CreatureScript
                         me->GetMotionMaster()->MoveIdle();
                         me->AttackStop();
                         me->StopMoving();
-                        me->SetTarget(0);
+                        me->SetTarget(ObjectGuid::Empty);
                         me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                         me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
                         me->RemoveAurasDueToSpell(SPELL_TERRORIZE_TSULONG);
@@ -768,7 +768,7 @@ class boss_tsulong : public CreatureScript
                 if (!instance)
                     return nullptr;
 
-                Creature* plant = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ENCHANTED_PLANT));
+                Creature* plant = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ENCHANTED_PLANT));
                 if (plant)
                 {
                     if (!plant->IsAlive() && !ignoreDeathState)
@@ -1010,7 +1010,7 @@ class npc_unstable_sha : public CreatureScript
         {
             npc_unstable_shaAI(Creature* creature) : ScriptedAI(creature)
             {
-                summonerGUID = 0;
+                summonerGUID = ObjectGuid::Empty;
                 riding = false;
                 cast = false;
             }
@@ -1070,7 +1070,7 @@ class npc_unstable_sha : public CreatureScript
 
             bool riding;
             bool cast;
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -1376,7 +1376,7 @@ class npc_dark_of_night : public CreatureScript
         {
             npc_dark_of_nightAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 sunbeamGUID;
+            ObjectGuid sunbeamGUID;
             bool hasDied;
 
             void IsSummonedBy(Unit* summoner) override

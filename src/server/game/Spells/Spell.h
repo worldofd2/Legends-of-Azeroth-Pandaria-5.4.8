@@ -92,7 +92,7 @@ struct SpellDestination
     void RelocateOffset(Position const& offset);
 
     WorldLocation _position;
-    uint64 _transportGUID;
+    ObjectGuid _transportGUID;
     Position _transportOffset;
 };
 
@@ -175,13 +175,13 @@ class SpellCastTargets
 {
     public:
         SpellCastTargets();
-        SpellCastTargets(Unit* caster, uint32 targetMask, uint64 targetGuid, uint64 itemTargetGuid, uint64 srcTransportGuid, uint64 destTransportGuid, Position srcPos, Position destPos, float elevation, float missileSpeed, std::string targetString);
+        SpellCastTargets(Unit* caster, uint32 targetMask, ObjectGuid targetGuid, ObjectGuid itemTargetGuid, ObjectGuid srcTransportGuid, ObjectGuid destTransportGuid, Position srcPos, Position destPos, float elevation, float missileSpeed, std::string targetString);
         ~SpellCastTargets();
 
         void Read(ByteBuffer& data, Unit* caster);
         void Write(ByteBuffer& data);
 
-        void Initialize(uint32 flags, uint64 target, uint64 itemTarget, uint64 dest, WorldLocation destPos, uint64 src, WorldLocation srcPos)
+        void Initialize(uint32 flags, ObjectGuid target, ObjectGuid itemTarget, ObjectGuid dest, WorldLocation destPos, ObjectGuid src, WorldLocation srcPos)
         {
             m_targetMask = flags;
             m_objectTargetGUID = target;
@@ -205,22 +205,22 @@ class SpellCastTargets
 
         void SetTargetFlag(SpellCastTargetFlags flag) { m_targetMask |= flag; }
 
-        uint64 GetUnitTargetGUID() const;
+        ObjectGuid GetUnitTargetGUID() const;
         Unit* GetUnitTarget() const;
         void SetUnitTarget(Unit* target);
 
-        uint64 GetGOTargetGUID() const;
+        ObjectGuid GetGOTargetGUID() const;
         GameObject* GetGOTarget() const;
         void SetGOTarget(GameObject* target);
 
-        uint64 GetCorpseTargetGUID() const;
+        ObjectGuid GetCorpseTargetGUID() const;
         Corpse* GetCorpseTarget() const;
 
         WorldObject* GetObjectTarget() const;
-        uint64 GetObjectTargetGUID() const;
+        ObjectGuid GetObjectTargetGUID() const;
         void RemoveObjectTarget();
 
-        uint64 GetItemTargetGUID() const { return m_itemTargetGUID; }
+        ObjectGuid GetItemTargetGUID() const { return m_itemTargetGUID; }
         Item* GetItemTarget() const { return m_itemTarget; }
         uint32 GetItemTargetEntry() const { return m_itemTargetEntry; }
         void SetItemTarget(Item* item);
@@ -268,7 +268,7 @@ class SpellCastTargets
             m_targetMask &= ~TARGET_FLAG_EXTRA_TARGETS;
         }
 
-        void AddExtraTarget(uint64 guid, WorldLocation pos)
+        void AddExtraTarget(ObjectGuid guid, WorldLocation pos)
         {
             SpellDestination extraTarget;
             extraTarget._position = pos;
@@ -292,8 +292,8 @@ class SpellCastTargets
         Item* m_itemTarget;
 
         // object GUID/etc, can be used always
-        uint64 m_objectTargetGUID;
-        uint64 m_itemTargetGUID;
+        ObjectGuid m_objectTargetGUID;
+        ObjectGuid m_itemTargetGUID;
         uint32 m_itemTargetEntry;
 
         SpellDestination m_src;
@@ -507,7 +507,7 @@ class TC_GAME_API Spell
 
         typedef std::set<Aura*> UsedSpellMods;
 
-        Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false);
+        Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, ObjectGuid originalCasterGUID = ObjectGuid::Empty, bool skipCheck = false);
         ~Spell();
 
         void InitExplicitTargets(SpellCastTargets const& targets);
@@ -591,7 +591,7 @@ class TC_GAME_API Spell
         void CheckSrc() { if (!m_targets.HasSrc()) m_targets.SetSrc(*m_caster); }
         void CheckDst() { if (!m_targets.HasDst()) m_targets.SetDst(*m_caster); }
 
-        static void SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cast_count, SpellCastResult result, SpellCustomErrors customError = SPELL_CUSTOM_ERROR_NONE, Opcodes opcode = SMSG_CAST_FAILED);
+        static void SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cast_count, SpellCastResult result, SpellCustomErrors customError = SPELL_CUSTOM_ERROR_NONE, OpcodeServer opcode = SMSG_CAST_FAILED);
         void SendCastResult(SpellCastResult result);
         void SendPetCastResult(SpellCastResult result);
         void SendSpellStart();
@@ -701,13 +701,13 @@ class TC_GAME_API Spell
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
 
-        void SendLoot(uint64 guid, LootType loottype);
+        void SendLoot(ObjectGuid guid, LootType loottype);
 
         Unit* const m_caster;
 
         SpellValue* const m_spellValue;
 
-        uint64 m_originalCasterGUID;                        // real source of cast (aura caster/etc), used for spell targets selection
+        ObjectGuid m_originalCasterGUID;                    // real source of cast (aura caster/etc), used for spell targets selection
                                                             // e.g. damage around area spell trigered by victim aura and damage enemies of aura caster
         Unit* m_originalCaster;                             // cached pointer for m_originalCaster, updated at Spell::UpdatePointers()
 
@@ -793,7 +793,7 @@ class TC_GAME_API Spell
     public:
         struct TargetInfo
         {
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint64 timeDelay;
             SpellMissInfo missCondition:8;
             SpellMissInfo reflectResult:8;
@@ -818,7 +818,7 @@ class TC_GAME_API Spell
 
         struct GOTargetInfo
         {
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint64 timeDelay;
             uint32 effectMask;
             bool   processed:1;
@@ -827,7 +827,7 @@ class TC_GAME_API Spell
 
         struct CorpseTargetInfo
         {
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint64 timeDelay;
             uint8  effectMask : 8;
             bool   processed : 1;
@@ -843,7 +843,7 @@ class TC_GAME_API Spell
 
         struct ReflectTargetInfo
         {
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint64 timeDelay;
             bool processed;
         };

@@ -251,7 +251,7 @@ class BattlegroundAB : public Battleground
         void AddPlayer(Player* player) override;
         void StartingEventCloseDoors() override;
         void StartingEventOpenDoors() override;
-        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
+        void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
         void HandleAreaTrigger(Player* Source, uint32 Trigger, bool entered) override;
         bool SetupBattleground() override;
         void Reset() override;

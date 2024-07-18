@@ -187,14 +187,14 @@ class npc_lazy_peon : public CreatureScript
         {
             npc_lazy_peonAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 PlayerGUID;
+            ObjectGuid PlayerGUID;
 
             uint32 RebuffTimer;
             bool work;
 
             void Reset() override
             {
-                PlayerGUID = 0;
+                PlayerGUID = ObjectGuid::Empty;
                 RebuffTimer = 0;
                 work = false;
             }
@@ -340,9 +340,9 @@ class npc_garrosh_horde_way_quest : public CreatureScript
         {
             npc_garrosh_horde_way_questAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay, slainCount;
-            std::vector<uint64> challengerGUIDs;
+            std::vector<ObjectGuid> challengerGUIDs;
 
             void IsSummonedBy(Unit* summoner) override
             {
@@ -557,7 +557,7 @@ class npc_ji_firepaw_horde_way_quest : public CreatureScript
         {
             npc_ji_firepaw_horde_way_questAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay;
             bool allowFollow;
 
@@ -622,7 +622,7 @@ struct npc_trial_challengers : public ScriptedAI
 {
     npc_trial_challengers(Creature* creature) : ScriptedAI(creature) { }
 
-    uint64 ownerGUID;
+    ObjectGuid ownerGUID;
     uint32 delay;
     float x, y;
 

@@ -476,7 +476,7 @@ class boss_toc_champion_controller : public CreatureScript
                         SummonChampions((Team)uiData);
                         break;
                     case 1:
-                        for (std::list<uint64>::iterator i = _summons.begin(); i != _summons.end(); ++i)
+                        for (std::list<ObjectGuid>::iterator i = _summons.begin(); i != _summons.end(); ++i)
                         {
                             if (Creature* temp = Unit::GetCreature(*me, *i))
                             {
@@ -559,7 +559,7 @@ struct boss_faction_championsAI : public BossAI
     void JustReachedHome() override
     {
         if (instance)
-            if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
+            if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetGuidData(NPC_CHAMPIONS_CONTROLLER)))
                 pChampionController->AI()->SetData(2, FAIL);
         me->DespawnOrUnsummon();
     }
@@ -610,7 +610,7 @@ struct boss_faction_championsAI : public BossAI
     {
         if (_aiType != AI_PET)
             if (instance)
-                if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
+                if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetGuidData(NPC_CHAMPIONS_CONTROLLER)))
                     pChampionController->AI()->SetData(2, DONE);
     }
 
@@ -619,7 +619,7 @@ struct boss_faction_championsAI : public BossAI
         DoCast(me, SPELL_ANTI_AOE, true);
         _JustEngagedWith();
         if (instance)
-            if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
+            if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetGuidData(NPC_CHAMPIONS_CONTROLLER)))
                 pChampionController->AI()->SetData(2, IN_PROGRESS);
     }
 
@@ -638,11 +638,11 @@ struct boss_faction_championsAI : public BossAI
             {
                 if (TeamInInstance == ALLIANCE)
                 {
-                    if (Creature* temp = Unit::GetCreature(*me, instance->GetData64(NPC_VARIAN)))
+                    if (Creature* temp = Unit::GetCreature(*me, instance->GetGuidData(NPC_VARIAN)))
                         temp->AI()->Talk(SAY_KILL_PLAYER);
                 }
                 else
-                    if (Creature* temp = Unit::GetCreature(*me, instance->GetData64(NPC_GARROSH)))
+                    if (Creature* temp = Unit::GetCreature(*me, instance->GetGuidData(NPC_GARROSH)))
                         temp->AI()->Talk(SAY_KILL_PLAYER);
 
 

@@ -117,7 +117,7 @@ class spell_ex_5581 : public SpellScriptLoader
 
             void HandleDummyLaunchTarget(SpellEffIndex /*effIndex*/)
             {
-                uint64 targetGUID = 0;
+                uint64 targetGUID = ObjectGuid::Empty;
                 if (Unit* unitTarget = GetHitUnit())
                     targetGUID = unitTarget->GetGUID();
                 // we're handling SPELL_EFFECT_DUMMY in effIndex 0 here

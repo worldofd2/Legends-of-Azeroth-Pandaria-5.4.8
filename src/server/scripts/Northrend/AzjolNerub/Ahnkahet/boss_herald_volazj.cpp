@@ -396,7 +396,7 @@ class npc_twisted_visage : public CreatureScript
             void IsSummonedBy(Unit* summoner) override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* volazj = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HERALD_VOLAZJ)))
+                    if (Creature* volazj = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_HERALD_VOLAZJ)))
                         volazj->AI()->JustSummoned(me);
 
                 DoCast(summoner, SPELL_SUMMON_TWISTED_VISAGE_SPAWN, true);
@@ -416,7 +416,7 @@ class npc_twisted_visage : public CreatureScript
             void Unsummoned() override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* volazj = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_HERALD_VOLAZJ)))
+                    if (Creature* volazj = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_HERALD_VOLAZJ)))
                         volazj->AI()->SummonedCreatureDespawn(me);
             }
 

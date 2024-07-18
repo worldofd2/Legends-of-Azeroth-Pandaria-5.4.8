@@ -978,12 +978,12 @@ class npc_gunship_boss : public CreatureScript
             inline Transport* OtherTransport() const { if (Creature* boss = OtherBoss()) return boss->GetTransport(); return nullptr; }
             inline Transport* Skybreaker() const { return IsAlliance() ? MyTransport() : OtherTransport(); }
             inline Transport* OrgrimsHammer() const { return IsHorde() ? MyTransport() : OtherTransport(); }
-            inline Creature* AllianceShip() const { return ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SKYBREAKER_BOSS)); }
-            inline Creature* HordeShip() const { return ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ORGRIMMAR_HAMMER_BOSS)); }
+            inline Creature* AllianceShip() const { return ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SKYBREAKER_BOSS)); }
+            inline Creature* HordeShip() const { return ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_ORGRIMMAR_HAMMER_BOSS)); }
             inline Creature* MyShip() const { return IsAlliance() ? AllianceShip() : HordeShip(); }
             inline Creature* OtherShip() const { return IsAlliance() ? HordeShip() : AllianceShip(); }
-            inline Creature* AllianceBoss() const { return IsAlliance() ? me : ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GB_MURADIN_BRONZEBEARD)); }
-            inline Creature* HordeBoss() const { return IsHorde() ? me : ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GB_HIGH_OVERLORD_SAURFANG)); }
+            inline Creature* AllianceBoss() const { return IsAlliance() ? me : ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GB_MURADIN_BRONZEBEARD)); }
+            inline Creature* HordeBoss() const { return IsHorde() ? me : ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GB_HIGH_OVERLORD_SAURFANG)); }
             inline Creature* OtherBoss() const { return IsAlliance() ? HordeBoss() : AllianceBoss(); }
 
             template<class T>
@@ -1166,7 +1166,7 @@ class npc_gunship_boss : public CreatureScript
             void SummonGameObjectWild(Map* map, uint32 entry, float x, float y, float z, float o, uint32 respawnTime)
             {
                 GameObject* go = new GameObject();
-                if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, 65535, x, y, z, o, { }, 255, GO_STATE_READY))
+                if (!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), entry, map, 65535, x, y, z, o, { }, 255, GO_STATE_READY))
                 {
                     delete go;
                     return;
@@ -1228,12 +1228,12 @@ class npc_gunship : public CreatureScript
 
                 if (instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
                 {
-                    if (Creature* pMuradin = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GB_MURADIN_BRONZEBEARD)))
+                    if (Creature* pMuradin = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GB_MURADIN_BRONZEBEARD)))
                         pMuradin->AI()->DoAction(me->GetEntry() == NPC_GB_SKYBREAKER ? ACTION_FAIL : ACTION_DONE);
                 }
                 else if (instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE)
                 {
-                    if (Creature* pSaurfang = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GB_HIGH_OVERLORD_SAURFANG)))
+                    if (Creature* pSaurfang = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GB_HIGH_OVERLORD_SAURFANG)))
                         pSaurfang->AI()->DoAction(me->GetEntry() == NPC_GB_SKYBREAKER ? ACTION_DONE : ACTION_FAIL);
                 }
             }
@@ -1354,7 +1354,7 @@ class npc_korkron_axethrower_rifleman : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
                     boss->AI()->DoAction(ACTION_RANGED_DIE);
                 me->AddObjectToRemoveList();
             }
@@ -1467,7 +1467,7 @@ class npc_sergeant : public CreatureScript
                 if (instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
 
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_GB_SKYBREAKER_SERGEANT ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(me->GetEntry() == NPC_GB_SKYBREAKER_SERGEANT ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
                     me->getThreatManager().modifyThreatPercent(boss, -100);
 
                 UpdateVictim();
@@ -1563,7 +1563,7 @@ class npc_marine_or_reaver : public CreatureScript
                 if (instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
 
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_GB_SKYBREAKER_MARINE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(me->GetEntry() == NPC_GB_SKYBREAKER_MARINE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
                     me->getThreatManager().modifyThreatPercent(boss, -100);
 
                 UpdateVictim();
@@ -1621,8 +1621,8 @@ class npc_gunship_mage : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
-                    boss->AI()->DoAction(me->GetGUID() == instance->GetData64(DATA_GB_BATTLE_MAGE) ? ACTION_MAGE_DIE : ACTION_MAGE_MISC_DIE);
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
+                    boss->AI()->DoAction(me->GetGUID() == instance->GetGuidData(DATA_GB_BATTLE_MAGE) ? ACTION_MAGE_DIE : ACTION_MAGE_MISC_DIE);
                 me->AddObjectToRemoveList();
             }
 
@@ -1647,7 +1647,7 @@ class npc_gunship_mage : public CreatureScript
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                if (me->GetGUID() == instance->GetData64(DATA_GB_BATTLE_MAGE))
+                if (me->GetGUID() == instance->GetGuidData(DATA_GB_BATTLE_MAGE))
                 {
                     events.Update(diff);
 
@@ -1719,7 +1719,7 @@ class npc_gunship_cannon : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage) override
             {
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetData64(me->GetEntry() == NPC_GB_ALLIANCE_CANNON ? DATA_SKYBREAKER_BOSS : DATA_ORGRIMMAR_HAMMER_BOSS)))
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetGuidData(me->GetEntry() == NPC_GB_ALLIANCE_CANNON ? DATA_SKYBREAKER_BOSS : DATA_ORGRIMMAR_HAMMER_BOSS)))
                     attacker->DealDamage(boss, damage);
             }
 
@@ -1782,7 +1782,7 @@ class npc_mortar_soldier_or_rocketeer : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
                     boss->AI()->DoAction(ACTION_SIEGE_DIE);
                 me->m_Events.Schedule(10000, [this]() { me->AddObjectToRemoveList(); });
             }

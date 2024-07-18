@@ -284,7 +284,7 @@ class boss_galakras : public CreatureScript
             uint32 northInfluenceData;
             uint32 northInfluenceProgressData;
             uint32 waveCounter;
-            uint64 flamesTargetGUID;
+            ObjectGuid flamesTargetGUID;
             bool hasEvade;
             bool hasPreEventDone;
             bool hasHitByCannon;
@@ -303,7 +303,7 @@ class boss_galakras : public CreatureScript
                 southInfluenceProgressData = 100;
                 northInfluenceData         = 0;
                 northInfluenceProgressData = 100;
-                flamesTargetGUID           = 0;
+                flamesTargetGUID = ObjectGuid::Empty;
                 waveCounter                = 0;
                 hasEvade                   = false;
                 hasHitByCannon             = false;
@@ -343,14 +343,14 @@ class boss_galakras : public CreatureScript
                 scheduler
                     .Schedule(Milliseconds(2500), [this](TaskContext context)
                 {
-                    if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                    if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                         zaela->AI()->Talk(TALK_INTRO);
                 });
 
                 scheduler
                     .Schedule(Milliseconds(19500), [this](TaskContext context)
                 {
-                    if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                    if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                         zaela->AI()->Talk(TALK_SPECIAL_1);
                 });
             }
@@ -375,7 +375,7 @@ class boss_galakras : public CreatureScript
                     berserkerEvents.ScheduleEvent(EVENT_SUMMON_TOWER_GRUNT, 6 * IN_MILLISECONDS);
             }
 
-            uint64 GetGUID(int32 /*type*/) const override
+            ObjectGuid GetGUID(int32 /*type*/) const override
             {
                 return flamesTargetGUID;
             }
@@ -385,25 +385,25 @@ class boss_galakras : public CreatureScript
                 switch (actionId)
                 {
                     case ACTION_START_INTRO:
-                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                             zaela->AI()->Talk(TALK_SPECIAL_3);
 
-                        if (Creature* sylvana = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                        if (Creature* sylvana = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, sylvana);
 
-                        if (Creature* lorthemar = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LORTHEMAR_THERON) : 0))
+                        if (Creature* lorthemar = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LORTHEMAR_THERON) : ObjectGuid::Empty))
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, lorthemar);
 
-                        if (Creature* aethas = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ARCHMAGE_AETHAS_SUNREAVER) : 0))
+                        if (Creature* aethas = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ARCHMAGE_AETHAS_SUNREAVER) : ObjectGuid::Empty))
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, aethas);
 
-                        if (Creature* jaina = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_JAINA_PROUDMOORE) : 0))
+                        if (Creature* jaina = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, jaina);
 
-                        if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                        if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, varian);
 
-                        if (Creature* vereesa = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_VEREESA_WINDRUNNER) : 0))
+                        if (Creature* vereesa = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_VEREESA_WINDRUNNER) : ObjectGuid::Empty))
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, vereesa);
 
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
@@ -425,7 +425,7 @@ class boss_galakras : public CreatureScript
                         berserkerEvents.CancelEvent(EVENT_SIEGE_TOWER);
                         berserkerEvents.CancelEvent(EVENT_NEXT_WAVE);
 
-                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                         {
                             zaela->ExitVehicle();
                             zaela->AI()->Talk(TALK_SPECIAL_14); // Announce
@@ -476,42 +476,42 @@ class boss_galakras : public CreatureScript
                     instance->DoUpdateWorldState(WORLDSTATE_NORTH_TOWER_INFLUENCE, 0);
                     instance->DoUpdateWorldState(WORLDSTATE_NORTH_TOWER_INFLUENCE_COUNT, 0);
 
-                    if (Creature* sylvana = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                    if (Creature* sylvana = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                         sylvana->AI()->DoAction(ACTION_FACTIONS_EVADE);
 
-                    if (Creature* lorthemar = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LORTHEMAR_THERON) : 0))
+                    if (Creature* lorthemar = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LORTHEMAR_THERON) : ObjectGuid::Empty))
                         lorthemar->AI()->DoAction(ACTION_FACTIONS_EVADE);
 
-                    if (Creature* aethas = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ARCHMAGE_AETHAS_SUNREAVER) : 0))
+                    if (Creature* aethas = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ARCHMAGE_AETHAS_SUNREAVER) : ObjectGuid::Empty))
                         aethas->AI()->DoAction(ACTION_FACTIONS_EVADE);
 
-                    if (Creature* jaina = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_JAINA_PROUDMOORE) : 0))
+                    if (Creature* jaina = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                         jaina->AI()->DoAction(ACTION_FACTIONS_EVADE);
 
-                    if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                    if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                         varian->AI()->DoAction(ACTION_FACTIONS_EVADE);
 
-                    if (Creature* vereesa = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_VEREESA_WINDRUNNER) : 0))
+                    if (Creature* vereesa = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_VEREESA_WINDRUNNER) : ObjectGuid::Empty))
                         vereesa->AI()->DoAction(ACTION_FACTIONS_EVADE);
 
-                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_PORTCULLIS)))
+                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_PORTCULLIS)))
                         towerDoor->SetGoState(GO_STATE_READY);
 
-                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_PORTCULLIS + 1)))
+                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_PORTCULLIS + 1)))
                         towerDoor->SetGoState(GO_STATE_READY);
 
                     // Lock Cannons
-                    if (Creature* southCannon = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ANTI_AIR_CANNON)))
+                    if (Creature* southCannon = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ANTI_AIR_CANNON)))
                         southCannon->AI()->SetData(TYPE_AIR_CANNON_ACTIVE, 0);
 
-                    if (Creature* northCannon = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ANTI_AIR_CANNON + 1)))
+                    if (Creature* northCannon = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ANTI_AIR_CANNON + 1)))
                         northCannon->AI()->SetData(TYPE_AIR_CANNON_ACTIVE, 0);
 
                     // Lock Rope
-                    if (Creature* sRope = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ROPE)))
+                    if (Creature* sRope = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ROPE)))
                         sRope->SetVisible(false);
 
-                    if (Creature* nRope = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ROPE + 1)))
+                    if (Creature* nRope = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ROPE + 1)))
                         nRope->SetVisible(false);
                 }
 
@@ -544,48 +544,48 @@ class boss_galakras : public CreatureScript
                     instance->DoUpdateWorldState(WORLDSTATE_NORTH_TOWER_INFLUENCE, 0);
                     instance->DoUpdateWorldState(WORLDSTATE_NORTH_TOWER_INFLUENCE_COUNT, 0);
 
-                    if (Creature* jaina = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_LADY_JAINA_PROUDMOORE)))
+                    if (Creature* jaina = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_LADY_JAINA_PROUDMOORE)))
                     {
                         jaina->AI()->DoAction(ACTION_GALAKRAS_DEFEAT);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, jaina);
                     }
 
-                    if (Creature* lorthemar = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LORTHEMAR_THERON) : 0))
+                    if (Creature* lorthemar = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LORTHEMAR_THERON) : ObjectGuid::Empty))
                     {
                         lorthemar->AI()->DoAction(ACTION_GALAKRAS_DEFEAT);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, lorthemar);
                     }
 
-                    if (Creature* aethas = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ARCHMAGE_AETHAS_SUNREAVER)))
+                    if (Creature* aethas = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ARCHMAGE_AETHAS_SUNREAVER)))
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, aethas);
 
-                    if (Creature* sylvana = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                    if (Creature* sylvana = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, sylvana);
 
-                    if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                    if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, varian);
 
-                    if (Creature* vereesa = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_VEREESA_WINDRUNNER) : 0))
+                    if (Creature* vereesa = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_VEREESA_WINDRUNNER) : ObjectGuid::Empty))
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, vereesa);
 
-                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_PORTCULLIS)))
+                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_PORTCULLIS)))
                         towerDoor->SetGoState(GO_STATE_READY);                     
                                                                                    
-                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_PORTCULLIS + 1)))
+                    if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_PORTCULLIS + 1)))
                         towerDoor->SetGoState(GO_STATE_READY);
 
                     // Lock Cannons
-                    if (Creature* southCannon = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ANTI_AIR_CANNON)))
+                    if (Creature* southCannon = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ANTI_AIR_CANNON)))
                         southCannon->AI()->SetData(TYPE_AIR_CANNON_ACTIVE, 0);
 
-                    if (Creature* northCannon = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ANTI_AIR_CANNON + 1)))
+                    if (Creature* northCannon = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ANTI_AIR_CANNON + 1)))
                         northCannon->AI()->SetData(TYPE_AIR_CANNON_ACTIVE, 0);
 
                     // Lock Rope
-                    if (Creature* sRope = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ROPE)))
+                    if (Creature* sRope = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ROPE)))
                         sRope->SetVisible(false);
 
-                    if (Creature* nRope = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ROPE + 1)))
+                    if (Creature* nRope = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ROPE + 1)))
                         nRope->SetVisible(false);
                 }
 
@@ -652,7 +652,7 @@ class boss_galakras : public CreatureScript
                             instance->DoUpdateWorldState(WORLDSTATE_SOUTH_TOWER_INFLUENCE_COUNT, 100);
 
                             // open door
-                            if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_PORTCULLIS)))
+                            if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_PORTCULLIS)))
                                 towerDoor->SetGoState(GO_STATE_ACTIVE);
 
                             // Tower Citizen
@@ -684,7 +684,7 @@ class boss_galakras : public CreatureScript
                             instance->DoUpdateWorldState(WORLDSTATE_NORTH_TOWER_INFLUENCE_COUNT, 100);
 
                             // open door
-                            if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_PORTCULLIS + 1)))
+                            if (GameObject* towerDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_PORTCULLIS + 1)))
                                 towerDoor->SetGoState(GO_STATE_ACTIVE);
 
                             // Tower Citizen
@@ -712,15 +712,15 @@ class boss_galakras : public CreatureScript
                         instance->DoUpdateWorldState(WORLDSTATE_SOUTH_TOWER_PROGRESS, 0);
 
                         // Announce
-                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                             zaela->AI()->Talk(TALK_SPECIAL_10);
 
                         // Unlock Tower Gun
-                        if (Creature* cannon = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ANTI_AIR_CANNON) : 0))
+                        if (Creature* cannon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ANTI_AIR_CANNON) : ObjectGuid::Empty))
                             cannon->AI()->SetData(TYPE_AIR_CANNON_ACTIVE, 1);
 
                         // Unlock Rope
-                        if (Creature* rope = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ROPE) : 0))
+                        if (Creature* rope = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ROPE) : ObjectGuid::Empty))
                             rope->SetVisible(true);
                         break;
                     }
@@ -740,15 +740,15 @@ class boss_galakras : public CreatureScript
                         instance->DoUpdateWorldState(WORLDSTATE_NORTH_TOWER_PROGRESS, 0);
 
                         // Announce
-                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                             zaela->AI()->Talk(TALK_SPECIAL_12);
 
                         // Unlock Tower Gun
-                        if (Creature* cannon = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ANTI_AIR_CANNON + 1) : 0))
+                        if (Creature* cannon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ANTI_AIR_CANNON + 1) : ObjectGuid::Empty))
                             cannon->AI()->SetData(TYPE_AIR_CANNON_ACTIVE, 1);
 
                         // Unlock Rope
-                        if (Creature* rope = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ROPE + 1) : 0))
+                        if (Creature* rope = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ROPE + 1) : ObjectGuid::Empty))
                             rope->SetVisible(true);
                         break;
                     }
@@ -794,7 +794,7 @@ class boss_galakras : public CreatureScript
 
                             if (instance && instance->GetData(DATA_FLEX) && instance->instance->GetPlayersCountExceptGMs() < 15) // If we have less than 15 players on flex, use flex script
                             {
-                                    if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                                    if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                                         zaela->AI()->Talk(urand(TALK_SPECIAL_4, TALK_SPECIAL_5));
                                 for (uint8 i = 0; i < 6; i++)
                                     if (keyflex->second[i])
@@ -804,7 +804,7 @@ class boss_galakras : public CreatureScript
                                 if (instance && !instance->GetData(DATA_FLEX)) // If we are in instance and not flex raid, use normal script
                                 {
                                     if (key->first != 4 && key->first != 9) // not announce dragons
-                                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                                        if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                                             zaela->AI()->Talk(urand(TALK_SPECIAL_4, TALK_SPECIAL_5));
                                     for (uint8 i = 0; i < 6; i++)
                                         if (key->second[i])
@@ -814,7 +814,7 @@ class boss_galakras : public CreatureScript
                                     if (instance && instance->GetData(DATA_FLEX) && instance->instance->GetPlayersCountExceptGMs() > 15) // If We are in Flex and Have more than 15 players we use normal spawns
                                     {
                                         if (key->first != 4 && key->first != 9) // not announce dragons
-                                            if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                                            if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                                                 zaela->AI()->Talk(urand(TALK_SPECIAL_4, TALK_SPECIAL_5));
                                         for (uint8 i = 0; i < 6; i++)
                                             if (key->second[i])
@@ -848,7 +848,7 @@ class boss_galakras : public CreatureScript
                             events.ScheduleEvent(EVENT_PULSING_FLAMES, 12.5 * IN_MILLISECONDS);
                             break;
                         case EVENT_CALL_DEMOLISHER:
-                            if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_ZAELA) : 0))
+                            if (Creature* zaela = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                             {
                                 zaela->AI()->Talk(TALK_SPECIAL_7);
                                 zaela->AI()->Talk(TALK_SPECIAL_8); // Announce
@@ -919,7 +919,7 @@ struct npc_master_cannoneer_dagryn : public ScriptedAI
     TaskScheduler scheduler;
     EventMap events;
     Position pos;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     // proto drakon doesn`t exists at second tower
     void IsSummonedBy(Unit* summoner) override { }
@@ -929,7 +929,7 @@ struct npc_master_cannoneer_dagryn : public ScriptedAI
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         events.Reset();
         scheduler.CancelAll();
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void AttackStart(Unit* target) override
@@ -968,7 +968,7 @@ struct npc_master_cannoneer_dagryn : public ScriptedAI
 
         Talk(TALK_SPECIAL_1);
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             galakras->AI()->SetData(TYPE_NORTH_TOWER_INFLUENCE_COUNT, 40);
     }
 
@@ -1059,7 +1059,7 @@ struct npc_high_enforcer_thranok : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -1118,7 +1118,7 @@ struct npc_lieutenant_krugruk : public ScriptedAI
     TaskScheduler scheduler;
     EventMap events;
     Position pos;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 dragonsCount; // 10 is limit
 
     void IsSummonedBy(Unit* summoner) override
@@ -1143,7 +1143,7 @@ struct npc_lieutenant_krugruk : public ScriptedAI
     {
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         events.Reset();
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -1159,7 +1159,7 @@ struct npc_lieutenant_krugruk : public ScriptedAI
 
         Talk(TALK_SPECIAL_1);
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             galakras->AI()->SetData(TYPE_SOUTH_TOWER_INFLUENCE_COUNT, 40);
     }
 
@@ -1252,7 +1252,7 @@ struct npc_korgra_the_snake : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -1325,13 +1325,13 @@ struct npc_galakras_dragonmaw_bonecrusher : public ScriptedAI
 
     TaskScheduler scheduler;
     EventMap events;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     bool hasControll;
 
     void Reset() override
     {
         events.Reset();
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
         hasControll = false;
     }
 
@@ -1342,7 +1342,7 @@ struct npc_galakras_dragonmaw_bonecrusher : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -1431,7 +1431,7 @@ struct npc_galakras_dragonmaw_bonecrusher : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    uint64 GetLeaderGUID()
+    ObjectGuid GetLeaderGUID()
     {
         std::list<Creature*> leadersList;
         GetCreatureListWithEntryInGrid(leadersList, me, NPC_LORTHEMAR_THERON, 200.0f);
@@ -1442,7 +1442,7 @@ struct npc_galakras_dragonmaw_bonecrusher : public ScriptedAI
         GetCreatureListWithEntryInGrid(leadersList, me, NPC_VEREESA_WINDRUNNER, 200.0f);
 
         if (leadersList.empty())
-            return 0;
+            return ObjectGuid::Empty;
 
         return Trinity::Containers::SelectRandomContainerElement(leadersList)->GetGUID();
     }
@@ -1467,7 +1467,7 @@ struct npc_galakras_dragonmaw_flagbearer : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -1526,7 +1526,7 @@ struct npc_galakras_dragonmaw_tidal_shaman : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -1544,7 +1544,7 @@ struct npc_galakras_dragonmaw_tidal_shaman : public ScriptedAI
         events.ScheduleEvent(EVENT_HEALING_TIDE_TOTEM, 9 * IN_MILLISECONDS);
     }
 
-    uint64 GetLowestFriendGUID()
+    ObjectGuid GetLowestFriendGUID()
     {
         std::list<Creature*> tmpTargets;
 
@@ -1556,14 +1556,14 @@ struct npc_galakras_dragonmaw_tidal_shaman : public ScriptedAI
         tmpTargets.remove_if([=](Creature* target) { return target && !target->IsAlive(); });
 
         if (tmpTargets.empty())
-            return 0;
+            return ObjectGuid::Empty;
 
         tmpTargets.sort(Trinity::HealthPctOrderPred());
 
         if (Creature* lowestTarget = tmpTargets.front())
             return lowestTarget->GetGUID();
 
-        return 0;
+        return ObjectGuid::Empty;
     }
 
     void UpdateAI(uint32 diff) override
@@ -1618,7 +1618,7 @@ struct npc_galakras_dragonmaw_flameslinger : public ScriptedAI
     }
 
     EventMap events;
-    uint64 arrowTargetGUID;
+    ObjectGuid arrowTargetGUID;
     uint8 inTower;
     bool innerTower;
 
@@ -1627,12 +1627,12 @@ struct npc_galakras_dragonmaw_flameslinger : public ScriptedAI
         events.Reset();
     }
 
-    uint64 GetGUID(int32 /*type*/) const override
+    ObjectGuid GetGUID(int32 /*type*/) const override
     {
         return arrowTargetGUID;
     }
 
-    void SetGUID(uint64 guid, int32 /*type*/) override
+    void SetGUID(ObjectGuid guid, int32 /*type*/) override
     {
         arrowTargetGUID = guid;
     }
@@ -1658,7 +1658,7 @@ struct npc_galakras_dragonmaw_flameslinger : public ScriptedAI
     void JustDied(Unit* /*killer*/) override
     {
         if (inTower && me->GetInstanceScript())
-            if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetData64(DATA_GALAKRAS)))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS)))
                 galakras->AI()->SetData(inTower > 1 ? TYPE_NORTH_TOWER_INFLUENCE_COUNT : TYPE_SOUTH_TOWER_INFLUENCE_COUNT, 10);
     }
 
@@ -1760,7 +1760,7 @@ struct npc_galakras_dragonmaw_grunt : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -1774,7 +1774,7 @@ struct npc_galakras_dragonmaw_grunt : public ScriptedAI
     void JustDied(Unit* /*killer*/) override
     {
         if (inTower && me->GetInstanceScript())
-            if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetData64(DATA_GALAKRAS)))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS)))
                 galakras->AI()->SetData(inTower > 1 ? TYPE_NORTH_TOWER_INFLUENCE_COUNT : TYPE_SOUTH_TOWER_INFLUENCE_COUNT, 10);
     }
 
@@ -1822,7 +1822,7 @@ struct npc_galakras_dragonmaw_grunt_tower : public ScriptedAI
     {
         events.Reset();
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
         {
             if (galakras->AI()->GetData(TYPE_SOUTH_TOWER) && galakras->AI()->GetData(TYPE_NORTH_TOWER))
             {
@@ -1910,7 +1910,7 @@ struct npc_galakras_dragonmaw_proto_drake : public ScriptedAI
 
         if (InAir)
         {
-            if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                 galakras->AI()->JustSummoned(me);
 
             scheduler
@@ -1947,7 +1947,7 @@ struct npc_galakras_dragonmaw_proto_drake : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -2010,7 +2010,7 @@ struct npc_galakras_korkron_demolisher : public ScriptedAI
         towerIndex = 0;
 
         // Set facing to Assaulted Tower
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             towerIndex = galakras->AI()->GetData(TYPE_NORTH_TOWER) ? 1 : 0;
 
         me->SetInCombatWithZone();
@@ -2096,7 +2096,7 @@ struct npc_galakras_varian_wrynn : public ScriptedAI
     {
         me->Respawn();
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             galakras->AI()->EnterEvadeMode();
     }
 
@@ -2181,7 +2181,7 @@ struct npc_galakras_sylvanas_windrunner : public ScriptedAI
     {
         me->Respawn();
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             galakras->AI()->EnterEvadeMode();
     }
 
@@ -2276,7 +2276,7 @@ struct npc_galakras_aethas_sunreaver : public ScriptedAI
     {
         me->Respawn();
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             galakras->AI()->EnterEvadeMode();
     }
 
@@ -2371,7 +2371,7 @@ struct npc_galakras_vereesa_windrunner : public ScriptedAI
     {
         me->Respawn();
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             galakras->AI()->EnterEvadeMode();
     }
 
@@ -2482,7 +2482,7 @@ class npc_galakras_jaina_proudmoore : public CreatureScript
                     case ACTION_START_INTRO:
                         me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-                        if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                        if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                             varian->AI()->Talk(TALK_INTRO);
 
                         delay = 6000;
@@ -2495,7 +2495,7 @@ class npc_galakras_jaina_proudmoore : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 3600), [this](TaskContext context)
                         {
-                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                                 varian->AI()->Talk(TALK_SPECIAL_1);
                         });
 
@@ -2508,21 +2508,21 @@ class npc_galakras_jaina_proudmoore : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 5100), [this](TaskContext context)
                         {
-                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                                 varian->AI()->Talk(TALK_SPECIAL_2);
                         });
 
                         scheduler
                             .Schedule(Milliseconds(delay += 6100), [this](TaskContext context)
                         {
-                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                                 varian->AI()->Talk(TALK_SPECIAL_3);
                         });
 
                         scheduler
                             .Schedule(Milliseconds(delay += 3000), [this](TaskContext context)
                         {
-                            if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_GALAKRAS) : 0))
+                            if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                                 galakras->AI()->DoAction(ACTION_START_INTRO);
                         });
                         break;
@@ -2538,7 +2538,7 @@ class npc_galakras_jaina_proudmoore : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 1800), [this](TaskContext context)
                         {
-                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                                 varian->AI()->Talk(TALK_SPECIAL_5);
                         });
 
@@ -2551,7 +2551,7 @@ class npc_galakras_jaina_proudmoore : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 9700), [this](TaskContext context)
                         {
-                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_KING_VARIAN_WRYNN) : 0))
+                            if (Creature* varian = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_KING_VARIAN_WRYNN) : ObjectGuid::Empty))
                                 varian->AI()->Talk(TALK_SPECIAL_6);
                         });
                         break;
@@ -2584,7 +2584,7 @@ class npc_galakras_jaina_proudmoore : public CreatureScript
             {
                 me->Respawn();
 
-                if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_GALAKRAS) : 0))
+                if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                     galakras->AI()->EnterEvadeMode();
             }
 
@@ -2703,14 +2703,14 @@ class npc_galakras_lorthemar_theron : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay), [this](TaskContext context)
                         {
-                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                                 sylvanas->AI()->Talk(TALK_INTRO);
                         });
 
                         scheduler
                             .Schedule(Milliseconds(delay += 5000), [this](TaskContext context)
                         {
-                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                                 sylvanas->AI()->Talk(TALK_SPECIAL_1);
                         });
 
@@ -2735,7 +2735,7 @@ class npc_galakras_lorthemar_theron : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 3500), [this](TaskContext context)
                         {
-                            if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_GALAKRAS) : 0))
+                            if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                                 galakras->AI()->DoAction(ACTION_START_INTRO);
                         });
                         break;
@@ -2751,7 +2751,7 @@ class npc_galakras_lorthemar_theron : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 1800), [this](TaskContext context)
                         {
-                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                                 sylvanas->AI()->Talk(TALK_SPECIAL_5);
                         });
 
@@ -2764,7 +2764,7 @@ class npc_galakras_lorthemar_theron : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 9700), [this](TaskContext context)
                         {
-                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_LADY_SYLVANAS_WINDRUNNER) : 0))
+                            if (Creature* sylvanas = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_LADY_SYLVANAS_WINDRUNNER) : ObjectGuid::Empty))
                                 sylvanas->AI()->Talk(TALK_SPECIAL_6);
                         });
                         break;
@@ -2802,7 +2802,7 @@ class npc_galakras_lorthemar_theron : public CreatureScript
             {
                 me->Respawn();
 
-                if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_GALAKRAS) : 0))
+                if (Creature* galakras = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                     galakras->AI()->EnterEvadeMode();
             }
 
@@ -2865,7 +2865,7 @@ struct npc_galakras_demolitions_expert : public ScriptedAI
         if (!IsHeroic())
             return;
 
-        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+        if (Creature* galakras = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
         {
             if (galakras->AI()->GetData(TYPE_SOUTH_TOWER) && galakras->AI()->GetData(TYPE_NORTH_TOWER))
                 return;
@@ -3032,14 +3032,14 @@ struct npc_galakras_dragonmaw_ebon_stalker : public ScriptedAI
 
     TaskScheduler scheduler;
     EventMap events;
-    uint64 shadowStepTargetGUID;
-    uint64 targetGUID;
+    ObjectGuid shadowStepTargetGUID;
+    ObjectGuid targetGUID;
 
     void Reset() override
     {
         events.Reset();
-        shadowStepTargetGUID = 0;
-        targetGUID           = 0;
+        shadowStepTargetGUID = ObjectGuid::Empty;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void AttackStart(Unit* victim) override
@@ -3049,7 +3049,7 @@ struct npc_galakras_dragonmaw_ebon_stalker : public ScriptedAI
             me->getThreatManager().doAddThreat(victim, -10000.0f); // remove thread from this target to exclude new pull
 
             // select faction leader
-            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : 0))
+            if (Creature* target = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(me->GetInstanceScript()->GetData(DATA_GROUP_FACTION) ? NPC_LADY_SYLVANAS_WINDRUNNER : NPC_LADY_JAINA_PROUDMOORE) : ObjectGuid::Empty))
                 if (me->Attack(target, true))
                     me->GetMotionMaster()->MoveChase(target);
 
@@ -3263,7 +3263,7 @@ class spell_most_complicated_bomb_in_the_world : public AuraScript
     {
         if (Creature* owner = GetOwner()->ToCreature())
         {
-            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             {
                 towerId = GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_IN_THE_WORLD_S ? TYPE_SOUTH_TOWER_COUNTER : TYPE_NORTH_TOWER_COUNTER;
                 uint32 towerProgressValue = galakras->AI()->GetData(towerId);
@@ -3273,10 +3273,10 @@ class spell_most_complicated_bomb_in_the_world : public AuraScript
                     galakras->AI()->SetData(GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_IN_THE_WORLD_S ? TYPE_SOUTH_TOWER : TYPE_NORTH_TOWER, 1);
 
                     // Announce
-                    if (Creature* zaela = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(NPC_ZAELA) : 0))
+                    if (Creature* zaela = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(NPC_ZAELA) : ObjectGuid::Empty))
                         zaela->AI()->Talk(GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_IN_THE_WORLD_S ? TALK_SPECIAL_6 : TALK_SPECIAL_11);
 
-                    if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+                    if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                         galakras->AI()->DoAction(ACTION_CALL_DEMOLISHER);
 
                     owner->DespawnOrUnsummon();
@@ -3352,7 +3352,7 @@ class spell_galakras_anti_air_cannon_missle : public SpellScript
         if (Unit* caster = GetCaster())
         {
             // Traj has an wrong traectory of hit...
-            if (Creature* galakras = ObjectAccessor::GetCreature(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             {
                 float dist = caster->GetExactDist2d(galakras);
                 GetPositionWithDistInOrientation(caster, dist, caster->GetAngle(galakras), x, y);
@@ -3606,14 +3606,14 @@ class spell_galakras_tower_strength : public AuraScript
     void HandleOnApply(AuraEffect const* /*aureff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* owner = GetOwner()->ToUnit())
-            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                 owner->SetPower(POWER_ALTERNATE_POWER, galakras->AI()->GetData(TYPE_SOUTH_TOWER_INFLUENCE_COUNT));
     }
 
     void OnTrigger(AuraEffect const* /*aurEff*/)
     {
         if (Unit* owner = GetOwner()->ToUnit())
-            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                 owner->SetPower(POWER_ALTERNATE_POWER, galakras->AI()->GetData(TYPE_SOUTH_TOWER_INFLUENCE_COUNT));
     }
 
@@ -3632,14 +3632,14 @@ class spell_galakras_tower_strength_north : public AuraScript
     void HandleOnApply(AuraEffect const* /*aureff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* owner = GetOwner()->ToUnit())
-            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                 owner->SetPower(POWER_ALTERNATE_POWER, galakras->AI()->GetData(TYPE_NORTH_TOWER_INFLUENCE_COUNT));
     }
 
     void OnTrigger(AuraEffect const* /*aurEff*/)
     {
         if (Unit* owner = GetOwner()->ToUnit())
-            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
                 owner->SetPower(POWER_ALTERNATE_POWER, galakras->AI()->GetData(TYPE_NORTH_TOWER_INFLUENCE_COUNT));
     }
 
@@ -3812,7 +3812,7 @@ class spell_galakras_flames_of_galakrond_periodic : public AuraScript
         return true;
     }
 
-    void SetGuid(uint32 type, uint64 guid) override
+    void SetGuid(uint32 type, ObjectGuid guid) override
     {
         splitAmount += int32(type);
     }
@@ -4100,7 +4100,7 @@ class sat_galakras_flames_of_galakrond : public IAreaTriggerAura
                     int32 amount = affectedCount > 0 ? (int32)(sSpellMgr->GetSpellInfo(SPELL_FLAMES_OF_GALAKROND_PERIODIC_EFF, caster->GetMap()->GetDifficulty())->Effects[0].BasePoints * (1 - affixMod)) : sSpellMgr->GetSpellInfo(SPELL_FLAMES_OF_GALAKROND_PERIODIC_EFF, caster->GetMap()->GetDifficulty())->Effects[0].BasePoints; // calculate amount of tick on this step
                     if (auto const aura = itr->GetAura(SPELL_FLAMES_OF_GALAKROND_PERIODIC_EFF))
                     {
-                        aura->SetScriptGuid(amount, 0);
+                        aura->SetScriptGuid(amount, ObjectGuid::Empty);
                         aura->SetStackAmount(aura->GetStackAmount() + 1);
                         aura->RefreshDuration();
                     }
@@ -4143,7 +4143,7 @@ class AreaTrigger_at_soo_south_tower : public AreaTriggerScript
             if (player->GetInstanceScript() && player->GetInstanceScript()->GetBossState(DATA_GALAKRAS) != IN_PROGRESS)
                 return false;
 
-            if (Creature* galakras = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             {
                 if (galakras->AI()->GetData(TYPE_SOUTH_TOWER) && !player->HasAura(SPELL_IN_A_TOWER))
                 {
@@ -4168,7 +4168,7 @@ class AreaTrigger_at_soo_north_tower : public AreaTriggerScript
             if (player->GetInstanceScript() && player->GetInstanceScript()->GetBossState(DATA_GALAKRAS) != IN_PROGRESS)
                 return false;
 
-            if (Creature* galakras = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetData64(DATA_GALAKRAS) : 0))
+            if (Creature* galakras = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetGuidData(DATA_GALAKRAS) : ObjectGuid::Empty))
             {
                 if (galakras->AI()->GetData(TYPE_NORTH_TOWER) && !player->HasAura(SPELL_IN_A_TOWER))
                 {

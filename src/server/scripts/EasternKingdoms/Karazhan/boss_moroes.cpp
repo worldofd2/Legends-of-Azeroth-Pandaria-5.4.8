@@ -108,7 +108,7 @@ class boss_moroes : public CreatureScript
 
             InstanceScript* instance;
 
-            uint64 AddGUID[4];
+            ObjectGuid AddGUID[4];
 
             uint32 Vanish_Timer;
             uint32 Blind_Timer;
@@ -341,12 +341,12 @@ struct boss_moroes_guestAI : public ScriptedAI
 {
     InstanceScript* instance;
 
-    uint64 GuestGUID[4];
+    ObjectGuid GuestGUID[4];
 
     boss_moroes_guestAI(Creature* creature) : ScriptedAI(creature)
     {
         for (uint8 i = 0; i < 4; ++i)
-            GuestGUID[i] = 0;
+            GuestGUID[i] = ObjectGuid::Empty;
 
         instance = creature->GetInstanceScript();
     }
@@ -362,15 +362,15 @@ struct boss_moroes_guestAI : public ScriptedAI
         if (!instance)
             return;
 
-       if (Creature* Moroes = Unit::GetCreature(*me, instance->GetData64(DATA_MOROES)))
+       if (Creature* Moroes = Unit::GetCreature(*me, instance->GetGuidData(DATA_MOROES)))
             for (uint8 i = 0; i < 4; ++i)
-                if (uint64 GUID = CAST_AI(boss_moroes::boss_moroesAI, Moroes->AI())->AddGUID[i])
+                if (ObjectGuid GUID = CAST_AI(boss_moroes::boss_moroesAI, Moroes->AI())->AddGUID[i])
                     GuestGUID[i] = GUID;
     }
 
     Unit* SelectGuestTarget()
     {
-        uint64 TempGUID = GuestGUID[rand() % 4];
+        ObjectGuid TempGUID = GuestGUID[rand() % 4];
         if (TempGUID)
         {
             Unit* unit = Unit::GetUnit(*me, TempGUID);

@@ -40,12 +40,12 @@ public:
             vortexTriggers.clear();
             portalTriggers.clear();
 
-            malygosGUID = 0;
-            irisGUID = 0;
-            lastPortalGUID = 0;
-            platformGUID = 0;
-            exitPortalGUID = 0;
-            alexstraszaBunnyGUID = 0;
+            malygosGUID = ObjectGuid::Empty;
+            irisGUID = ObjectGuid::Empty;
+            lastPortalGUID = ObjectGuid::Empty;
+            platformGUID = ObjectGuid::Empty;
+            exitPortalGUID = ObjectGuid::Empty;
+            alexstraszaBunnyGUID = ObjectGuid::Empty;
         };
 
         bool SetBossState(uint32 type, EncounterState state) override
@@ -57,7 +57,7 @@ public:
             {
                 if (state == FAIL)
                 {
-                    for (std::list<uint64>::const_iterator itr_trigger = portalTriggers.begin(); itr_trigger != portalTriggers.end(); ++itr_trigger)
+                    for (std::list<ObjectGuid>::const_iterator itr_trigger = portalTriggers.begin(); itr_trigger != portalTriggers.end(); ++itr_trigger)
                     {
                         if (Creature* trigger = instance->GetCreature(*itr_trigger))
                         {
@@ -83,7 +83,7 @@ public:
         void SpawnGameObject(uint32 entry, Position& pos)
         {
             GameObject* go = new GameObject;
-            if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, instance,
+            if (!go->Create(instance->GenerateLowGuid<HighGuid::GameObject>(), entry, instance,
                 PHASEMASK_NORMAL, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(),
                 { }, 100, GO_STATE_READY))
             {
@@ -192,7 +192,7 @@ public:
             if (Creature* malygos = instance->GetCreature(malygosGUID))
             {
                 std::list<HostileReference*> m_threatlist = malygos->getThreatManager().getThreatList();
-                for (std::list<uint64>::const_iterator itr_vortex = vortexTriggers.begin(); itr_vortex != vortexTriggers.end(); ++itr_vortex)
+                for (std::list<ObjectGuid>::const_iterator itr_vortex = vortexTriggers.begin(); itr_vortex != vortexTriggers.end(); ++itr_vortex)
                 {
                     if (m_threatlist.empty())
                         return;
@@ -226,7 +226,7 @@ public:
         {
             bool next = (lastPortalGUID == portalTriggers.back() || !lastPortalGUID ? true : false);
 
-            for (std::list<uint64>::const_iterator itr_trigger = portalTriggers.begin(); itr_trigger != portalTriggers.end(); ++itr_trigger)
+            for (std::list<ObjectGuid>::const_iterator itr_trigger = portalTriggers.begin(); itr_trigger != portalTriggers.end(); ++itr_trigger)
             {
                 if (next)
                 {
@@ -259,7 +259,7 @@ public:
             }
         }
 
-        uint64 GetData64(uint32 data) const override
+        ObjectGuid GetGuidData(uint32 data) const override
         {
             switch (data)
             {
@@ -279,7 +279,7 @@ public:
                     return giftBoxBunnyGUID;
             }
 
-            return 0;
+            return ObjectGuid::Empty;
         }
 
         std::string GetSaveData() override
@@ -325,16 +325,16 @@ public:
         }
 
         private:
-            std::list<uint64> vortexTriggers;
-            std::list<uint64> portalTriggers;
-            uint64 malygosGUID;
-            uint64 irisGUID;
-            uint64 lastPortalGUID;
-            uint64 platformGUID;
-            uint64 exitPortalGUID;
-            uint64 heartOfMagicGUID;
-            uint64 alexstraszaBunnyGUID;
-            uint64 giftBoxBunnyGUID;
+            std::list<ObjectGuid> vortexTriggers;
+            std::list<ObjectGuid> portalTriggers;
+            ObjectGuid malygosGUID;
+            ObjectGuid irisGUID;
+            ObjectGuid lastPortalGUID;
+            ObjectGuid platformGUID;
+            ObjectGuid exitPortalGUID;
+            ObjectGuid heartOfMagicGUID;
+            ObjectGuid alexstraszaBunnyGUID;
+            ObjectGuid giftBoxBunnyGUID;
             Position focusingIrisPosition;
             Position exitPortalPosition;
     };

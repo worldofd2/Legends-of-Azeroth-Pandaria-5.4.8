@@ -306,11 +306,11 @@ class npc_announcer_toc5 : public CreatureScript
 
             uint32 phase;
             uint32 timer;
-            uint64 uiBlackKnightGUID;
+            ObjectGuid uiBlackKnightGUID;
 
-            std::list<uint64> Champion1List;
-            std::list<uint64> Champion2List;
-            std::list<uint64> Champion3List;
+            std::list<ObjectGuid> Champion1List;
+            std::list<ObjectGuid> Champion2List;
+            std::list<ObjectGuid> Champion3List;
 
             void NextStep(uint32 timerStep, bool nextStep = true, uint8 phaseStep = 0)
             {
@@ -329,9 +329,9 @@ class npc_announcer_toc5 : public CreatureScript
                 switch (type)
                 {
                     case DATA_START:
-                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MAIN_GATE)))
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_MAIN_GATE)))
                             instance->HandleGameObject(go->GetGUID(), true);
-                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_PORTCULLIS)))
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_PORTCULLIS)))
                             instance->HandleGameObject(go->GetGUID(), false);
                         instance->SetData(DATA_MOVEMENT_DONE, 0);
 
@@ -341,14 +341,14 @@ class npc_announcer_toc5 : public CreatureScript
                         break;
                     case DATA_IN_POSITION: // movement done.
                         me->GetMotionMaster()->MovePoint(1, 735.81f, 661.92f, 412.39f);
-                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MAIN_GATE)))
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_MAIN_GATE)))
                             instance->HandleGameObject(go->GetGUID(), false);
                         NextStep(10000, false, 3);
                         break;
                     case DATA_LESSER_CHAMPIONS_DEFEATED:
                     {
                         ++lesserChampions;
-                        std::list<uint64> tempList;
+                        std::list<ObjectGuid> tempList;
                         if (lesserChampions == 3 || lesserChampions == 6)
                         {
                             switch (lesserChampions)
@@ -375,7 +375,7 @@ class npc_announcer_toc5 : public CreatureScript
                         if (defeatedGrandChampions == 3)
                         {
                             for (uint8 i = 0; i < 3; ++i)
-                                if (Creature* GrandChampion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GRAND_CHAMPION_1 + i)))
+                                if (Creature* GrandChampion = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GRAND_CHAMPION_1 + i)))
                                 {
                                     switch (i)
                                     {
@@ -403,7 +403,7 @@ class npc_announcer_toc5 : public CreatureScript
             void StartGrandChampionsAttack()
             {
                 for (uint8 i = 0; i < 3; ++i)
-                    if (Creature* GrandChampion = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_GRAND_CHAMPION_1 + i) : 0))
+                    if (Creature* GrandChampion = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_GRAND_CHAMPION_1 + i) : ObjectGuid::Empty))
                         AggroAllPlayers(GrandChampion);
             }
 
@@ -533,7 +533,7 @@ class npc_announcer_toc5 : public CreatureScript
 
                 me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-                if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_PORTCULLIS)))
+                if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_PORTCULLIS)))
                     instance->HandleGameObject(go->GetGUID(), false);
 
                 if (instance->GetData(BOSS_BLACK_KNIGHT) == NOT_STARTED)
@@ -558,7 +558,7 @@ class npc_announcer_toc5 : public CreatureScript
                             pBlackKnight->SetTarget(me->GetGUID());
                             me->SetTarget(uiBlackKnightGUID);
                         }
-                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MAIN_GATE)))
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_MAIN_GATE)))
                             instance->HandleGameObject(go->GetGUID(), false);
 
                         me->MonsterYell("What''s that, up near the rafters?", LANG_UNIVERSAL, 0); // SAY_START5

@@ -23,7 +23,7 @@ void WorldDatabaseConnection::DoPrepareStatements()
     if (!m_reconnecting)
         m_stmts.resize(MAX_WORLDDATABASE_STATEMENTS);
 
-    PrepareStatement(WORLD_SEL_QUEST_POOLS, "SELECT entry, pool_entry, chance FROM pool_quest", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_QUEST_POOLS, "SELECT pq.entry, pq.pool_entry, pt.max_limit FROM pool_quest pq LEFT JOIN pool_template pt ON pq.pool_entry = pt.entry", CONNECTION_SYNCH);
     PrepareStatement(WORLD_DEL_CRELINKED_RESPAWN, "DELETE FROM linked_respawn WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(WORLD_REP_CREATURE_LINKED_RESPAWN, "REPLACE INTO linked_respawn (guid, linkedGuid) VALUES (?, ?)", CONNECTION_ASYNC);
     PrepareStatement(WORLD_SEL_CREATURE_TEXT, "SELECT CreatureID, GroupID, ID, `Text`, Type, Language, Probability, Emote, Duration, Sound, SoundType, BroadcastTextId, TextRange FROM creature_text", CONNECTION_SYNCH);    // TC table struct

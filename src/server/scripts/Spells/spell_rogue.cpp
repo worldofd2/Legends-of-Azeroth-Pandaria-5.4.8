@@ -202,7 +202,7 @@ class spell_rog_growl : public SpellScript
 
     void HandleCast()
     {
-        uint64 guid = GetCaster()->GetTarget();
+        ObjectGuid guid = GetCaster()->GetTarget();
         if (Unit* target = ObjectAccessor::GetUnit(*GetCaster(), guid))
             if (GetCaster()->IsValidAttackTarget(target))
                 GetCaster()->CastSpell(target, SPELL_ROUGE_GROWL, true);
@@ -656,7 +656,7 @@ class spell_rog_deadly_poison : public SpellScriptLoader
                             if (!spellInfo)
                             {
                                 TC_LOG_ERROR("spells", "Player::CastItemCombatSpell Enchant %i, player (Name: %s, GUID: %u) cast unknown spell %i",
-                                             enchant->ID, player->GetName().c_str(), player->GetGUIDLow(), enchant->SpellID[s]);
+                                             enchant->ID, player->GetName().c_str(), player->GetGUID().GetCounter(), enchant->SpellID[s]);
                                 continue;
                             }
 
@@ -795,8 +795,8 @@ class spell_rog_killing_spree : public AuraScript
 {
     PrepareAuraScript(spell_rog_killing_spree);
 
-    std::set<uint64> m_targets;
-    uint64 m_mainTarget = 0;
+    std::set<ObjectGuid> m_targets;
+    ObjectGuid m_mainTarget = ObjectGuid::Empty;
     bool m_glyphed = false;
     WorldLocation m_start;
     uint32 m_phase = 0;
@@ -861,7 +861,7 @@ class spell_rog_killing_spree : public AuraScript
         {
             while (!m_targets.empty())
             {
-                uint64 guid = Trinity::Containers::SelectRandomContainerElement(m_targets);
+                ObjectGuid guid = Trinity::Containers::SelectRandomContainerElement(m_targets);
                 target = ObjectAccessor::GetUnit(*m_caster, guid);
                 if (target && target->IsAlive() && !notValidTarget(target))
                     break;
@@ -1472,7 +1472,7 @@ class spell_rog_honor_among_thieves : public AuraScript
                 return;
 
             Unit* target = nullptr;
-            if (uint64 guid = rogue->ToPlayer()->GetComboTarget())
+            if (ObjectGuid guid = rogue->ToPlayer()->GetComboTarget())
                 target = ObjectAccessor::GetUnit(*rogue, guid);
             if (!target)
                 target = rogue->GetVictim();

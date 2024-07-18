@@ -308,7 +308,7 @@ class boss_eye_of_cthun : public CreatureScript
                             me->SetReactState(REACT_PASSIVE);
     
                             //Remove any target
-                            me->SetTarget(0);
+                            me->SetTarget(ObjectGuid::Empty);
     
                             //Select random target for dark beam to start on
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
@@ -385,7 +385,7 @@ class boss_eye_of_cthun : public CreatureScript
                     //Transition phase
                     case PHASE_CTHUN_TRANSITION:
                         //Remove any target
-                        me->SetTarget(0);
+                        me->SetTarget(ObjectGuid::Empty);
                         me->SetHealth(0);
                         me->SetVisible(false);
                         break;
@@ -425,7 +425,7 @@ class boss_eye_of_cthun : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
     
                         //Remove Target field
-                        me->SetTarget(0);
+                        me->SetTarget(ObjectGuid::Empty);
     
                         //Death animation/respawning;
                         instance->SetData(DATA_CTHUN_PHASE, PHASE_CTHUN_TRANSITION);
@@ -492,10 +492,10 @@ class boss_cthun : public CreatureScript
             uint32 StomachAcidTimer;
             uint32 StomachEnterTimer;
             uint32 StomachEnterVisTimer;
-            uint64 StomachEnterTarget;
+            ObjectGuid StomachEnterTarget;
     
             //Stomach map, bool = true then in stomach
-            std::unordered_map<uint64, bool> Stomach_Map;
+            std::unordered_map<ObjectGuid, bool> Stomach_Map;
     
             void Reset() override
             {
@@ -516,7 +516,7 @@ class boss_cthun : public CreatureScript
                 StomachAcidTimer = 4000;                            //Every 4 seconds
                 StomachEnterTimer = 10000;                          //Every 10 seconds
                 StomachEnterVisTimer = 0;                           //Always 3.5 seconds after Stomach Enter Timer
-                StomachEnterTarget = 0;                             //Target to be teleported to stomach
+                StomachEnterTarget = ObjectGuid::Empty;             //Target to be teleported to stomach
     
                 //Clear players in stomach and outside
                 Stomach_Map.clear();
@@ -550,7 +550,7 @@ class boss_cthun : public CreatureScript
                 if (Stomach_Map.empty())
                     return NULL;
     
-                std::unordered_map<uint64, bool>::const_iterator i = Stomach_Map.begin();
+                std::unordered_map<ObjectGuid, bool>::const_iterator i = Stomach_Map.begin();
     
                 std::list<Unit*> temp;
                 std::list<Unit*>::const_iterator j;
@@ -612,7 +612,7 @@ class boss_cthun : public CreatureScript
                     return;
                 }
     
-                me->SetTarget(0);
+                me->SetTarget(ObjectGuid::Empty);
     
                 //No instance
                 if (!instance)
@@ -686,7 +686,7 @@ class boss_cthun : public CreatureScript
                     //Body Phase
                     case PHASE_CTHUN_STOMACH:
                         //Remove Target field
-                        me->SetTarget(0);
+                        me->SetTarget(ObjectGuid::Empty);
     
                         //Weaken
                         if (FleshTentaclesKilled > 1)
@@ -698,7 +698,7 @@ class boss_cthun : public CreatureScript
     
                             DoCast(me, SPELL_PURPLE_COLORATION, true);
     
-                            std::unordered_map<uint64, bool>::iterator i = Stomach_Map.begin();
+                            std::unordered_map<ObjectGuid, bool>::iterator i = Stomach_Map.begin();
     
                             //Kick all players out of stomach
                             while (i != Stomach_Map.end())
@@ -730,7 +730,7 @@ class boss_cthun : public CreatureScript
                         if (StomachAcidTimer <= diff)
                         {
                             //Apply aura to all players in stomach
-                            std::unordered_map<uint64, bool>::iterator i = Stomach_Map.begin();
+                            std::unordered_map<ObjectGuid, bool>::iterator i = Stomach_Map.begin();
     
                             while (i != Stomach_Map.end())
                             {
@@ -792,7 +792,7 @@ class boss_cthun : public CreatureScript
                                     DoTeleportPlayer(unit, STOMACH_X, STOMACH_Y, STOMACH_Z, STOMACH_O);
                                 }
     
-                                StomachEnterTarget = 0;
+                                StomachEnterTarget = ObjectGuid::Empty;
                                 StomachEnterVisTimer = 0;
                             } else StomachEnterVisTimer -= diff;
                         }
@@ -933,7 +933,7 @@ class npc_eye_tentacle : public CreatureScript
     
             uint32 MindflayTimer;
             uint32 KillSelfTimer;
-            uint64 Portal;
+            ObjectGuid Portal;
     
             void JustDied(Unit* /*killer*/) override
             {
@@ -1008,7 +1008,7 @@ class npc_claw_tentacle : public CreatureScript
             uint32 GroundRuptureTimer;
             uint32 HamstringTimer;
             uint32 EvadeTimer;
-            uint64 Portal;
+            ObjectGuid Portal;
     
             void JustDied(Unit* /*killer*/) override
             {
@@ -1118,7 +1118,7 @@ class npc_giant_claw_tentacle : public CreatureScript
             uint32 ThrashTimer;
             uint32 HamstringTimer;
             uint32 EvadeTimer;
-            uint64 Portal;
+            ObjectGuid Portal;
     
             void JustDied(Unit* /*killer*/) override
             {
@@ -1233,7 +1233,7 @@ class npc_giant_eye_tentacle : public CreatureScript
             }
     
             uint32 BeamTimer;
-            uint64 Portal;
+            ObjectGuid Portal;
     
             void JustDied(Unit* /*killer*/) override
             {

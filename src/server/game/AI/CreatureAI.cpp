@@ -334,7 +334,7 @@ bool CreatureAI::_EnterEvadeMode()
     // don't remove vehicle auras, passengers aren't supposed to drop off the vehicle
     // don't remove clone caster on evade (to be verified)
     // And don't remove any auras for fucking player's summons
-    if (!IS_PLAYER_GUID(me->GetCreatorGUID()))
+    if (!me->GetCreatorGUID().IsPlayer())
         me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE, SPELL_AURA_CLONE_CASTER);
 
     // sometimes bosses stuck in combat?
@@ -531,8 +531,25 @@ Creature* SummonablePremiumNpcAI::OpenGossip(PlayerOrChatHandler player, Creatur
     // Yeah, lol. Just to simulate the whole process, with aura interruptions and such, and avoid duplicating code
     ObjectGuid guid = creature->GetGUID();
     WorldPacket data(CMSG_GOSSIP_HELLO, 8);
-    data.WriteGuidMask(guid, 2, 4, 0, 3, 6, 7, 5, 1);
-    data.WriteGuidBytes(guid, 4, 7, 1, 0, 5, 3, 6, 2);
+
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[1]);
+
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[2]);
+
     player->GetSession()->HandleGossipHelloOpcode(data);
     return creature;
 }

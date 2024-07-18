@@ -214,14 +214,14 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay), [this](TaskContext context)
                         {
-                            if (Creature* rakgor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR) : 0))
+                            if (Creature* rakgor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR) : ObjectGuid::Empty))
                                 rakgor->AI()->Talk(TALK_INTRO);
                         });
 
                         scheduler
                             .Schedule(Milliseconds(delay += 3400), [this](TaskContext context)
                         {
-                            if (Creature* rakgor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR) : 0))
+                            if (Creature* rakgor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR) : ObjectGuid::Empty))
                                 rakgor->SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, 17719);
                         });
 
@@ -229,7 +229,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                             .Schedule(Milliseconds(delay += 1000), [this](TaskContext context)
                         {
                             // Fly out of there
-                            if (Creature* rakgor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR) : 0))
+                            if (Creature* rakgor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR) : ObjectGuid::Empty))
                             {
                                 Movement::MoveSplineInit init(rakgor);
                                 for (auto&& itr : korkronLeavePath)
@@ -319,7 +319,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                                 init.Launch();
 
                                 // Grizzle too wanna go with us!
-                                if (Creature* gearslip = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_GRIZZLE_GEARSLIP) : 0))
+                                if (Creature* gearslip = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_GRIZZLE_GEARSLIP) : ObjectGuid::Empty))
                                     gearslip->AI()->DoAction(ACTION_START_INTRO);
 
                                 scheduler
@@ -373,7 +373,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                             // Move to boat
                             me->GetMotionMaster()->MovePoint(0, boatPath[0]);
 
-                            if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_GRIZZLE_GEARSLIP) : 0))
+                            if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_GRIZZLE_GEARSLIP) : ObjectGuid::Empty))
                                 grizzle->AI()->DoAction(ACTION_MOVE_TO_BOAT);
                         });
                         break;
@@ -391,14 +391,14 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 2600), [this](TaskContext context)
                         {
-                            if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_GRIZZLE_GEARSLIP) : 0))
+                            if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_GRIZZLE_GEARSLIP) : ObjectGuid::Empty))
                                 grizzle->AI()->Talk(TALK_SPECIAL_4);
                         });
 
                         scheduler
                             .Schedule(Milliseconds(delay += 6000), [this](TaskContext context)
                         {
-                            if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_GRIZZLE_GEARSLIP) : 0))
+                            if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_GRIZZLE_GEARSLIP) : ObjectGuid::Empty))
                                 grizzle->AI()->Talk(TALK_SPECIAL_5);
 
                             // Move to lair
@@ -450,7 +450,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 8600), [this](TaskContext context)
                         {
-                            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR + 1) : 0))
+                            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR + 1) : ObjectGuid::Empty))
                                 me->SetFacingToObject(bloodrazor);
 
                             Talk(TALK_SPECIAL_24);
@@ -459,7 +459,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(delay += 7000), [this](TaskContext context)
                         {
-                            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR + 1) : 0))
+                            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR + 1) : ObjectGuid::Empty))
                                 bloodrazor->AI()->Talk(TALK_SPECIAL_4);
                         });
 
@@ -469,7 +469,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                         {
                             Talk(TALK_SPECIAL_25);
 
-                            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR + 1) : 0))
+                            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR + 1) : ObjectGuid::Empty))
                                 bloodrazor->AI()->DoAction(ACTION_GONNA_KILL_VOLJIN);
                         });
                         break;
@@ -569,7 +569,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
             }
 
             private:
-                uint64 getAnyKorkronBodyguardGUID()
+                ObjectGuid getAnyKorkronBodyguardGUID()
                 {
                     std::list<Creature*> bodyguards;
                     GetCreatureListWithEntryInGrid(bodyguards, me, NPC_KORKRON_BODYGUARD, 30.0f);
@@ -577,7 +577,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                     bodyguards.remove_if([=](Creature* target) { return target && target->GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID) == 17719; });
 
                     if (bodyguards.empty())
-                        return 0;
+                        return ObjectGuid::Empty;
 
                     return Trinity::Containers::SelectRandomContainerElement(bodyguards)->GetGUID();
                 }
@@ -643,24 +643,24 @@ struct npc_dagger_in_dark_grizzle_gearslip : public ScriptedAI
                     if (Creature* springDrifter = me->FindNearestCreature(NPC_SPRING_DRIFTER, 50.0f, true))
                         springDrifter->DespawnOrUnsummon();
 
-                    if (Creature* saurokSlayer = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_SPRING_SAUROK_SLAYER) : 0))
+                    if (Creature* saurokSlayer = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_SPRING_SAUROK_SLAYER) : ObjectGuid::Empty))
                         saurokSlayer->AI()->DoAction(ACTION_START_INTRO);
                 });
 
                 scheduler
                     .Schedule(Milliseconds(delay += 8500), [this](TaskContext context)
                 {
-                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                         voljin->AI()->Talk(TALK_SPECIAL_12);
                 });
 
                 scheduler
                     .Schedule(Milliseconds(delay += 4800), [this](TaskContext context)
                 {
-                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                         voljin->AI()->Talk(TALK_SPECIAL_13);
 
-                    if (Creature* saurokSlayer = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_SPRING_SAUROK_SLAYER) : 0))
+                    if (Creature* saurokSlayer = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_SPRING_SAUROK_SLAYER) : ObjectGuid::Empty))
                         saurokSlayer->AI()->DoAction(ACTION_IN_CAVE);
                 });
                 break;
@@ -741,7 +741,7 @@ struct npc_dagger_in_dark_darkhatched_shaman : public customCreatureAI
         DoMeleeAttackIfReady();
     }
 
-    uint64 GetLowestFriendGUID() override
+    ObjectGuid GetLowestFriendGUID() override
     {
         std::list<Creature*> tmpTargets;
 
@@ -755,14 +755,14 @@ struct npc_dagger_in_dark_darkhatched_shaman : public customCreatureAI
         GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_DARKHATCHED_SKINFLAYER, 35.0f);
 
         if (tmpTargets.empty())
-            return 0;
+            return ObjectGuid::Empty;
 
         tmpTargets.sort(Trinity::HealthPctOrderPred());
 
         if (Creature* lowestTarget = tmpTargets.front())
             return lowestTarget->GetGUID();
 
-        return 0;
+        return ObjectGuid::Empty;
     }
 };
 
@@ -875,7 +875,7 @@ struct npc_dagger_in_dark_broodmaster_noshi : public customCreatureAI
     {
         DoCast(me, SPELL_SWING);
 
-        if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+        if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
             voljin->Attack(me, true);
 
         events.ScheduleEvent(EVENT_STALACTITE, 10 * IN_MILLISECONDS);
@@ -928,7 +928,7 @@ struct npc_dagger_in_dark_broodmaster_noshi : public customCreatureAI
         {
             if (eventId == EVENT_DEATH_NOVA)
             {
-                if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                     voljin->AI()->DoAction(ACTION_BIG_BAD_VOOODOO);
             }
 
@@ -1101,13 +1101,13 @@ struct npc_dagger_in_dark_darkhatched_lizard_lord : public customCreatureAI
 
     TaskScheduler scheduler;
     bool hasTriggered;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void Reset() override
     {
         summons.DespawnAll();
         events.Reset();
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* who) override
@@ -1115,7 +1115,7 @@ struct npc_dagger_in_dark_darkhatched_lizard_lord : public customCreatureAI
         events.ScheduleEvent(EVENT_WATER_JETS, 8 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_CALL_HELP, 21 * IN_MILLISECONDS);
 
-        if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+        if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
             voljin->AI()->Talk(TALK_SPECIAL_9);
     }
 
@@ -1246,10 +1246,10 @@ struct npc_dagger_in_dark_spring_saurok_slayer : public customCreatureAI
             }
             case ACTION_IN_CAVE:
             {
-                if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                     voljin->EnterVehicle(me, 1);
 
-                if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_GRIZZLE_GEARSLIP) : 0))
+                if (Creature* grizzle = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_GRIZZLE_GEARSLIP) : ObjectGuid::Empty))
                     grizzle->EnterVehicle(me, 2);
 
                 me->OverrideInhabitType(INHABIT_AIR);
@@ -1401,7 +1401,7 @@ struct npc_dagger_in_dark_rakgor_bloodrazor : public customCreatureAI
                 {
                     Talk(TALK_SPECIAL_2);
 
-                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                         voljin->GetMotionMaster()->MovePoint(0, voljinLastStand);
                 });
 
@@ -1410,21 +1410,21 @@ struct npc_dagger_in_dark_rakgor_bloodrazor : public customCreatureAI
                 {
                     Talk(TALK_SPECIAL_3);
 
-                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                         me->SetFacingToObject(voljin);
                 });
 
                 scheduler
                     .Schedule(Milliseconds(delay += 6300), [this](TaskContext context)
                 {
-                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                         voljin->AI()->Talk(TALK_SPECIAL_20);
                 });
 
                 scheduler
                     .Schedule(Milliseconds(delay += 3000), [this](TaskContext context)
                 {
-                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                    if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                         voljin->AI()->Talk(TALK_SPECIAL_21);
 
                     for (auto&& itr : me->GetInstanceScript()->instance->GetPlayers())
@@ -1445,7 +1445,7 @@ struct npc_dagger_in_dark_rakgor_bloodrazor : public customCreatureAI
                 break;
             }
             case ACTION_GONNA_KILL_VOLJIN:
-                if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                if (Creature* voljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                 {
                     // Move forward to him
                     me->SetWalk(true);
@@ -1468,14 +1468,14 @@ struct npc_dagger_in_dark_rakgor_bloodrazor : public customCreatureAI
                     {
                         me->HandleEmoteCommand(EMOTE_ONESHOT_ATTACK1H);
 
-                        if (Creature* newVoljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                        if (Creature* newVoljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                             newVoljin->SetStandState(UNIT_STAND_STATE_DEAD);
                     });
 
                     scheduler
                         .Schedule(Milliseconds(delay += 3000), [this](TaskContext context)
                     {
-                        if (Creature* newVoljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_VOLJIN) : 0))
+                        if (Creature* newVoljin = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_VOLJIN) : ObjectGuid::Empty))
                             newVoljin->AI()->Talk(TALK_SPECIAL_26);
                     });
 
@@ -1715,7 +1715,7 @@ class spell_dagger_in_dark_stasis : public AuraScript
         {
             boat->AI()->DoAction(ACTION_APPLY_STASIS);
 
-            if (Creature* grizzle = ObjectAccessor::GetCreature(*boat, boat->GetInstanceScript() ? boat->GetInstanceScript()->GetData64(NPC_GRIZZLE_GEARSLIP) : 0))
+            if (Creature* grizzle = ObjectAccessor::GetCreature(*boat, boat->GetInstanceScript() ? boat->GetInstanceScript()->GetGuidData(NPC_GRIZZLE_GEARSLIP) : ObjectGuid::Empty))
                 grizzle->AI()->Talk(TALK_SPECIAL_3);
         }
     }
@@ -1853,7 +1853,7 @@ class sat_dagger_in_dark_healing_ward : public IAreaTriggerAura
                 caster->CastSpell(target, SPELL_HEALING_WARD_EFF, true);
 
             // Achievement
-            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*target, target->GetInstanceScript() ? target->GetInstanceScript()->GetData64(NPC_RAKGOR_BLOODRAZOR + 1) : 0))
+            if (Creature* bloodrazor = ObjectAccessor::GetCreature(*target, target->GetInstanceScript() ? target->GetInstanceScript()->GetGuidData(NPC_RAKGOR_BLOODRAZOR + 1) : ObjectGuid::Empty))
                 if (bloodrazor->IsInCombat())
                     target->GetMap()->SetWorldState(WORLDSTATE_U_MEAN_THATS_NOT_VOID_ZONE, 0);
         }

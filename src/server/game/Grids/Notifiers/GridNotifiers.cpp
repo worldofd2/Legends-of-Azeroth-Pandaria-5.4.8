@@ -69,7 +69,7 @@ void VisibleNotifier::SendToSelf()
         i_player.m_clientGUIDs.erase(*it);
         i_data.AddOutOfRangeGUID(*it);
 
-        if (IS_PLAYER_GUID(*it))
+        if ((*it).IsPlayer())
         {
             Player* player = ObjectAccessor::FindPlayer(*it);
             if (player && player->IsInWorld())

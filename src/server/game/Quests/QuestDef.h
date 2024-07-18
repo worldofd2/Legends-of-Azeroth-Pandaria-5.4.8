@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <bitset>
 
 class Player;
 
@@ -333,6 +334,9 @@ class Quest
 
         // Possibly deprecated flag
         bool IsUnavailable() const { return HasFlag(QUEST_FLAGS_DEPRECATED); }
+
+        // whether the quest is globally enabled (spawned by pool, game event active etc.)
+        static bool IsTakingQuestEnabled(uint32 questId);
 
         // table data accessors:
         uint32 GetQuestId() const { return _id; }

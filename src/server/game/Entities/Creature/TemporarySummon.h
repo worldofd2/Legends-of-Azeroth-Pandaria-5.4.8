@@ -42,7 +42,7 @@ class TC_GAME_API TempSummon : public Creature
         explicit TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
         virtual ~TempSummon() { }
         void Update(uint32 time) override;
-        bool Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, CreatureData const* data = nullptr);
+        bool Create(ObjectGuid::LowType guidlow, Map* map, uint32 phaseMask, uint32 entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, CreatureData const* data = nullptr);
         virtual void InitStats(uint32 lifetime);
         virtual void InitSummon();
         virtual void UnSummon(uint32 msTime = 0);
@@ -51,7 +51,7 @@ class TC_GAME_API TempSummon : public Creature
         void SaveToDB(uint32 /*mapid*/, uint16 /*spawnMask*/, uint32 /*phaseMask*/) override { }
         Unit* GetSummoner() const;
         Creature* GetSummonerCreatureBase() const;
-        uint64 GetSummonerGUID() const { return m_summonerGUID; }
+        ObjectGuid GetSummonerGUID() const { return m_summonerGUID; }
         TempSummonType const& GetSummonType() { return m_type; }
         uint32 GetTimer() { return m_timer; }
 
@@ -76,7 +76,7 @@ class TC_GAME_API TempSummon : public Creature
         TempSummonType m_type;
         uint32 m_timer;
         uint32 m_lifetime;
-        uint64 m_summonerGUID;
+        ObjectGuid m_summonerGUID;
 };
 
 class TC_GAME_API Minion : public TempSummon

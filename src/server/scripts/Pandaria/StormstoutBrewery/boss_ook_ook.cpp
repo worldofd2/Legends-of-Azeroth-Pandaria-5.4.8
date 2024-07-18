@@ -47,9 +47,9 @@ static const Position barrelPos[] =
     { -777.73f, 1357.66f, 147.79f, 1.64f }
 };
 
-bool CheckIfAgainstUnit(uint64 casterGUID)
+bool CheckIfAgainstUnit(Unit* me, ObjectGuid casterGUID)
 {
-    Unit* owner = ObjectAccessor::FindUnit(casterGUID);
+    Unit* owner = ObjectAccessor::GetUnit(*me, casterGUID);
 
     if (!owner)
         return false;
@@ -109,7 +109,7 @@ class boss_ook_ook : public CreatureScript
             boss_ook_ook_AI(Creature* creature) : BossAI(creature, DATA_OOK_OOK) { }
 
             bool introDone, initializedBarrels;
-            uint64 targetGuid;
+            ObjectGuid targetGuid;
 
             void InitializeAI() override
             {
@@ -292,7 +292,7 @@ class npc_barrel : public CreatureScript
         {
             npc_barrel_AI(Creature* creature) : ScriptedAI(creature) {}
 
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
             EventMap events;
             bool initiate;
 
@@ -328,7 +328,7 @@ class npc_barrel : public CreatureScript
 
             void UpdateAI(uint32 diff) override
             {
-                if (CheckIfAgainstUnit(me->GetGUID()) && initiate)
+                if (CheckIfAgainstUnit(me, me->GetGUID()) && initiate)
                     DoExplode();
 
                 events.Update(diff);
@@ -407,7 +407,7 @@ class npc_hozen_hollerer : public CreatureScript
             uint32 GetBarrelTimer() const
             {
                 if (instance)
-                    if (Unit* ookOok = ObjectAccessor::GetUnit(*me, instance->GetData64(DATA_OOK_OOK)))
+                    if (Unit* ookOok = ObjectAccessor::GetUnit(*me, instance->GetGuidData(DATA_OOK_OOK)))
                         if (ookOok->GetAura(SPELL_GOING_BANANAS))
                         {
                             switch (ookOok->GetAura(SPELL_GOING_BANANAS)->GetStackAmount())
@@ -579,7 +579,7 @@ class spell_brew_barrel_ride : public SpellScriptLoader
             void OnTrigger(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* caster = GetOwner()->ToUnit())
-                    if (CheckIfAgainstUnit(caster->GetGUID()))
+                    if (CheckIfAgainstUnit(caster, caster->GetGUID()))
                     {
                         caster->CastSpell(caster, SPELL_BARREL_EXPLOSION_HOSTILE, false);
                         caster->CastSpell(caster, SPELL_BARREL_EXPLOSION_PLAYER, false);

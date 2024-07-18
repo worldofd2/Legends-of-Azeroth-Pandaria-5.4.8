@@ -541,7 +541,7 @@ class npc_warlord_zonozz_void_of_the_unmaking : public CreatureScript
                                 {
                                     if (aur->GetStackAmount() >= 9)
                                         if (InstanceScript* instance = me->GetInstanceScript())
-                                            if (Creature* pZonozz = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ZONOZZ)))
+                                            if (Creature* pZonozz = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_ZONOZZ)))
                                                 pZonozz->AI()->SetData(DATA_ACHIEVE, 1);
                                 }
                                 

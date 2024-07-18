@@ -95,10 +95,6 @@ void RegisterGlobals(lua_State* L)
     lua_register(L, "SaveAllPlayers", &LuaGlobalFunctions::SaveAllPlayers);                                 // SaveAllPlayers() - Saves all players
     lua_register(L, "SendMail", &LuaGlobalFunctions::SendMail);                                             // SendMail(subject, text, receiverLowGUID[, sender, stationary, delay, itemEntry, itemAmount, itemEntry2, itemAmount2...]) - Sends a mail to player with lowguid. use nil to use default values on optional arguments. Sender is an optional player object. UNDOCUMENTED
     lua_register(L, "AddTaxiPath", &LuaGlobalFunctions::AddTaxiPath);                                       // AddTaxiPath(pathTable, mountA, mountH[, price, pathId]) - Adds a new taxi path. Returns the path's ID. Will replace an existing path if pathId provided and already used. path table structure: T = {{map, x, y, z[, actionFlag, delay, arrivalEvId, departEvId]}, {...}, ...} UDOCUMENTED
-    lua_register(L, "AddCorpse", &LuaGlobalFunctions::AddCorpse);                                           // AddCorpse(corpse) - Adds the player's corpse to the world. More specifically, the cell.
-    lua_register(L, "RemoveCorpse", &LuaGlobalFunctions::RemoveCorpse);                                     // RemoveCorpse(corpse) - Removes the player's corpse from the world.
-    lua_register(L, "ConvertCorpseForPlayer", &LuaGlobalFunctions::ConvertCorpseForPlayer);                 // ConvertCorpseFromPlayer(guid[, insignia]) - Converts the player's corpse to bones. Adding insignia for PvP is optional (true or false).
-    lua_register(L, "RemoveOldCorpses", &LuaGlobalFunctions::RemoveOldCorpses);                             // RemoveOldCorpses() - Converts (removes) old corpses that aren't bones.
     lua_register(L, "FindWeather", &LuaGlobalFunctions::FindWeather);                                       // FindWeather(zoneId) - Finds the weather by zoneId and returns the weather
     lua_register(L, "AddWeather", &LuaGlobalFunctions::AddWeather);                                         // AddWeather(zoneId) - Adds weather to the following zone, also returns weather
     lua_register(L, "RemoveWeather", &LuaGlobalFunctions::RemoveWeather);                                   // RemoveWeather(zoneId) - Removes weather from a zone
@@ -1054,7 +1050,6 @@ ElunaRegister<Corpse> CorpseMethods[] =
     {"GetType", &LuaCorpse::GetType},                       // :GetType() - Returns the (CorpseType) of a corpse
     {"ResetGhostTime", &LuaCorpse::ResetGhostTime},         // :ResetGhostTime() - Resets the corpse's ghost time
     {"SaveToDB", &LuaCorpse::SaveToDB},                     // :SaveToDB() - Saves to database
-    {"DeleteBonesFromWorld", &LuaCorpse::DeleteBonesFromWorld},                                             // :DeleteBonesFromWorld() - Deletes all bones from the world
 
     {NULL, NULL}
 };

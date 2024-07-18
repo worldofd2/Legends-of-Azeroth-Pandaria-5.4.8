@@ -308,7 +308,7 @@ class BattlegroundDG : public Battleground
         void EventPlayerClickedOnFlag(Player* source, Unit* target) override;
         void UpdatePlayerScore(Player* source, uint32 type, uint32 value, bool doAddHonor = true) override;
         void AddPlayer(Player* player) override;
-        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
+        void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player) override;
         void HandleKillPlayer(Player* player, Player* killer) override;
         void EventPlayerDroppedFlag(Player* player) override;
@@ -316,16 +316,16 @@ class BattlegroundDG : public Battleground
     private:
         uint8 GetFlagState(uint32 team)             { return m_flagState[GetTeamIndexByTeamId(team)]; };
 
-        uint64 GetFlagPickerGUID(int32 team) const override
+        ObjectGuid GetFlagPickerGUID(int32 team) const override
         {
             if (team != TEAM_ALLIANCE && team != TEAM_HORDE)
-                return 0;
+                return ObjectGuid::Empty;
 
             return m_flagKeepers[team];
         }
 
-        void SetAllianceCartPicker(uint64 guid)     { m_flagKeepers[TEAM_ALLIANCE] = guid; };
-        void SetHordeFlagPicker(uint64 guid)        { m_flagKeepers[TEAM_HORDE] = guid; };
+        void SetAllianceCartPicker(ObjectGuid guid) { m_flagKeepers[TEAM_ALLIANCE] = guid; };
+        void SetHordeFlagPicker(ObjectGuid guid)    { m_flagKeepers[TEAM_HORDE] = guid; };
         bool IsAllianceFlagPickedup() const         { return m_flagKeepers[TEAM_ALLIANCE] != 0; };
         bool IsHordeFlagPickedup() const            { return m_flagKeepers[TEAM_HORDE] != 0; };
         void SetLastFlagCapture(uint32 team)        { m_lastFlagCaptureTeam = team; };
@@ -362,7 +362,7 @@ class BattlegroundDG : public Battleground
         uint32              m_honorTicks;
 
         uint32 m_lastFlagCaptureTeam;                       // Winner is based on this if score is equal
-        uint64 m_flagKeepers[2];                            // 0 - alliance, 1 - horde
+        ObjectGuid m_flagKeepers[2];                        // 0 - alliance, 1 - horde
         uint8 m_flagState[2];                               // for checking flag state
         int32 m_flagGold[2];
         int32 m_flagsTimer[2];

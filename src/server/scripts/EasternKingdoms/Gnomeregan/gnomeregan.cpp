@@ -130,8 +130,8 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
             uint8 uiPhase;
             uint32 uiTimer;
 
-            std::list<uint64> SummonList;
-            std::list<uint64> GoSummonList;
+            std::list<ObjectGuid> SummonList;
+            std::list<ObjectGuid> GoSummonList;
 
             void Reset() override
             {
@@ -161,7 +161,7 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
                 if (GoSummonList.empty())
                     return;
 
-                for (std::list<uint64>::const_iterator itr = GoSummonList.begin(); itr != GoSummonList.end(); ++itr)
+                for (std::list<ObjectGuid>::const_iterator itr = GoSummonList.begin(); itr != GoSummonList.end(); ++itr)
                 {
                    if (GameObject* go = GameObject::GetGameObject(*me, *itr))
                    {
@@ -182,12 +182,12 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
                if (bBool)
                {
                     if (instance)
-                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_RIGHT)))
-                            instance->HandleGameObject(0, false, go);
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_RIGHT)))
+                            instance->HandleGameObject(ObjectGuid::Empty, false, go);
                }else
                     if (instance)
-                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_LEFT)))
-                            instance->HandleGameObject(0, false, go);
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_LEFT)))
+                            instance->HandleGameObject(ObjectGuid::Empty, false, go);
             }
 
             void SetInFace(bool bBool)
@@ -197,10 +197,10 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
 
                 if (bBool)
                 {
-                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_RIGHT)))
+                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_RIGHT)))
                         me->SetFacingToObject(go);
                 }else
-                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_LEFT)))
+                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_LEFT)))
                         me->SetFacingToObject(go);
             }
 
@@ -209,21 +209,21 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
                 if (!instance)
                     return;
 
-                if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_RIGHT)))
-                    instance->HandleGameObject(0, false, go);
+                if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_RIGHT)))
+                    instance->HandleGameObject(ObjectGuid::Empty, false, go);
 
-                if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_LEFT)))
-                    instance->HandleGameObject(0, false, go);
+                if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_LEFT)))
+                    instance->HandleGameObject(ObjectGuid::Empty, false, go);
 
                 if (!GoSummonList.empty())
-                    for (std::list<uint64>::const_iterator itr = GoSummonList.begin(); itr != GoSummonList.end(); ++itr)
+                    for (std::list<ObjectGuid>::const_iterator itr = GoSummonList.begin(); itr != GoSummonList.end(); ++itr)
                     {
                         if (GameObject* go = GameObject::GetGameObject(*me, *itr))
                             go->RemoveFromWorld();
                     }
 
                 if (!SummonList.empty())
-                    for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
+                    for (std::list<ObjectGuid>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
                     {
                         if (Creature* summon = Unit::GetCreature(*me, *itr))
                         {
@@ -437,8 +437,8 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
                                 Talk(SAY_BLASTMASTER_5);
                                 Summon(1);
                                 if (instance)
-                                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_RIGHT)))
-                                        instance->HandleGameObject(0, true, go);
+                                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_RIGHT)))
+                                        instance->HandleGameObject(ObjectGuid::Empty, true, go);
                                 NextStep(3000, true);
                                 break;
                             case 7:
@@ -484,8 +484,8 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
                                 Talk(SAY_BLASTMASTER_14);
                                 SetInFace(false);
                                 if (instance)
-                                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_GO_CAVE_IN_LEFT)))
-                                        instance->HandleGameObject(0, true, go);
+                                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetGuidData(DATA_GO_CAVE_IN_LEFT)))
+                                        instance->HandleGameObject(ObjectGuid::Empty, true, go);
                                 NextStep(2000, true);
                                 break;
                             case 17:

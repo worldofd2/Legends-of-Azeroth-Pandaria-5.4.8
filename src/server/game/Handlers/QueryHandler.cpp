@@ -35,11 +35,10 @@
 
 void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 {
-    ObjectGuid guid2 = 0;
+    ObjectGuid guid2 = ObjectGuid::Empty;
     ObjectGuid guid3 = guid;
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
-    CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
+    CharacterNameData const* nameData = sWorld->GetCharacterNameData(guid);
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 500);
     data.WriteBit(guid[3]);
@@ -457,7 +456,7 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket& recvData)
     else
     {
         TC_LOG_DEBUG("network", "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
-            GUID_LOPART((uint64)guid), entry);
+            guid.GetCounter(), entry);
         TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
 
@@ -468,9 +467,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_CORPSE_QUERY");
 
-    Corpse* corpse = GetPlayer()->GetCorpse();
-
-    if (!corpse)
+    if (!_player->HasCorpse())
     {
         WorldPacket data(SMSG_CORPSE_QUERY, 1);
         data.WriteBits(0, 9); // Not found + guid stream
@@ -480,11 +477,12 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
         return;
     }
 
-    uint32 mapId = corpse->GetMapId();
-    float x = corpse->GetPositionX();
-    float y = corpse->GetPositionY();
-    float z = corpse->GetPositionZ();
-    uint32 corpseMapId = mapId;
+    WorldLocation corpseLocation = _player->GetCorpseLocation();
+    uint32 corpseMapId = corpseLocation.GetMapId();
+    uint32 mapId = corpseLocation.GetMapId();
+    float x = corpseLocation.GetPositionX();
+    float y = corpseLocation.GetPositionY();
+    float z = corpseLocation.GetPositionZ();
 
     // if corpse at different map
     if (mapId != _player->GetMapId())
@@ -506,9 +504,8 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
         }
     }
 
-    _player->SendCorpseReclaimDelay();
-
-    ObjectGuid corpseGuid = 0; // need correct condition, guid shouldn't always be sent to player (corpse->GetGUID())
+    // this might be transport guid?
+    ObjectGuid corpseGuid = ObjectGuid::Empty; // need correct condition, guid shouldn't always be sent to player (corpse->GetGUID())
 
     WorldPacket data(SMSG_CORPSE_QUERY, 9 + 1 + (4 * 5));
     data.WriteBit(corpseGuid[0]);
@@ -685,8 +682,22 @@ void WorldSession::HandleCorpseMapPositionQuery(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "WORLD: Recv CMSG_CORPSE_MAP_POSITION_QUERY");
 
     ObjectGuid corpseGuid;
-    recvData.ReadGuidMask(corpseGuid, 7, 6, 3, 0, 4, 1, 5, 2);
-    recvData.ReadGuidBytes(corpseGuid, 1, 6, 0, 5, 3, 2, 4, 7);
+    corpseGuid[7] = recvData.ReadBit();
+    corpseGuid[6] = recvData.ReadBit();
+    corpseGuid[3] = recvData.ReadBit();
+    corpseGuid[0] = recvData.ReadBit();
+    corpseGuid[4] = recvData.ReadBit();
+    corpseGuid[1] = recvData.ReadBit();
+    corpseGuid[5] = recvData.ReadBit();
+    corpseGuid[2] = recvData.ReadBit();
+    recvData.ReadByteSeq(corpseGuid[1]);
+    recvData.ReadByteSeq(corpseGuid[6]);
+    recvData.ReadByteSeq(corpseGuid[0]);
+    recvData.ReadByteSeq(corpseGuid[5]);
+    recvData.ReadByteSeq(corpseGuid[3]);
+    recvData.ReadByteSeq(corpseGuid[2]);
+    recvData.ReadByteSeq(corpseGuid[4]);
+    recvData.ReadByteSeq(corpseGuid[7]);
 
     WorldPacket data(SMSG_CORPSE_MAP_POSITION_QUERY_RESPONSE, 4+4+4+4);
     data << float(0);
@@ -698,7 +709,9 @@ void WorldSession::HandleCorpseMapPositionQuery(WorldPacket& recvData)
 
 void WorldSession::HandleQuestNPCQuery(WorldPacket& recvData)
 {
-    std::map<uint32, std::vector<uint32>> quests;
+    // use set to remove duplicates
+    // proper fix would be inside GetCreatureQuestInvolvedRelationReverseBounds
+    std::map<uint32, std::set<uint32>> quests;
     for (int i = 0; i < 50; ++i)
     {
         uint32 questId;
@@ -707,13 +720,11 @@ void WorldSession::HandleQuestNPCQuery(WorldPacket& recvData)
         if (!sObjectMgr->GetQuestTemplate(questId))
             continue;
 
-        auto creatures = sObjectMgr->GetCreatureQuestInvolvedRelationReverseBounds(questId);
-        for (auto it = creatures.first; it != creatures.second; ++it)
-            quests[questId].push_back(it->second);
+        for (auto const& creatures : sObjectMgr->GetCreatureQuestInvolvedRelationReverseBounds(questId))
+            quests[questId].emplace(creatures.second);
 
-        auto gos = sObjectMgr->GetGOQuestInvolvedRelationReverseBounds(questId);
-        for (auto it = gos.first; it != gos.second; ++it)
-            quests[questId].push_back(it->second | 0x80000000); // GO mask
+        for (auto const& gos : sObjectMgr->GetGOQuestInvolvedRelationReverseBounds(questId))
+            quests[questId].emplace(gos.second | 0x80000000); // GO mask
     }
 
     uint32 count;
@@ -724,8 +735,6 @@ void WorldSession::HandleQuestNPCQuery(WorldPacket& recvData)
 
     for (auto it = quests.begin(); it != quests.end(); ++it)
         data.WriteBits(it->second.size(), 22);
-
-    data.FlushBits();
 
     for (auto it = quests.begin(); it != quests.end(); ++it)
     {

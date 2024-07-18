@@ -57,7 +57,7 @@ class boss_commander_rimok : public CreatureScript
         {
             boss_commander_rimokAI(Creature* creature) : BossAI(creature, DATA_RIMOK) { }
 
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint8 getType;
 
             void Reset() override

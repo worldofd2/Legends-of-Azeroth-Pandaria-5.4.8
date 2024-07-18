@@ -707,7 +707,7 @@ class npc_well_of_eternity_legion_demon : public CreatureScript
                 instance->SetData(secondDemon ? DATA_EVENT_DEMON_2 : DATA_EVENT_DEMON, DONE);
 
                 if (instance->GetData(DATA_EVENT_ILLIDAN_1) == IN_PROGRESS)
-                    if (Creature* illidan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_EVENT_ILLIDAN_1)))
+                    if (Creature* illidan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_EVENT_ILLIDAN_1)))
                         illidan->AI()->DoAction(ACTION_ILLIDAN_1_LEGION_DEMON_RESUME);
 
                 Map::PlayerList const &PlayerList = instance->instance->GetPlayers();
@@ -1036,7 +1036,7 @@ class npc_well_of_eternity_illidan_1 : public CreatureScript
                         ResumeMovement(4000);
                         // Teleporting him now to avoid messing up the visual
                         if (InstanceScript* instance = me->GetInstanceScript())
-                            if (Creature* perotharn = instance->instance->GetCreature(instance->GetData64(DATA_PEROTHARN)))
+                            if (Creature* perotharn = instance->instance->GetCreature(instance->GetGuidData(DATA_PEROTHARN)))
                                 perotharn->AI()->DoAction(3); // ACTION_TELEPORT_APPEAR
                         break;
                     case POINT_ILLIDAN_1_MOVE_12:
@@ -1052,7 +1052,7 @@ class npc_well_of_eternity_illidan_1 : public CreatureScript
                         Talk(SAY_ILLIDAN_1_BOSS_PRE);
                         // Teleporting him now to avoid messing up the visual
                         if (InstanceScript* instance = me->GetInstanceScript())
-                            if (Creature* perotharn = instance->instance->GetCreature(instance->GetData64(DATA_PEROTHARN)))
+                            if (Creature* perotharn = instance->instance->GetCreature(instance->GetGuidData(DATA_PEROTHARN)))
                                 perotharn->AI()->DoAction(4); // ACTION_TELEPORT_CENTER
                         events.ScheduleEvent(EVENT_ILLIDAN_1_BOSS_SPAWN, 3000);
                         events.ScheduleEvent(EVENT_ILLIDAN_1_SAY_WAIT, 15000);
@@ -1269,7 +1269,7 @@ class npc_well_of_eternity_illidan_1 : public CreatureScript
                     case EVENT_ILLIDAN_1_BOSS_SPAWN:
                         events.CancelEvent(EVENT_ILLIDAN_1_WIPE_CHECK);
                         if (InstanceScript* instance = me->GetInstanceScript())
-                            if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_PEROTHARN)))
+                            if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_PEROTHARN)))
                                 boss->AI()->DoAction(1); // ACTION_START
                         break;
                     case EVENT_ILLIDAN_1_OUTRO_1:
@@ -1727,7 +1727,7 @@ class npc_well_of_eternity_guardian_demon : CreatureScript
                 }
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 if (Unit* target = ObjectAccessor::GetUnit(*me, guid))
                 {
@@ -1828,7 +1828,7 @@ class npc_well_of_eternity_fel_crystal_stalker : public CreatureScript
                 switch (action)
                 {
                     case ACTION_FEL_CRYSTAL_STALKER_UNLOCK:
-                        for (std::vector<uint64>::const_iterator itr = guardGuids.begin(); itr != guardGuids.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = guardGuids.begin(); itr != guardGuids.end(); ++itr)
                             if (Creature* guard = ObjectAccessor::GetCreature(*me, *itr))
                                 if (guard->IsAlive())
                                     return;
@@ -1842,7 +1842,7 @@ class npc_well_of_eternity_fel_crystal_stalker : public CreatureScript
                         portalEnergyFocus->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_LOCKED);
 
                         if (InstanceScript* instance = me->GetInstanceScript())
-                            if (Creature* illidan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_EVENT_ILLIDAN_1)))
+                            if (Creature* illidan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_EVENT_ILLIDAN_1)))
                                 illidan->GetAI()->DoAction(ACTION_ILLIDAN_1_CRYSTAL);
                         break;
                     case ACTION_FEL_CRYSTAL_STALKER_MELTDOWN:
@@ -1897,7 +1897,7 @@ class npc_well_of_eternity_fel_crystal_stalker : public CreatureScript
                             connector->GetAI()->DoAction(ACTION_PORTAL_DISABLE);
 
                         if (InstanceScript* instance = me->GetInstanceScript())
-                            if (Creature* illidan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_EVENT_ILLIDAN_1)))
+                            if (Creature* illidan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_EVENT_ILLIDAN_1)))
                                 illidan->GetAI()->DoAction(ACTION_ILLIDAN_1_CRYSTAL_RESUME);
                         break;
                     default:
@@ -1907,7 +1907,7 @@ class npc_well_of_eternity_fel_crystal_stalker : public CreatureScript
 
         private:
             EventMap events;
-            std::vector<uint64> guardGuids;
+            std::vector<ObjectGuid> guardGuids;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -1927,8 +1927,8 @@ class npc_well_of_eternity_portal_connector : CreatureScript
 
             void Reset() override
             {
-                connectedToGuid = 0;
-                portalGuid = 0;
+                connectedToGuid = ObjectGuid::Empty;
+                portalGuid = ObjectGuid::Empty;
                 actionExecuted = false;
                 events.Reset();
                 Reconnect();
@@ -1941,8 +1941,8 @@ class npc_well_of_eternity_portal_connector : CreatureScript
                 Unit* oldConnection = GetConnection();
                 uint64 oldConnectionGuid = connectedToGuid;
 
-                connectedToGuid = 0;
-                portalGuid = 0;
+                connectedToGuid = ObjectGuid::Empty;
+                portalGuid = ObjectGuid::Empty;
 
                 uint32 nextEntry = 0;
                 switch (me->GetEntry())
@@ -2026,8 +2026,8 @@ class npc_well_of_eternity_portal_connector : CreatureScript
 
         private:
             EventMap events;
-            uint64 connectedToGuid;
-            uint64 portalGuid;
+            ObjectGuid connectedToGuid;
+            ObjectGuid portalGuid;
             bool actionExecuted; // Loop prevention
 
             Unit* GetConnection()
@@ -2532,7 +2532,7 @@ class at_well_of_eternity_skip_illidan_intro : public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
                 if (instance->GetData(DATA_EVENT_ILLIDAN_1) == NOT_STARTED)
-                    if (Creature* illidan = instance->instance->GetCreature(instance->GetData64(DATA_EVENT_ILLIDAN_1)))
+                    if (Creature* illidan = instance->instance->GetCreature(instance->GetGuidData(DATA_EVENT_ILLIDAN_1)))
                         illidan->AI()->DoAction(ACTION_ILLIDAN_1_START);
             return true;
         }
@@ -2547,7 +2547,7 @@ class at_well_of_eternity_perotharn_preevent_appear : public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
                 if (instance->GetData(DATA_EVENT_ILLIDAN_1) == DONE && instance->GetBossState(DATA_PEROTHARN) == NOT_STARTED)
-                    if (Creature* perotharn = instance->instance->GetCreature(instance->GetData64(DATA_PEROTHARN)))
+                    if (Creature* perotharn = instance->instance->GetCreature(instance->GetGuidData(DATA_PEROTHARN)))
                         if (perotharn->HasAura(SPELL_CAMOUFLAGE))
                             perotharn->AI()->DoAction(2); // ACTION_PREEVENT_APPEAR
             return true;
@@ -2563,7 +2563,7 @@ class at_well_of_eternity_illidan_outro_resume : public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
                 if (instance->GetData(DATA_EVENT_ILLIDAN_1) == DONE && instance->GetBossState(DATA_PEROTHARN) == DONE)
-                    if (Creature* illidan = instance->instance->GetCreature(instance->GetData64(DATA_EVENT_ILLIDAN_1)))
+                    if (Creature* illidan = instance->instance->GetCreature(instance->GetGuidData(DATA_EVENT_ILLIDAN_1)))
                         illidan->AI()->DoAction(ACTION_ILLIDAN_1_OUTRO_RESUME);
             return true;
         }
@@ -3048,7 +3048,7 @@ class npc_well_of_eternity_doomguard_annihilator : public CreatureScript
             void JustDied(Unit* /*killer*/) override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* pIllidan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_EVENT_ILLIDAN_2)))
+                    if (Creature* pIllidan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_EVENT_ILLIDAN_2)))
                         pIllidan->AI()->DoAction(ACTION_DOOMGUARD_DIED);
             }
         };
@@ -3147,9 +3147,9 @@ class npc_well_of_eternity_illidan_2 : public CreatureScript
                             events.ScheduleEvent(EVENT_ILLIDAN_MOVE_2_9, 100);
                             break;
                         case POINT_ILLIDAN_2_9:
-                            if (Creature* pVarothen = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VAROTHEN)))
+                            if (Creature* pVarothen = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_VAROTHEN)))
                                 pVarothen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                            if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MANNOROTH)))
+                            if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MANNOROTH)))
                                 pMannoroth->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                             Talk(SAY_ILLIDAN_2_VAROTHEN);
                             break;
@@ -3381,7 +3381,7 @@ class npc_well_of_eternity_tyrande : public CreatureScript
                                 me->RemoveAura(SPELL_BLESSING_OF_ELUNE);
                                 Talk(SAY_TYRANDE_CONTINUE);
                                 events.ScheduleEvent(EVENT_TYRANDE_SHOT, 1000);
-                                if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MANNOROTH)))
+                                if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MANNOROTH)))
                                     pMannoroth->AI()->DoAction(2); // ACTION_DEBILITATING_OFF
                             }
                         }
@@ -3537,7 +3537,7 @@ class npc_well_of_eternity_abyssal_doombringer : public CreatureScript
             void JustDied(Unit* /*killer*/) override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* pIllidan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_EVENT_ILLIDAN_2)))
+                    if (Creature* pIllidan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_EVENT_ILLIDAN_2)))
                         pIllidan->AI()->DoAction(ACTION_DOOMBRINGER_DIED);
 
                 me->DespawnOrUnsummon(3000);

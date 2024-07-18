@@ -676,7 +676,7 @@ class npc_wrathion_breath_of_the_black_prince : public CreatureScript
 
             EventMap events, nonCombatEvents;
             uint32 wp;
-            uint64 SummonerGUID;
+            ObjectGuid SummonerGUID;
 
             void IsSummonedBy(Unit* summoner) override
             {
@@ -988,7 +988,7 @@ struct npc_image_of_wrathion : public ScriptedAI
     npc_image_of_wrathion(Creature* creature) : ScriptedAI(creature) { }
 
     uint32 runestoneIndex;
-    uint64 ownerGUID;
+    ObjectGuid ownerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {
@@ -1001,7 +1001,7 @@ struct npc_image_of_wrathion : public ScriptedAI
         me->DespawnOrUnsummon(15 * IN_MILLISECONDS);
     }
 
-    uint32 DoFindRunestoneIndex(int n, uint64 ownerGUID)
+    uint32 DoFindRunestoneIndex(int n, ObjectGuid ownerGUID)
     {
         if (n < 1)
             return 0;
@@ -1022,7 +1022,7 @@ struct npc_wrathion_suen_celestial : public ScriptedAI
     npc_wrathion_suen_celestial(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 ownerGUID;
+    ObjectGuid ownerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -1233,7 +1233,7 @@ struct npc_wrathion_chiji_celestial : public ScriptedAI
     npc_wrathion_chiji_celestial(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 ownerGUID;
+    ObjectGuid ownerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -1397,7 +1397,7 @@ struct npc_wrathion_niuzao_celestial : public ScriptedAI
     npc_wrathion_niuzao_celestial(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 ownerGUID;
+    ObjectGuid ownerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -1572,7 +1572,7 @@ struct npc_wrathion_xuen_challenge : public customCreatureAI
     npc_wrathion_xuen_challenge(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     bool hasReign;
     bool hasDefeat;
 
@@ -1728,13 +1728,13 @@ struct npc_neltharions_tear : public ScriptedAI
 
     TaskScheduler scheduler;
     bool hasTriggered;
-    uint64 targetGUID;
-    uint64 summonerGUID;
+    ObjectGuid targetGUID;
+    ObjectGuid summonerGUID;
 
     void Reset() override
     {
         hasTriggered = false;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void IsSummonedBy(Unit* summoner) override
@@ -1835,7 +1835,7 @@ struct npc_wrathion_cloak_achieve : public ScriptedAI
     npc_wrathion_cloak_achieve(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override

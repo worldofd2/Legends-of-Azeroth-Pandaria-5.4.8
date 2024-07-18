@@ -77,7 +77,7 @@ class boss_wushoolay : public CreatureScript
             void Reset() override
             {
                 _Reset();
-                rushTarget = 0;
+                rushTarget = ObjectGuid::Empty;
                 preRushTarget = NULL;
                 SetCombatMovement(true);
             }
@@ -230,7 +230,7 @@ class boss_wushoolay : public CreatureScript
             }
 
         protected:
-            uint64 rushTarget;
+            ObjectGuid rushTarget;
             Unit* preRushTarget;
         };
 

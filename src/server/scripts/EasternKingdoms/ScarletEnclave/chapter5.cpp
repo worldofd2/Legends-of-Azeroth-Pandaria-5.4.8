@@ -314,15 +314,15 @@ public:
     {
         npc_highlord_darion_mograineAI(Creature* creature) : npc_escortAI(creature)
         {
-            uiTirionGUID = 0;
-            uiKorfaxGUID = 0;
-            uiMaxwellGUID = 0;
-            uiEligorGUID = 0;
-            uiRayneGUID = 0;
-            uiKoltiraGUID = 0;
-            uiOrbazGUID = 0;
-            uiThassarianGUID = 0;
-            uiLichKingGUID = 0;
+            uiTirionGUID = ObjectGuid::Empty;
+            uiKorfaxGUID = ObjectGuid::Empty;
+            uiMaxwellGUID = ObjectGuid::Empty;
+            uiEligorGUID = ObjectGuid::Empty;
+            uiRayneGUID = ObjectGuid::Empty;
+            uiKoltiraGUID = ObjectGuid::Empty;
+            uiOrbazGUID = ObjectGuid::Empty;
+            uiThassarianGUID = ObjectGuid::Empty;
+            uiLichKingGUID = ObjectGuid::Empty;
 
             memset(uiDefenderGUID, 0, sizeof(uiDefenderGUID));
             memset(uiEarthshatterGUID, 0, sizeof(uiEarthshatterGUID));
@@ -353,25 +353,25 @@ public:
         uint32 uiTargetcheck;
 
         // Dawn
-        uint64 uiTirionGUID;
-        uint64 uiAlexandrosGUID;
-        uint64 uiDarionGUID;
-        uint64 uiKorfaxGUID;
-        uint64 uiMaxwellGUID;
-        uint64 uiEligorGUID;
-        uint64 uiRayneGUID;
-        uint64 uiDefenderGUID[ENCOUNTER_DEFENDER_NUMBER];
-        uint64 uiEarthshatterGUID[ENCOUNTER_EARTHSHATTER_NUMBER];
+        ObjectGuid uiTirionGUID;
+        ObjectGuid uiAlexandrosGUID;
+        ObjectGuid uiDarionGUID;
+        ObjectGuid uiKorfaxGUID;
+        ObjectGuid uiMaxwellGUID;
+        ObjectGuid uiEligorGUID;
+        ObjectGuid uiRayneGUID;
+        ObjectGuid uiDefenderGUID[ENCOUNTER_DEFENDER_NUMBER];
+        ObjectGuid uiEarthshatterGUID[ENCOUNTER_EARTHSHATTER_NUMBER];
 
         // Death
-        uint64 uiKoltiraGUID;
-        uint64 uiOrbazGUID;
-        uint64 uiThassarianGUID;
-        uint64 uiLichKingGUID;
-        uint64 uiAbominationGUID[ENCOUNTER_ABOMINATION_NUMBER];
-        uint64 uiBehemothGUID[ENCOUNTER_BEHEMOTH_NUMBER];
-        uint64 uiGhoulGUID[ENCOUNTER_GHOUL_NUMBER];
-        uint64 uiWarriorGUID[ENCOUNTER_WARRIOR_NUMBER];
+        ObjectGuid uiKoltiraGUID;
+        ObjectGuid uiOrbazGUID;
+        ObjectGuid uiThassarianGUID;
+        ObjectGuid uiLichKingGUID;
+        ObjectGuid uiAbominationGUID[ENCOUNTER_ABOMINATION_NUMBER];
+        ObjectGuid uiBehemothGUID[ENCOUNTER_BEHEMOTH_NUMBER];
+        ObjectGuid uiGhoulGUID[ENCOUNTER_GHOUL_NUMBER];
+        ObjectGuid uiWarriorGUID[ENCOUNTER_WARRIOR_NUMBER];
 
         void Reset() override
         {
@@ -414,23 +414,23 @@ public:
                 if (Creature* temp = Unit::GetCreature(*me, uiRayneGUID))
                     temp->setDeathState(JUST_DIED);
 
-                uiTirionGUID = 0;
-                uiKorfaxGUID = 0;
-                uiMaxwellGUID = 0;
-                uiEligorGUID = 0;
-                uiRayneGUID = 0;
+                uiTirionGUID = ObjectGuid::Empty;
+                uiKorfaxGUID = ObjectGuid::Empty;
+                uiMaxwellGUID = ObjectGuid::Empty;
+                uiEligorGUID = ObjectGuid::Empty;
+                uiRayneGUID = ObjectGuid::Empty;
 
                 for (uint8 i = 0; i < ENCOUNTER_DEFENDER_NUMBER; ++i)
                 {
                     if (Creature* temp = Unit::GetCreature(*me, uiDefenderGUID[i]))
                         temp->setDeathState(JUST_DIED);
-                    uiDefenderGUID[i] = 0;
+                    uiDefenderGUID[i] = ObjectGuid::Empty;
                 }
                 for (uint8 i = 0; i < ENCOUNTER_EARTHSHATTER_NUMBER; ++i)
                 {
                     if (Creature* temp = Unit::GetCreature(*me, uiEarthshatterGUID[i]))
                         temp->setDeathState(JUST_DIED);
-                    uiEarthshatterGUID[i] = 0;
+                    uiEarthshatterGUID[i] = ObjectGuid::Empty;
                 }
 
                 if (Creature* temp = Unit::GetCreature(*me, uiKoltiraGUID))
@@ -442,33 +442,33 @@ public:
                 if (Creature* temp = Unit::GetCreature(*me, uiLichKingGUID))
                     temp->Respawn();
 
-                uiKoltiraGUID = 0;
-                uiOrbazGUID = 0;
-                uiThassarianGUID = 0;
-                uiLichKingGUID = 0;
+                uiKoltiraGUID = ObjectGuid::Empty;
+                uiOrbazGUID = ObjectGuid::Empty;
+                uiThassarianGUID = ObjectGuid::Empty;
+                uiLichKingGUID = ObjectGuid::Empty;
                 for (uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
                 {
                     if (Creature* temp = Unit::GetCreature(*me, uiAbominationGUID[i]))
                         temp->setDeathState(JUST_DIED);
-                    uiAbominationGUID[i] = 0;
+                    uiAbominationGUID[i] = ObjectGuid::Empty;
                 }
                 for (uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
                 {
                     if (Creature* temp = Unit::GetCreature(*me, uiBehemothGUID[i]))
                         temp->setDeathState(JUST_DIED);
-                    uiBehemothGUID[i] = 0;
+                    uiBehemothGUID[i] = ObjectGuid::Empty;
                 }
                 for (uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
                 {
                     if (Creature* temp = Unit::GetCreature(*me, uiGhoulGUID[i]))
                         temp->setDeathState(JUST_DIED);
-                    uiGhoulGUID[i] = 0;
+                    uiGhoulGUID[i] = ObjectGuid::Empty;
                 }
                 for (uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
                 {
                     if (Creature* temp = Unit::GetCreature(*me, uiWarriorGUID[i]))
                         temp->setDeathState(JUST_DIED);
-                    uiWarriorGUID[i] = 0;
+                    uiWarriorGUID[i] = ObjectGuid::Empty;
                 }
             }
         }
@@ -1531,7 +1531,7 @@ public:
             ++uiStep;
         }
 
-        void NPCChangeTarget(uint64 ui_GUID)
+        void NPCChangeTarget(ObjectGuid ui_GUID)
         {
             if (Creature* temp = Unit::GetCreature(*me, ui_GUID))
                 if (temp->IsAlive())
@@ -1650,7 +1650,7 @@ public:
             }
         }
 
-        void DespawnNPC(uint64 pGUID)
+        void DespawnNPC(ObjectGuid pGUID)
         {
             if (Creature* temp = Unit::GetCreature(*me, pGUID))
                 if (temp->IsAlive())

@@ -77,7 +77,7 @@ class boss_brother_korloff : public CreatureScript
             boss_brother_korloffAI(Creature* creature) : BossAI(creature, BOSS_BROTHER_KORLOFF) { }
 
             uint32 phase;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             uint32 burningDummyCounter;
             float heal;
 
@@ -101,7 +101,7 @@ class boss_brother_korloff : public CreatureScript
                 }
                 phase = PHASE_ONE;
                 heal = 100.0f;
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 burningDummyCounter = 0;
                 me->GetMap()->SetWorldState(WORLDSTATE_BURNING_MAN, 0);
             }

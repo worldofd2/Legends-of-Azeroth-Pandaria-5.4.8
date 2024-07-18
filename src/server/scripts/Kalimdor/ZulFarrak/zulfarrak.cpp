@@ -113,7 +113,7 @@ class npc_sergeant_bly : public CreatureScript
             uint32 Text_Timer;
             uint32 ShieldBash_Timer;
             uint32 Revenge_Timer;                                   //this is wrong, spell should never be used unless me->GetVictim() dodge, parry or block attack. Trinity support required.
-            uint64 PlayerGUID;
+            ObjectGuid PlayerGUID;
 
             void Reset() override
             {
@@ -139,7 +139,7 @@ class npc_sergeant_bly : public CreatureScript
                         {
                         case 1:
                             //weegli doesn't fight - he goes & blows up the door
-                            if (Creature* pWeegli = instance->instance->GetCreature(instance->GetData64(NPC_WEEGLI)))
+                            if (Creature* pWeegli = instance->instance->GetCreature(instance->GetGuidData(NPC_WEEGLI)))
                                 pWeegli->AI()->DoAction(0);
                             Talk(SAY_1);
                             Text_Timer = 5000;
@@ -195,7 +195,7 @@ class npc_sergeant_bly : public CreatureScript
 
             void switchFactionIfAlive(InstanceScript* instance, uint32 entry)
             {
-                if (Creature* crew = instance->instance->GetCreature(instance->GetData64(entry)))
+                if (Creature* crew = instance->instance->GetCreature(instance->GetGuidData(entry)))
                     if (crew->IsAlive())
                         crew->SetFaction(FACTION_HOSTILE);
             }
@@ -341,7 +341,7 @@ class npc_weegli_blastfuse : public CreatureScript
                     else
                         if (destroyingDoor)
                         {
-                            instance->DoUseDoorOrButton(instance->GetData64(GO_END_DOOR));
+                            instance->DoUseDoorOrButton(instance->GetGuidData(GO_END_DOOR));
                             /// @todo leave the area...
                             me->DespawnOrUnsummon();
                         };
@@ -417,7 +417,7 @@ class npc_sandfury_executioner : public CreatureScript
 
             void initBlyCrewMember(InstanceScript* instance, uint32 entry, float x, float y, float z)
             {
-                if (Creature* crew = ObjectAccessor::GetCreature(*me, instance->GetData64(entry)))
+                if (Creature* crew = ObjectAccessor::GetCreature(*me, instance->GetGuidData(entry)))
                 {
                     crew->SetReactState(REACT_AGGRESSIVE);
                     crew->SetWalk(true);

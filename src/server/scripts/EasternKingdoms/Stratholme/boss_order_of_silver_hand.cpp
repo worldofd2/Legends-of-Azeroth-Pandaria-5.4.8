@@ -131,7 +131,7 @@ public:
             if (instance->GetData(TYPE_SH_QUEST))
             {
                 if (Player* player = killer->ToPlayer())
-                    player->KilledMonsterCredit(SH_QUEST_CREDIT, 0);
+                    player->KilledMonsterCredit(SH_QUEST_CREDIT, ObjectGuid::Empty);
             }
         }
 

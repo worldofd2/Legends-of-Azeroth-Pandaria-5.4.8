@@ -55,13 +55,13 @@ public:
 
         uint32 speechTimer;
         uint32 speechCounter;
-        uint64 playerGUID;
+        ObjectGuid playerGUID;
 
         void Reset() override
         {
             speechTimer = 0;
             speechCounter = 0;
-            playerGUID = 0;
+            playerGUID = ObjectGuid::Empty;
             me->SetReactState(REACT_AGGRESSIVE);
             me->RestoreFaction();
         }
@@ -216,7 +216,7 @@ public:
             {
                 wave = 0;
                 waveTimer = 3000;
-                valrothGUID = 0;
+                valrothGUID = ObjectGuid::Empty;
                 me->LoadEquipment(0, true);
                 me->RemoveAurasDueToSpell(SPELL_ANTI_MAGIC_ZONE);
                 me->RemoveAurasDueToSpell(SPELL_KOLTIRA_TRANSFORM);
@@ -343,7 +343,7 @@ public:
     private:
         uint8 wave;
         uint32 waveTimer;
-        uint64 valrothGUID;
+        ObjectGuid valrothGUID;
 
     };
 
@@ -607,13 +607,13 @@ public:
 
         uint32 ExecuteSpeech_Timer;
         uint32 ExecuteSpeech_Counter;
-        uint64 PlayerGUID;
+        ObjectGuid PlayerGUID;
 
         void Reset() override
         {
             ExecuteSpeech_Timer = 0;
             ExecuteSpeech_Counter = 0;
-            PlayerGUID = 0;
+            PlayerGUID = ObjectGuid::Empty;
 
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
         }

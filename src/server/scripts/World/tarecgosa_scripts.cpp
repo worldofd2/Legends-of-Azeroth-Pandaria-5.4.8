@@ -66,7 +66,7 @@ class npc_anachronos_15192 : public CreatureScript
             player->PlayerTalkClass->ClearMenus();
             if (action == ACTION_A_WRINKIE_IN_TIME)
             {
-                player->KilledMonsterCredit(52605, 0);
+                player->KilledMonsterCredit(52605, ObjectGuid::Empty);
             }
             else if (action == ACTION_ON_A_WING_AND_A_PRAYER)
             {
@@ -124,7 +124,7 @@ class npc_tarecgosa_52835 : public CreatureScript
 
                 if (who->ToPlayer()->GetQuestStatus(29193) == QUEST_STATUS_INCOMPLETE)
                 {
-                    who->ToPlayer()->KilledMonsterCredit(52832, 0);
+                    who->ToPlayer()->KilledMonsterCredit(52832, ObjectGuid::Empty);
                     who->ToPlayer()->CompleteQuest(29193);
                 }
             }
@@ -158,13 +158,13 @@ class npc_tarecgosa_53098 : public CreatureScript
 
                 if (who->ToPlayer()->GetQuestStatus(29240) == QUEST_STATUS_INCOMPLETE)
                 {
-                    who->ToPlayer()->KilledMonsterCredit(53047, 0);
+                    who->ToPlayer()->KilledMonsterCredit(53047, ObjectGuid::Empty);
                     who->ToPlayer()->CompleteQuest(29240);
                 }
 
                 if (who->ToPlayer()->GetQuestStatus(29269) == QUEST_STATUS_INCOMPLETE)
                 {
-                    who->ToPlayer()->KilledMonsterCredit(53182, 0);
+                    who->ToPlayer()->KilledMonsterCredit(53182, ObjectGuid::Empty);
                     who->ToPlayer()->CompleteQuest(29269);
                 }
             }
@@ -229,7 +229,7 @@ class npc_thyrinar : public CreatureScript
                     pTarecgosa->RemoveAura(99561);
 
                 if (originalKiller->ToPlayer()->GetQuestStatus(29194) == QUEST_STATUS_INCOMPLETE)
-                    originalKiller->ToPlayer()->KilledMonsterCredit(52867, 0);
+                    originalKiller->ToPlayer()->KilledMonsterCredit(52867, ObjectGuid::Empty);
             }
         };
 
@@ -257,7 +257,7 @@ class npc_kalecgos_53349 : public CreatureScript
                     return;
 
                 if (who->ToPlayer()->GetQuestStatus(29285) == QUEST_STATUS_INCOMPLETE)
-                    who->ToPlayer()->KilledMonsterCredit(53227, 0);
+                    who->ToPlayer()->KilledMonsterCredit(53227, ObjectGuid::Empty);
             }
         };
 
@@ -506,12 +506,12 @@ class npc_kalecgos_53392 : public CreatureScript
                 if (who->ToPlayer()->GetTeam() == HORDE)
                 {
                     if (who->ToPlayer()->GetQuestStatus(29309) == QUEST_STATUS_INCOMPLETE)
-                        who->ToPlayer()->KilledMonsterCredit(53715, 0);
+                        who->ToPlayer()->KilledMonsterCredit(53715, ObjectGuid::Empty);
                 }
                 else if (who->ToPlayer()->GetTeam() == ALLIANCE)
                 {
                     if (who->ToPlayer()->GetQuestStatus(29312) == QUEST_STATUS_INCOMPLETE)
-                        who->ToPlayer()->KilledMonsterCredit(53715, 0);
+                        who->ToPlayer()->KilledMonsterCredit(53715, ObjectGuid::Empty);
                 }
             }
 

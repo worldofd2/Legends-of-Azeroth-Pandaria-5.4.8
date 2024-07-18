@@ -49,9 +49,9 @@ enum Spells
     SPELL_TWILIGHT_METEORITE_MARK                     = 88518,
     SPELL_DEEP_BREATH                                 = 86059,
     SPELL_TWILIGHT_FLAMES_TRIGGER                     = 86194,
-    SPELL_TWILIGHT_FLAME_DMG_1                        = 86199, // бьет по обычному миру
-    SPELL_TWILIGHT_FLAME_DMG_2                        = 86228, // бьет по сумеречному миру
-    SPELL_COSMETIC_TWILIGHT_BREATH                    = 78954, // возможно неверный
+    SPELL_TWILIGHT_FLAME_DMG_1                        = 86199, // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    SPELL_TWILIGHT_FLAME_DMG_2                        = 86228, // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    SPELL_COSMETIC_TWILIGHT_BREATH                    = 78954, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     // Theralion
     SPELL_ENGULFING_MAGIC                             = 86607,
@@ -72,8 +72,8 @@ enum Spells
 
     // twilight ream & mobs spells
     SPELL_TWILIGHT_PROTECTION_BUFF                    = 86415,
-    SPELL_TWILIGHT_SHIFT_AURA_1                       = 86202, // от глубокого дыхания
-    SPELL_TWILIGHT_SHIFT_AURA_2                       = 88436, // от разрушения
+    SPELL_TWILIGHT_SHIFT_AURA_1                       = 86202, // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    SPELL_TWILIGHT_SHIFT_AURA_2                       = 88436, // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     SPELL_COLLAPSING_TWILIGHT_PORTAL_VISUAL           = 86291,
     SPELL_UNSTABLE_TWILIGHT_VISUAL                    = 86302,
     SPELL_UNSTABLE_TWILIGHT_DMG                       = 86305,
@@ -371,7 +371,7 @@ class boss_theralion : public CreatureScript
                         me->OverrideInhabitType(INHABIT_GROUND);
                         me->UpdateMovementFlags();
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        if (Creature* pValiona = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VALIONA)))
+                        if (Creature* pValiona = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_VALIONA)))
                             pValiona->AI()->DoAction(ACTION_VALIONA_FLY_START);
                         me->GetMotionMaster()->MovePoint(POINT_LAND, valionatheralionflightPos);
                         break;
@@ -396,7 +396,7 @@ class boss_theralion : public CreatureScript
                 //DoCast(me, SPELL_TWILIGHT_SHIFT_BUFF);
                 events.ScheduleEvent(EVENT_BERSERK, IsHeroic()? 10*MINUTE*IN_MILLISECONDS: 6*MINUTE*IN_MILLISECONDS);
                 DoAction(ACTION_THERALION_FLY_START);
-                if (Creature* pValiona = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VALIONA)))
+                if (Creature* pValiona = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_VALIONA)))
                     if (!pValiona->IsInCombat())
                         pValiona->SetInCombatWithZone();
                 events.ScheduleEvent(EVENT_THERALION_INTRO_1, 6000);
@@ -423,7 +423,7 @@ class boss_theralion : public CreatureScript
                 summons.DespawnAll();
                 Talk(SAY_THERALION_DEATH);
                 instance->SetData(DATA_HEALTH_VALIONA_THERALION, 0);
-                if (Creature* pValiona = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VALIONA)))
+                if (Creature* pValiona = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_VALIONA)))
                     killer->Kill(pValiona);
             }
             
@@ -591,7 +591,7 @@ class boss_valiona : public CreatureScript
             {
                 _Reset();
 
-                // правки общих спеллов тоже тут
+                // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_PROTECTION_BUFF);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT_AURA_1);
@@ -650,7 +650,7 @@ class boss_valiona : public CreatureScript
                 summons.DespawnAll();
                 Talk(SAY_VALIONA_DEATH);
                 instance->SetData(DATA_HEALTH_VALIONA_THERALION, 0);
-                if (Creature* pTheralion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_THERALION)))
+                if (Creature* pTheralion = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_THERALION)))
                     killer->Kill(pTheralion);
                 if (Creature* Chogall = me->SummonCreature(NPC_CHOGALL_DLG, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 1, TEMPSUMMON_DEAD_DESPAWN, 0))
                     Chogall->AI()->DoAction(ACTION_AT_VALIONA_THERALION_END);
@@ -690,7 +690,7 @@ class boss_valiona : public CreatureScript
                         me->OverrideInhabitType(INHABIT_GROUND);
                         me->UpdateMovementFlags();
                         //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        if (Creature* pTheralion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_THERALION)))
+                        if (Creature* pTheralion = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_THERALION)))
                             pTheralion->AI()->DoAction(ACTION_THERALION_FLY_START);
                         me->GetMotionMaster()->MovePoint(POINT_LAND, valionatheralionlandPos);
                         break;
@@ -715,7 +715,7 @@ class boss_valiona : public CreatureScript
                     events.ScheduleEvent(EVENT_TWILIGHT_SHIFT_STACK, urand(10000, 20000));
                 }
                 
-                if (Creature* pTheralion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_THERALION)))
+                if (Creature* pTheralion = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_THERALION)))
                     pTheralion->SetInCombatWithZone();
                 for (uint8 i = 0; i < 10; i++)
                     if (Creature* pUnstableTwilight = me->SummonCreature(NPC_UNSTABLE_TWILIGHT, unstabletwilightPos[i]))

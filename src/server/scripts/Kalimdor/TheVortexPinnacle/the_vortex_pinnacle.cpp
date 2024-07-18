@@ -18,7 +18,7 @@
 #include"ScriptPCH.h"
 #include "the_vortex_pinnacle.h"
 
-// Перепрыгивания в вихрях пока не реализованы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 enum Creatures
 {
@@ -1398,7 +1398,7 @@ class at_catch_fall_5 : public AreaTriggerScript
 
             // Prevent Combat if victim has force down
             for (auto&& itr : bossData)
-                if (Creature* encounter = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetData64(itr) : 0))
+                if (Creature* encounter = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetGuidData(itr) : ObjectGuid::Empty))
                     if (encounter->IsInCombat() && encounter->GetVictim() && encounter->GetVictim()->GetGUID() == player->GetGUID())
                         encounter->AI()->EnterEvadeMode();
 

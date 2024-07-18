@@ -606,7 +606,8 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
             return ReadDataHandlerResult::Ok;
 
         case CMSG_TIME_SYNC_RESP:
-            packetToQueue = new WorldPacket(std::move(packet), std::chrono::steady_clock::now());
+            packet.SetReceiveTime(std::chrono::steady_clock::now());
+            packetToQueue = new WorldPacket(std::move(packet));
             break;
 
         default:
@@ -625,11 +626,11 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
         return ReadDataHandlerResult::Error;
     }
 
-    OpcodeHandler const* handler = clientOpcodeTable[opcode];
+    ClientOpcodeHandler const* handler = opcodeTable[opcode];
     //if (!handler)
     if (!handler || handler->Status == STATUS_UNHANDLED)
     {
-        TC_LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode()),false).c_str(), _worldSession->GetPlayerInfo().c_str());
+        TC_LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode())).c_str(), _worldSession->GetPlayerInfo().c_str());
         delete packetToQueue;
         //return ReadDataHandlerResult::Error;
         return ReadDataHandlerResult::Ok;
@@ -649,18 +650,18 @@ void WorldSocket::LogOpcodeText(OpcodeClient opcode, std::unique_lock<std::mutex
 {
     if (!guard)
     {
-        TC_LOG_TRACE("network.opcode", "C->S: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(opcode,false).c_str());
+        TC_LOG_TRACE("network.opcode", "C->S: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str());
     }
     else
     {
         TC_LOG_TRACE("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(),
-            GetOpcodeNameForLogging(opcode,false).c_str());
+            GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str());
     }
 }
 
 void WorldSocket::SendPacketAndLogOpcode(WorldPacket const& packet)
 {
-    TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet.GetOpcode()),true).c_str());
+    TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet.GetOpcode())).c_str());
     SendPacket(packet);
 }
 

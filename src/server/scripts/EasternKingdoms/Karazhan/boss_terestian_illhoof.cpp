@@ -75,12 +75,12 @@ class npc_kilrek : public CreatureScript
             }
 
             InstanceScript* instance;
-            uint64 TerestianGUID;
+            ObjectGuid TerestianGUID;
             uint32 AmplifyTimer;
 
             void Reset() override
             {
-                TerestianGUID = 0;
+                TerestianGUID = ObjectGuid::Empty;
                 AmplifyTimer = 2000;
             }
 
@@ -97,7 +97,7 @@ class npc_kilrek : public CreatureScript
             {
                 if (instance)
                 {
-                    uint64 TerestianGUID = instance->GetData64(DATA_TERESTIAN);
+                    ObjectGuid TerestianGUID = instance->GetGuidData(DATA_TERESTIAN);
                     if (TerestianGUID)
                     {
                         Unit* terestian = Unit::GetUnit(*me, TerestianGUID);
@@ -140,11 +140,11 @@ class npc_demon_chain : public CreatureScript
         {
             npc_demon_chainAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 SacrificeGUID;
+            ObjectGuid SacrificeGUID;
 
             void Reset() override
             {
-                SacrificeGUID = 0;
+                SacrificeGUID = ObjectGuid::Empty;
             }
 
             void JustEngagedWith(Unit* /*who*/) override { }
@@ -255,13 +255,13 @@ class boss_terestian_illhoof : public CreatureScript
             boss_terestianAI(Creature* creature) : ScriptedAI(creature)
             {
                 for (uint8 i = 0; i < 2; ++i)
-                    PortalGUID[i] = 0;
+                    PortalGUID[i] = ObjectGuid::Empty;
                 instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
 
-            uint64 PortalGUID[2];
+            ObjectGuid PortalGUID[2];
             uint8 portalsCount;
 
             uint32 SacrificeTimer;
@@ -284,7 +284,7 @@ class boss_terestian_illhoof : public CreatureScript
                             portal->DespawnOrUnsummon();
                         }
 
-                        PortalGUID[i] = 0;
+                        PortalGUID[i] = ObjectGuid::Empty;
                     }
                 }
 
@@ -347,7 +347,7 @@ class boss_terestian_illhoof : public CreatureScript
                         if (Creature* portal = Unit::GetCreature(*me, PortalGUID[i]))
                             portal->DespawnOrUnsummon();
 
-                        PortalGUID[i] = 0;
+                        PortalGUID[i] = ObjectGuid::Empty;
                     }
                 }
 

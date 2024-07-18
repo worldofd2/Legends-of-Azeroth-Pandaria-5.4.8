@@ -69,12 +69,12 @@ class npc_water_elemental : public CreatureScript
     {
         npc_water_elementalAI(Creature* creature) : ScriptedAI(creature) { }
 
-        uint64 balindaGUID;
+        ObjectGuid balindaGUID;
 
         void Reset() override
         {
             _events.Reset();
-            balindaGUID = 0;
+            balindaGUID = ObjectGuid::Empty;
         }
 
         void JustEngagedWith(Unit* /*who*/) override

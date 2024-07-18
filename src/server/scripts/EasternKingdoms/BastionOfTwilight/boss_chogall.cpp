@@ -19,10 +19,10 @@
 #include"Spell.h"
 #include"bastion_of_twilight.h"
 
-// todo: разобраться с entry мобов у orders
-// todo: реализовать правильные absorb fire, absorb shadow
-// todo: сделать героик скиллы
-// todo: разобраться с таргетами fester blood
+// todo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ entry пїЅпїЅпїЅпїЅпїЅ пїЅ orders
+// todo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ absorb fire, absorb shadow
+// todo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// todo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ fester blood
 
 enum ScriptTexts
 {
@@ -368,7 +368,7 @@ class boss_chogall : public CreatureScript
                         case EVENT_FESTER_BLOOD_1:
                             if (!summons.empty())
                             {
-                                for (std::list<uint64>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
+                                for (std::list<ObjectGuid>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
                                 {
                                     if (Creature* pSummon = Unit::GetCreature(*me, *itr))
                                     {
@@ -584,7 +584,7 @@ class npc_chogall_fire_elemental : public CreatureScript
             void IsSummonedBy(Unit* summoner) override
             {
                 bNear = false;
-                pChogall = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CHOGALL));
+                pChogall = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CHOGALL));
                 if (!pChogall)
                     me->DespawnOrUnsummon();
                 DoCast(me, SPELL_FIRE_SHELL);
@@ -651,7 +651,7 @@ class npc_chogall_shadow_lord : public CreatureScript
             void IsSummonedBy(Unit* summoner) override
             {
                 bNear = false;
-                pChogall = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CHOGALL));
+                pChogall = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CHOGALL));
                 if (!pChogall)
                     me->DespawnOrUnsummon();
                 DoCast(me, SPELL_SHADOW_SHELL);

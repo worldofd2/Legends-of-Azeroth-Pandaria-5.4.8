@@ -117,13 +117,13 @@ public:
         pet->SavePetToDB(trans);
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
         stmt->setUInt8(0, newPetSlot);
-        stmt->setUInt32(1, player->GetGUIDLow());
+        stmt->setUInt32(1, player->GetGUID().GetCounter());
         stmt->setUInt32(2, pet->GetCharmInfo()->GetPetNumber());
         trans->Append(stmt);
         CharacterDatabase.CommitTransaction(trans);
         player->PetSpellInitialize();
 
-        player->GetSession()->SendPetList(0, PET_SLOT_ACTIVE_FIRST, PET_SLOT_ACTIVE_LAST);
+        player->GetSession()->SendPetList(ObjectGuid::Empty, PET_SLOT_ACTIVE_FIRST, PET_SLOT_ACTIVE_LAST);
 
         return true;
     }

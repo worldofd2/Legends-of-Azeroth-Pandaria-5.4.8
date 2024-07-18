@@ -351,7 +351,7 @@ struct npc_child_of_chi_ji : public ScriptedAI
 
     TaskScheduler scheduler;
     float x, y;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {

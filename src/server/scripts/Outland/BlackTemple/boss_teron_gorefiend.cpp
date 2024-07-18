@@ -60,13 +60,13 @@ class npc_doom_blossom : public CreatureScript
 
             uint32 CheckTeronTimer;
             uint32 ShadowBoltTimer;
-            uint64 TeronGUID;
+            ObjectGuid TeronGUID;
 
             void Reset() override
             {
                 CheckTeronTimer = 5000;
                 ShadowBoltTimer = 12000;
-                TeronGUID = 0;
+                TeronGUID = ObjectGuid::Empty;
             }
 
             void JustEngagedWith(Unit* /*who*/) override { }
@@ -105,7 +105,7 @@ class npc_doom_blossom : public CreatureScript
                 return;
             }
 
-            void SetTeronGUID(uint64 guid)
+            void SetTeronGUID(ObjectGuid guid)
             {
                 TeronGUID = guid;
             }
@@ -126,15 +126,15 @@ class npc_shadowy_construct : public CreatureScript
         {
             npc_shadowy_constructAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 GhostGUID;
-            uint64 TeronGUID;
+            ObjectGuid GhostGUID;
+            ObjectGuid TeronGUID;
             uint32 CheckPlayerTimer;
             uint32 CheckTeronTimer;
 
             void Reset() override
             {
-                GhostGUID = 0;
-                TeronGUID = 0;
+                GhostGUID = ObjectGuid::Empty;
+                TeronGUID = ObjectGuid::Empty;
 
                 CheckPlayerTimer = 2000;
                 CheckTeronTimer = 5000;
@@ -225,8 +225,8 @@ class boss_teron_gorefiend : public CreatureScript
             uint32 SummonShadowsTimer;
             uint32 RandomYellTimer;
             uint32 AggroTimer;
-            uint64 AggroTargetGUID;
-            uint64 GhostGUID; // Player that gets killed by Shadow of Death and gets turned into a ghost
+            ObjectGuid AggroTargetGUID;
+            ObjectGuid GhostGUID; // Player that gets killed by Shadow of Death and gets turned into a ghost
             bool Intro;
             bool Done;
 
@@ -247,7 +247,7 @@ class boss_teron_gorefiend : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
                 AggroTimer = 20000;
-                AggroTargetGUID = 0;
+                AggroTargetGUID = ObjectGuid::Empty;
                 Intro = false;
                 Done = false;
             }

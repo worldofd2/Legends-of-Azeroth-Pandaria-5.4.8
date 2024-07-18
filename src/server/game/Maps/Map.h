@@ -31,6 +31,7 @@
 #include "MapRefManager.h"
 #include "DynamicTree.h"
 #include "GameObjectModel.h"
+#include "ObjectGuid.h"
 
 #include <bitset>
 #include <list>
@@ -44,6 +45,7 @@ class Object;
 class WorldObject;
 class TempSummon;
 class Player;
+class ActivePoolData;
 class CreatureGroup;
 struct ScriptInfo;
 struct ScriptAction;
@@ -58,9 +60,9 @@ namespace VMAP { enum class ModelIgnoreFlags : uint32; }
 
 struct ScriptAction
 {
-    uint64 sourceGUID;
-    uint64 targetGUID;
-    uint64 ownerGUID;                                       ///> owner of source if source is item
+    ObjectGuid sourceGUID;
+    ObjectGuid targetGUID;
+    ObjectGuid ownerGUID;                                   ///> owner of source if source is item
     ScriptInfo const* script;                               ///> pointer to static script data
 };
 
@@ -476,13 +478,46 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         void UpdateIteratorBack(Player* player);
 
-        TempSummon* SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = NULL, uint32 duration = 0, Unit* summoner = NULL, uint32 spellId = 0, uint32 vehId = 0, uint64 privateObjectOwner = 0);
+        TempSummon* SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = NULL, uint32 duration = 0, Unit* summoner = NULL, uint32 spellId = 0, uint32 vehId = 0, ObjectGuid privateObjectOwner = ObjectGuid::Empty);
         void SummonCreatureGroup(uint8 group, std::list<TempSummon*>* list = NULL);
-        Player* GetPlayer(uint64 guid);
-        Creature* GetCreature(uint64 guid);
-        GameObject* GetGameObject(uint64 guid);
-        Transport* GetTransport(uint64 guid);
-        DynamicObject* GetDynamicObject(uint64 guid);
+        Player* GetPlayer(ObjectGuid guid);
+        AreaTrigger* GetAreaTrigger(ObjectGuid const& guid);
+        Corpse* GetCorpse(ObjectGuid const& guid);
+        Creature* GetCreature(ObjectGuid guid);
+        GameObject* GetGameObject(ObjectGuid guid);
+        Transport* GetTransport(ObjectGuid guid);
+        DynamicObject* GetDynamicObject(ObjectGuid guid);
+        Creature* GetCreatureBySpawnId(ObjectGuid::LowType spawnId) const;
+        GameObject* GetGameObjectBySpawnId(ObjectGuid::LowType spawnId) const;
+        Pet* GetPet(ObjectGuid const& guid);
+
+        MapStoredObjectTypesContainer& GetObjectsStore() { return _objectsStore; }
+
+        typedef std::unordered_multimap<ObjectGuid::LowType, Creature*> CreatureBySpawnIdContainer;
+        CreatureBySpawnIdContainer& GetCreatureBySpawnIdStore() { return _creatureBySpawnIdStore; }
+        CreatureBySpawnIdContainer const& GetCreatureBySpawnIdStore() const { return _creatureBySpawnIdStore; }
+
+        typedef std::unordered_multimap<ObjectGuid::LowType, GameObject*> GameObjectBySpawnIdContainer;
+        GameObjectBySpawnIdContainer& GetGameObjectBySpawnIdStore() { return _gameObjectBySpawnIdStore; }
+        GameObjectBySpawnIdContainer const& GetGameObjectBySpawnIdStore() const { return _gameObjectBySpawnIdStore; }
+
+        std::unordered_set<Corpse*> const* GetCorpsesInCell(uint32 cellId) const
+        {
+            auto itr = _corpsesByCell.find(cellId);
+            if (itr != _corpsesByCell.end())
+                return &itr->second;
+
+            return nullptr;
+        }
+
+        Corpse* GetCorpseByPlayer(ObjectGuid const& ownerGuid) const
+        {
+            auto itr = _corpsesByPlayer.find(ownerGuid);
+            if (itr != _corpsesByPlayer.end())
+                return itr->second;
+
+            return nullptr;
+        }
 
         MapInstanced* ToMapInstanced(){ if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return NULL;  }
         const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return NULL;  }
@@ -515,8 +550,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         /*
             RESPAWN TIMES
         */
-        time_t GetLinkedRespawnTime(uint64 guid) const;
-        time_t GetCreatureRespawnTime(uint32 dbGuid) const
+        time_t GetLinkedRespawnTime(ObjectGuid guid) const;
+        time_t GetCreatureRespawnTime(ObjectGuid::LowType dbGuid) const
         {
             std::unordered_map<uint32 /*dbGUID*/, time_t>::const_iterator itr = _creatureRespawnTimes.find(dbGuid);
             if (itr != _creatureRespawnTimes.end())
@@ -525,7 +560,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
             return time_t(0);
         }
 
-        time_t GetGORespawnTime(uint32 dbGuid) const
+        time_t GetGORespawnTime(ObjectGuid::LowType dbGuid) const
         {
             std::unordered_map<uint32 /*dbGUID*/, time_t>::const_iterator itr = _goRespawnTimes.find(dbGuid);
             if (itr != _goRespawnTimes.end())
@@ -543,6 +578,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         static void DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId);
 
+        void LoadCorpseData();
+        void DeleteCorpseData();
+        void AddCorpse(Corpse* corpse);
+        void RemoveCorpse(Corpse* corpse);
+        Corpse* ConvertCorpseToBones(ObjectGuid const& ownerGuid, bool insignia = false);
+        void RemoveOldCorpses();
+
         void SendInitTransports(Player* player);
         void SendRemoveTransports(Player* player);
         void SendZoneDynamicInfo(Player* player);
@@ -556,6 +598,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void AddCustomVisibilityObject(WorldObject* obj, uint32 zoneId = 0) { (zoneId ? m_customVisibilityObjectsByZone[zoneId] : m_customVisibilityObjects).insert(obj); }
         void RemoveCustomVisibilityObject(WorldObject* obj, uint32 zoneId = 0) { (zoneId ? m_customVisibilityObjectsByZone[zoneId] : m_customVisibilityObjects).erase(obj); }
         std::unordered_set<WorldObject*> const& GetCustomVisibilityObjects(uint32 zoneId = 0) { return zoneId ? m_customVisibilityObjectsByZone[zoneId] : m_customVisibilityObjects; }
+
+        template<HighGuid high>
+        inline ObjectGuid::LowType GenerateLowGuid()
+        {
+            static_assert(ObjectGuidTraits<high>::MapSpecific, "Only map specific guid can be generated in Map context");
+            return GetGuidSequenceGenerator<high>().Generate();
+        }
 
         uint32 GetUpdateTime() const { return m_updateTime; }
         void AddUpdateObject(Object* object) { m_updatable.insert(object); }
@@ -575,6 +624,9 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         }
 
         void SetDebugFlexPlayersCount(uint32 count) { debugFlexPlayersCount = count; }
+
+        ActivePoolData& GetPoolData() { return *_poolData; }
+        ActivePoolData const& GetPoolData() const { return *_poolData; }
 
     private:
         void LoadMapAndVMap(int gx, int gy);
@@ -727,6 +779,25 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
                 return m_activeNonPlayers.erase(obj) != 0;
         }
 
+        template<HighGuid high>
+        inline ObjectGuidGeneratorBase& GetGuidSequenceGenerator()
+        {
+            auto itr = _guidGenerators.find(high);
+            if (itr == _guidGenerators.end())
+                itr = _guidGenerators.insert(std::make_pair(high, std::unique_ptr<ObjectGuidGenerator<high>>(new ObjectGuidGenerator<high>()))).first;
+
+            return *itr->second;
+        }
+
+        std::map<HighGuid, std::unique_ptr<ObjectGuidGeneratorBase>> _guidGenerators;
+        std::unique_ptr<ActivePoolData> _poolData;
+        MapStoredObjectTypesContainer _objectsStore;
+        CreatureBySpawnIdContainer _creatureBySpawnIdStore;
+        GameObjectBySpawnIdContainer _gameObjectBySpawnIdStore;
+        std::unordered_map<uint32/*cellId*/, std::unordered_set<Corpse*>> _corpsesByCell;
+        std::unordered_map<ObjectGuid, Corpse*> _corpsesByPlayer;
+        std::unordered_set<Corpse*> _corpseBones;
+
         std::unordered_map<uint32 /*dbGUID*/, time_t> _creatureRespawnTimes;
         std::unordered_map<uint32 /*dbGUID*/, time_t> _goRespawnTimes;
 
@@ -782,7 +853,7 @@ class InstanceMap : public Map
         bool m_isLfgMap;
         InstanceScript* i_data;
         uint32 i_script_id;
-        std::set<uint32> m_stillInMapPlayers;
+        GuidSet m_stillInMapPlayers;
 };
 
 class BattlegroundMap : public Map

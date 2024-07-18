@@ -166,33 +166,25 @@ class SmartScript
 
         GameObject* FindGameObjectNear(WorldObject* searchObject, uint32 guid) const
         {
-            GameObject* gameObject = NULL;
+            auto bounds = searchObject->GetMap()->GetGameObjectBySpawnIdStore().equal_range(guid);
+            if (bounds.first == bounds.second)
+                return nullptr;
 
-            CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
-            Cell cell(p);
-
-            Trinity::GameObjectWithDbGUIDCheck goCheck(*searchObject, guid);
-            Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(searchObject, gameObject, goCheck);
-
-            TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > objectChecker(checker);
-            cell.Visit(p, objectChecker, *searchObject->GetMap(), *searchObject, searchObject->GetGridActivationRange());
-
-            return gameObject;
+            return bounds.first->second;
         }
 
         Creature* FindCreatureNear(WorldObject* searchObject, uint32 guid) const
         {
-            Creature* creature = NULL;
-            CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
-            Cell cell(p);
+            auto bounds = searchObject->GetMap()->GetCreatureBySpawnIdStore().equal_range(guid);
+            if (bounds.first == bounds.second)
+                return nullptr;
 
-            Trinity::CreatureWithDbGUIDCheck target_check(searchObject, guid);
-            Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(searchObject, creature, target_check);
+            auto creatureItr = std::find_if(bounds.first, bounds.second, [](Map::CreatureBySpawnIdContainer::value_type const& pair)
+            {
+                return pair.second->IsAlive();
+            });
 
-            TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-            cell.Visit(p, unit_checker, *searchObject->GetMap(), *searchObject, searchObject->GetGridActivationRange());
-
-            return creature;
+            return creatureItr != bounds.second ? creatureItr->second : bounds.first->second;
         }
 
         GuidListMap* mTargetStorage;
@@ -200,24 +192,31 @@ class SmartScript
         void OnReset();
         void ResetBaseObject()
         {
-            if (meOrigGUID)
+            WorldObject* lookupRoot = me;
+            if (!lookupRoot)
+                lookupRoot = go;
+
+            if (lookupRoot)
             {
-                if (Creature* m = HashMapHolder<Creature>::Find(meOrigGUID))
+                if (!meOrigGUID.IsEmpty())
                 {
-                    me = m;
-                    go = NULL;
+                    if (Creature *m = ObjectAccessor::GetCreature(*lookupRoot, meOrigGUID))
+                    {
+                        me = m;
+                        go = nullptr;
+                    }
+                }
+                if (goOrigGUID)
+                {
+                    if (GameObject *o = ObjectAccessor::GetGameObject(*lookupRoot, goOrigGUID))
+                    {
+                        me = nullptr;
+                        go = o;
+                    }
                 }
             }
-            if (goOrigGUID)
-            {
-                if (GameObject* o = HashMapHolder<GameObject>::Find(goOrigGUID))
-                {
-                    me = NULL;
-                    go = o;
-                }
-            }
-            goOrigGUID = 0;
-            meOrigGUID = 0;
+            goOrigGUID.Clear();
+            meOrigGUID.Clear();
         }
 
         uint32 GetPhase() { return mEventPhase; }
@@ -225,7 +224,7 @@ class SmartScript
         //TIMED_ACTIONLIST (script type 9 aka script9)
         void SetScript9(SmartScriptHolder& e, uint32 entry);
         Unit* GetLastInvoker();
-        uint64 mLastInvoker;
+        ObjectGuid mLastInvoker;
         typedef std::unordered_map<uint32, uint32> CounterMap;
         CounterMap mCounterList;
 
@@ -246,9 +245,9 @@ class SmartScript
         SmartAIEventList mInstallEvents;
         SmartAIEventList mTimedActionList;
         Creature* me;
-        uint64 meOrigGUID;
+        ObjectGuid meOrigGUID;
         GameObject* go;
-        uint64 goOrigGUID;
+        ObjectGuid goOrigGUID;
         AreaTriggerEntry const* trigger;
         SmartScriptType mScriptType;
         uint32 mEventPhase;

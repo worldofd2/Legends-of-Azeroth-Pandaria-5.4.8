@@ -224,7 +224,7 @@ struct FlameLeviathanPursuedTargetSelector
             bool playerFound = false;
             if (!playerFound)
                 for (auto&& itr : vehicle->Seats)
-                    if (IS_PLAYER_GUID(itr.second.Passenger.Guid))
+                    if (itr.second.Passenger.Guid.IsPlayer())
                         playerFound = true;
 
             return !playerFound;
@@ -310,7 +310,7 @@ class boss_flame_leviathan : public CreatureScript
                 _Reset();
                 // resets shutdown counter to 0.  2 or 4 depending on raid mode
                 Shutdown = 0;
-                _pursueTarget = 0;
+                _pursueTarget = ObjectGuid::Empty;
 
                 me->SetVisible(true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
@@ -331,7 +331,7 @@ class boss_flame_leviathan : public CreatureScript
                         towerOfLife = true;
                         towerOfFlames = true;
                         towerOfFrost = true;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                         {
                             orbitalSupport->CastSpell(orbitalSupport, SPELL_BUFF_TOWER_OF_STORMS, true);
                             orbitalSupport->CastSpell(orbitalSupport, SPELL_BUFF_TOWER_OF_FROST, true);
@@ -346,7 +346,7 @@ class boss_flame_leviathan : public CreatureScript
                         towerOfLife = false;
                         towerOfFlames = false;
                         towerOfFrost = false;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                         {
                             orbitalSupport->RemoveAurasDueToSpell(SPELL_BUFF_TOWER_OF_STORMS);
                             orbitalSupport->RemoveAurasDueToSpell(SPELL_BUFF_TOWER_OF_FROST);
@@ -423,7 +423,7 @@ class boss_flame_leviathan : public CreatureScript
                 Talk(SAY_AGGRO);
                 if (instance->GetData(DATA_LEVI_HARD_MODE))
                 {
-                    Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT));
+                    Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT));
 
                     if (towerOfFrost)
                     {
@@ -469,7 +469,7 @@ class boss_flame_leviathan : public CreatureScript
                 // Set DynFlags 12
                 // Set NPCFlags 0
                 Talk(SAY_DEATH);
-                if (GameObject* door = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_LEVI_DOOR)))
+                if (GameObject* door = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_LEVI_DOOR)))
                     instance->HandleGameObject(door->GetGUID(), true);
             }
 
@@ -520,7 +520,7 @@ class boss_flame_leviathan : public CreatureScript
                     me->SetReactState(REACT_AGGRESSIVE);
                     if (Unit* target = FindNearestAttackableTarget())
                         me->SetInCombatWith(target);
-                    if (GameObject* door = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_LEVI_DOOR)))
+                    if (GameObject* door = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_LEVI_DOOR)))
                         instance->HandleGameObject(door->GetGUID(), false);
                     me->UpdateObjectVisibility();
                     me->SetHomePosition(Center);
@@ -710,22 +710,22 @@ class boss_flame_leviathan : public CreatureScript
                 {
                     case ACTION_TOWER_OF_STORM_DESTROYED:
                         towerOfStorms = false;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                             orbitalSupport->RemoveAurasDueToSpell(SPELL_BUFF_TOWER_OF_STORMS);
                         break;
                     case ACTION_TOWER_OF_FROST_DESTROYED:
                         towerOfFrost = false;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                             orbitalSupport->RemoveAurasDueToSpell(SPELL_BUFF_TOWER_OF_FROST);
                         break;
                     case ACTION_TOWER_OF_FLAMES_DESTROYED:
                         towerOfFlames = false;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                             orbitalSupport->RemoveAurasDueToSpell(SPELL_BUFF_TOWER_OF_FLAMES);
                         break;
                     case ACTION_TOWER_OF_LIFE_DESTROYED:
                         towerOfLife = false;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                             orbitalSupport->RemoveAurasDueToSpell(SPELL_BUFF_TOWER_OF_LIFE);
                         break;
                     case ACTION_START_HARD_MODE:  // Activate hard-mode enable all towers, apply buffs on leviathan
@@ -733,7 +733,7 @@ class boss_flame_leviathan : public CreatureScript
                         towerOfLife = true;
                         towerOfFlames = true;
                         towerOfFrost = true;
-                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ORBITAL_SUPPORT)))
+                        if (Creature* orbitalSupport = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ORBITAL_SUPPORT)))
                         {
                             orbitalSupport->CastSpell(orbitalSupport, SPELL_BUFF_TOWER_OF_STORMS, true);
                             orbitalSupport->CastSpell(orbitalSupport, SPELL_BUFF_TOWER_OF_FROST, true);
@@ -789,7 +789,7 @@ class boss_flame_leviathan : public CreatureScript
                     return targets.front();
                 }
 
-                uint64 _pursueTarget;
+                ObjectGuid _pursueTarget;
 
                 struct HostileCheck
                 {
@@ -1293,7 +1293,7 @@ struct targetting_reticle_ai : public ScriptedAI
     void JustSummoned(Creature* summon) override
     {
         if (InstanceScript* instance = me->GetInstanceScript())
-            if (Creature* leviathan = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_LEVIATHAN)))
+            if (Creature* leviathan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_LEVIATHAN)))
                 leviathan->AI()->JustSummoned(summon);
     }
 };
@@ -1514,7 +1514,7 @@ class npc_freya_ward_summon : public CreatureScript
                 DoZoneInCombat(me, 250.0f);
 
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* leviathan = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_LEVIATHAN)))
+                    if (Creature* leviathan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_LEVIATHAN)))
                         leviathan->AI()->JustSummoned(me);
             }
 
@@ -1694,28 +1694,28 @@ class go_ulduar_tower : public GameObjectScript
                     CreatureDies(go);
                     if (GameObject* HightTower = go->FindNearestGameObject(194666, 150.0f))
                         HightTower->SetGoState(GO_STATE_ACTIVE);
-                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_TOWER_OF_STORMS_CRYSTAL)))
+                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetGuidData(DATA_TOWER_OF_STORMS_CRYSTAL)))
                         Crystal->SetGoState(GO_STATE_ACTIVE);
                     break;
                 case GO_TOWER_OF_FLAMES:
                     CreatureDies(go);
                     if (GameObject* HightTower = go->FindNearestGameObject(194664, 150.0f))
                         HightTower->SetGoState(GO_STATE_ACTIVE);
-                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_TOWER_OF_FLAMES_CRYSTAL)))
+                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetGuidData(DATA_TOWER_OF_FLAMES_CRYSTAL)))
                         Crystal->SetGoState(GO_STATE_ACTIVE);
                     break;
                 case GO_TOWER_OF_FROST:
                     CreatureDies(go);
                     if (GameObject* HightTower = go->FindNearestGameObject(194665, 150.0f))
                         HightTower->SetGoState(GO_STATE_ACTIVE);
-                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_TOWER_OF_FROST_CRYSTAL)))
+                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetGuidData(DATA_TOWER_OF_FROST_CRYSTAL)))
                         Crystal->SetGoState(GO_STATE_ACTIVE);
                     break;
                 case GO_TOWER_OF_LIFE:
                     CreatureDies(go);
                     if (GameObject* HightTower = go->FindNearestGameObject(194663, 150.0f))
                         HightTower->SetGoState(GO_STATE_ACTIVE);
-                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_TOWER_OF_LIFE_CRYSTAL)))
+                    if (GameObject* Crystal = ObjectAccessor::GetGameObject(*go, instance->GetGuidData(DATA_TOWER_OF_LIFE_CRYSTAL)))
                         Crystal->SetGoState(GO_STATE_ACTIVE);
                     break;
             }
@@ -1980,7 +1980,7 @@ class spell_pursue : public SpellScriptLoader
                 {
                     for (auto&& seat : vehicle->Seats)
                     {
-                        if (seat.second.Passenger.Guid && IS_PLAYER_GUID(seat.second.Passenger.Guid))
+                        if (seat.second.Passenger.Guid && seat.second.Passenger.Guid.IsPlayer())
                         {
                             if (Player* passenger = ObjectAccessor::GetPlayer(*caster, seat.second.Passenger.Guid))
                             {

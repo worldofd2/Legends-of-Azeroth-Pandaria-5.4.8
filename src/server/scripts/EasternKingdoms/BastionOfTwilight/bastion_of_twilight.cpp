@@ -397,7 +397,7 @@ struct twilight_casterAI : public ScriptedAI
         return false;
     }
 
-    uint64 GetLowestFriendlyGUID()
+    ObjectGuid GetLowestFriendlyGUID()
     {
         std::list<Creature*> tmpTargets;
 
@@ -413,14 +413,14 @@ struct twilight_casterAI : public ScriptedAI
         GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_TWILIGHT_BRUTE, 80.0f);
 
         if (tmpTargets.empty())
-            return 0;
+            return ObjectGuid::Empty;
 
         tmpTargets.sort(Trinity::HealthPctOrderPred());
 
         if (Creature* lowestTarget = tmpTargets.front())
             return lowestTarget->GetGUID();
 
-        return 0;
+        return ObjectGuid::Empty;
     }
 };
 

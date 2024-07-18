@@ -295,7 +295,7 @@ void AnticheatMgr::HandlePlayerLogin(Player* player)
     // we must delete this to prevent errors in case of crash
     //CharacterDatabase.PExecute("DELETE FROM players_reports_status WHERE guid=%u",player->GetGUIDLow());
     // we initialize the pos of lastMovementPosition var.
-    _players[player->GetGUIDLow()].SetPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+    _players[player->GetGUID()].SetPosition(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
     /*QueryResult resultDB = CharacterDatabase.PQuery("SELECT * FROM daily_players_reports WHERE guid=%u;",player->GetGUIDLow());
     
     if (resultDB)
@@ -309,7 +309,7 @@ void AnticheatMgr::HandlePlayerLogout(Player* player)
     // We must also delete it at logout to prevent have data of offline players in the db when we query the database (IE: The GM Command)
     //CharacterDatabase.PExecute("DELETE FROM players_reports_status WHERE guid=%u",player->GetGUIDLow());
     // Delete not needed data from the memory.
-    _players.erase(player->GetGUIDLow());
+    _players.erase(player->GetGUID());
 }
 
 void AnticheatMgr::SavePlayerData(Player* player)
@@ -317,27 +317,27 @@ void AnticheatMgr::SavePlayerData(Player* player)
     //CharacterDatabase.PExecute("REPLACE INTO players_reports_status (guid,average,total_reports,speed_reports,fly_reports,jump_reports,waterwalk_reports,teleportplane_reports,climb_reports,creation_time) VALUES (%u,%f,%u,%u,%u,%u,%u,%u,%u,%u);",player->GetGUIDLow(),_players[player->GetGUIDLow()].GetAverage(),_players[player->GetGUIDLow()].GetTotalReports(), _players[player->GetGUIDLow()].GetTypeReports(SPEED_HACK_REPORT),_players[player->GetGUIDLow()].GetTypeReports(FLY_HACK_REPORT),_players[player->GetGUIDLow()].GetTypeReports(JUMP_HACK_REPORT),_players[player->GetGUIDLow()].GetTypeReports(WALK_WATER_HACK_REPORT),_players[player->GetGUIDLow()].GetTypeReports(TELEPORT_PLANE_HACK_REPORT),_players[player->GetGUIDLow()].GetTypeReports(CLIMB_HACK_REPORT),_players[player->GetGUIDLow()].GetCreationTime());
 }
 
-uint32 AnticheatMgr::GetTotalReports(uint32 lowGUID)
+uint32 AnticheatMgr::GetTotalReports(ObjectGuid guid)
 {
-    AnticheatPlayersDataMap::iterator iter = _players.find(lowGUID);
+    AnticheatPlayersDataMap::iterator iter = _players.find(guid);
     if (iter == _players.end())
         return 0;
 
     return iter->second.totalReports;
 }
 
-float AnticheatMgr::GetAverage(uint32 lowGUID)
+float AnticheatMgr::GetAverage(ObjectGuid guid)
 {
-    AnticheatPlayersDataMap::iterator iter = _players.find(lowGUID);
+    AnticheatPlayersDataMap::iterator iter = _players.find(guid);
     if (iter == _players.end())
         return 0.0f;
 
     return iter->second.average;
 }
 
-uint32 AnticheatMgr::GetTypeReports(uint32 lowGUID, uint8 type)
+uint32 AnticheatMgr::GetTypeReports(ObjectGuid guid, uint8 type)
 {
-    AnticheatPlayersDataMap::iterator iter = _players.find(lowGUID);
+    AnticheatPlayersDataMap::iterator iter = _players.find(guid);
     if (iter == _players.end())
         return 0;
 
@@ -354,7 +354,7 @@ bool AnticheatMgr::MustCheckTempReports(uint8 type)
 
 void AnticheatMgr::BuildReport(Player* player, AnticheatData& data, uint8 reportType)
 {
-    uint32 key = player->GetGUIDLow();
+    auto key = player->GetGUID();
 
     if (MustCheckTempReports(reportType))
     {
@@ -440,7 +440,7 @@ void AnticheatMgr::BuildReport(Player* player, AnticheatData& data, uint8 report
 void AnticheatMgr::AnticheatGlobalCommand(ChatHandler* handler)
 {
     // MySQL will sort all for us, anyway this is not the best way we must only save the anticheat data not whole player's data!.
-    sObjectAccessor->SaveAllPlayers();
+    ObjectAccessor::SaveAllPlayers();
 
     QueryResult resultDB = CharacterDatabase.Query("SELECT guid,average,total_reports FROM players_reports_status WHERE total_reports != 0 ORDER BY average ASC LIMIT 3;");
     if (!resultDB)
@@ -493,7 +493,7 @@ void AnticheatMgr::AnticheatGlobalCommand(ChatHandler* handler)
     }
 }
 
-void AnticheatMgr::AnticheatDeleteCommand(uint32 guid)
+void AnticheatMgr::AnticheatDeleteCommand(ObjectGuid guid)
 {
     if (!guid)
     {
@@ -521,7 +521,7 @@ void AnticheatMgr::ResetDailyReportStates()
 
 AnticheatData* AnticheatMgr::GetDataFor(Player* player)
 {
-    AnticheatPlayersDataMap::iterator iter = _players.find(player->GetGUIDLow());
+    AnticheatPlayersDataMap::iterator iter = _players.find(player->GetGUID());
     if (iter == _players.end())
     {
         //TC_LOG_ERROR("entities.player", "AnticheatMgr::GetDataFor - player (GUID: %u) data not found, kicking out", player->GetGUIDLow());

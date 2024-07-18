@@ -184,7 +184,7 @@ class boss_immerseus : public CreatureScript
             int8 contaminatedPuddlesToSummon;  // For Split phase. 1 / each 4 Corruption points boss lacks.
             uint8 puddleDoneCount;
             uint32 tearsSlainCount;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             bool secondPhaseInProgress;         // Used as an UpdateAI diff check.
             bool hasDefendersFallen;
 
@@ -224,7 +224,7 @@ class boss_immerseus : public CreatureScript
 
                 shaPuddlesToSummon = 0;
                 contaminatedPuddlesToSummon = 0;
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 puddleDoneCount = 0;
                 tearsSlainCount = 0;
 
@@ -264,7 +264,7 @@ class boss_immerseus : public CreatureScript
                 _JustEngagedWith();
 
                 // Disable Pre-Event
-                if (Creature* oozeController = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(NPC_OOZE_CONTROLLER) : 0))
+                if (Creature* oozeController = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(NPC_OOZE_CONTROLLER) : ObjectGuid::Empty))
                     oozeController->AI()->DoAction(ACTION_START_INTRO);
             }
 
@@ -512,7 +512,7 @@ class boss_immerseus : public CreatureScript
                 me->SummonCreature(NPC_LOREWALKER_CHO, choPastImmerseusEvent[0], TEMPSUMMON_MANUAL_DESPAWN);
 
                 if (!instance->GetData(DATA_LFR))
-                    if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance ? instance->GetData64(IsHeroic() ? GO_TEARS_OF_THE_VALE_HC : GO_TEARS_OF_THE_VALE) : 0))
+                    if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance ? instance->GetGuidData(IsHeroic() ? GO_TEARS_OF_THE_VALE_HC : GO_TEARS_OF_THE_VALE) : ObjectGuid::Empty))
                         instance->DoRespawnGameObject(go->GetGUID(), 7 * DAY);
             }
 
@@ -654,7 +654,7 @@ class boss_immerseus : public CreatureScript
                                 if (Creature* swirlTarget = me->SummonCreature(NPC_SWIRL_TARGET, x, y, 246.83f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 13100))
                                 {
                                     me->PrepareChanneledCast(sOri, SPELL_SWIRL);
-                                    me->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, swirlTarget->GetGUID());
+                                    me->SetGuidValue(UNIT_FIELD_CHANNEL_OBJECT, swirlTarget->GetGUID());
                                     me->SetTarget(swirlTarget->GetGUID());
                                 }
 
@@ -737,7 +737,7 @@ struct npc_sha_splash_bolt_immerseus : public ScriptedAI
             me->SetWalk(false);
             me->SetSpeed(MOVE_RUN, 0.65f);
 
-            if (Creature* immersius = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_IMMERSEUS) : 0))
+            if (Creature* immersius = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IMMERSEUS) : ObjectGuid::Empty))
                 me->GetMotionMaster()->MovePoint(0, *immersius);
 
             me->DespawnOrUnsummon(me->GetSplineDuration());
@@ -806,7 +806,7 @@ struct npc_swirl_target_immerseus : public ScriptedAI
 
         dist = me->GetExactDist2d(&ImmerseusCenterPos);
 
-        if (Creature* immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_IMMERSEUS) : 0))
+        if (Creature* immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IMMERSEUS) : ObjectGuid::Empty))
         {
             Movement::MoveSplineInit init(me);
             for (uint8 i = 1; i < 41; ++i)
@@ -840,7 +840,7 @@ struct npc_sha_puddle_immerseus : public ScriptedAI
     }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     bool reachedBoss;
 
     void IsSummonedBy(Unit* summoner) override
@@ -880,7 +880,7 @@ struct npc_sha_puddle_immerseus : public ScriptedAI
     void JustDied(Unit* killer) override
     {
         // Set boss corruption to remove to +1.
-        if (Creature* Immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_IMMERSEUS) : 0))
+        if (Creature* Immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IMMERSEUS) : ObjectGuid::Empty))
             CAST_AI(boss_immerseus::boss_immerseusAI, Immerseus->AI())->corruptionToRemove += 1;
 
         // Cast the buffs.
@@ -908,7 +908,7 @@ struct npc_contaminated_puddle_immerseus : public ScriptedAI
     }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     bool reachedBoss;
     bool hasCleared;
 
@@ -961,7 +961,7 @@ struct npc_tears_of_the_vale : public ScriptedAI
 
     void IsSummonedBy(Unit* /*summoner*/) override
     {
-        if (Creature* immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_IMMERSEUS) : 0))
+        if (Creature* immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IMMERSEUS) : ObjectGuid::Empty))
             immerseus->AI()->JustSummoned(me);
 
         scheduler
@@ -974,7 +974,7 @@ struct npc_tears_of_the_vale : public ScriptedAI
 
     void JustDied(Unit* killer) override
     {
-        if (Creature* immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_IMMERSEUS) : 0))
+        if (Creature* immerseus = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IMMERSEUS) : ObjectGuid::Empty))
             immerseus->AI()->SetData(TYPE_NO_MORE_TEARS, 1);
     }
 
@@ -1155,7 +1155,7 @@ class spell_immerseus_congealing : public AuraScript
             caster->CastSpell(caster, SPELL_PURIFIED, true);
 
             // Set boss corruption to remove to +1.
-            if (Creature* Immerseus = ObjectAccessor::GetCreature(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(DATA_IMMERSEUS) : 0))
+            if (Creature* Immerseus = ObjectAccessor::GetCreature(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetGuidData(DATA_IMMERSEUS) : ObjectGuid::Empty))
                 CAST_AI(boss_immerseus::boss_immerseusAI, Immerseus->AI())->corruptionToRemove += 1;
 
             caster->CastSpell(caster, SPELL_PURIFIED_RESIDUE, true);

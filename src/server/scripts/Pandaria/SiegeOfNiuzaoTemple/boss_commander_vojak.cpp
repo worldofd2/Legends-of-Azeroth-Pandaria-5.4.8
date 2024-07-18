@@ -391,7 +391,7 @@ class npc_yang_ironclaw : public CreatureScript
             {
                 instance = me->GetInstanceScript();
                 encounterInProgress = false;
-                AmberWingGUID = 0;
+                AmberWingGUID = ObjectGuid::Empty;
                 me->SetFaction(1665);
                 me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 ResetEncounter();
@@ -754,8 +754,8 @@ class npc_yang_ironclaw : public CreatureScript
             EventMap events;
             SummonList summons;
             InstanceScript * instance;
-            uint64 vojakGUID;
-            uint64 AmberWingGUID;
+            ObjectGuid vojakGUID;
+            ObjectGuid AmberWingGUID;
             bool encounterInProgress;
         };
 
@@ -827,7 +827,7 @@ struct npc_vojak_addAI : public ScriptedAI
     {
         triggerTimer = 0;
         waveNumber = 0;
-        summonerGUID = 0;
+        summonerGUID = ObjectGuid::Empty;
         addCounter = 0;
         TRIGGER_TIMER = 0;
         aggrotimer = 0;
@@ -907,7 +907,7 @@ struct npc_vojak_addAI : public ScriptedAI
 
 private:
     uint8 waveNumber;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     uint32 triggerTimer;
     uint32 TRIGGER_TIMER;
     uint32 aggrotimer;
@@ -1029,7 +1029,7 @@ class boss_commander_vojak : public CreatureScript
         private:
             bool moving;
             EventMap events;
-            uint64 dashingTargetGUID;
+            ObjectGuid dashingTargetGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -1150,8 +1150,8 @@ class npc_chu_helper : public CreatureScript
             {
                 side = (me->GetEntry() == NPC_LO_CHU) ? SIDE_RIGHT : SIDE_LEFT;
                 me->SetFaction(1665);
-                barrelTargetGUID = 0;
-                barrelGUID = 0;
+                barrelTargetGUID = ObjectGuid::Empty;
+                barrelGUID = ObjectGuid::Empty;
                 eventInProgress = false;
             }
 
@@ -1159,8 +1159,8 @@ class npc_chu_helper : public CreatureScript
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
-                barrelTargetGUID = 0;
-                barrelGUID = 0;
+                barrelTargetGUID = ObjectGuid::Empty;
+                barrelGUID = ObjectGuid::Empty;
                 eventInProgress = false;
                 events.Reset();
             }
@@ -1202,7 +1202,7 @@ class npc_chu_helper : public CreatureScript
                     case ACTION_ENGAGE_COMBAT:
                         eventInProgress = true;
                         events.ScheduleEvent(EVENT_MOVE_TO_POOL, side ? 1000 : 2000);
-                        barrelTargetGUID = 0;
+                        barrelTargetGUID = ObjectGuid::Empty;
                         me->SetReactState(REACT_PASSIVE);
                         me->SetFaction(35);
                         break;
@@ -1211,7 +1211,7 @@ class npc_chu_helper : public CreatureScript
                         //me->GetVehicleKit()->RemoveAllPassengers();
                         events.Reset();
                         eventInProgress = false;
-                        barrelTargetGUID = 0;
+                        barrelTargetGUID = ObjectGuid::Empty;
                         EnterEvadeMode();
                         break;
                     default:
@@ -1238,7 +1238,7 @@ class npc_chu_helper : public CreatureScript
                                     //barrel->CastSpell(barrelTarget, SPELL_BARREL_JUMP, true);
                                     barrel->AI()->SetGUID(barrelTargetGUID);
                                 }
-                            barrelTargetGUID = 0;
+                            barrelTargetGUID = ObjectGuid::Empty;
 
                             events.ScheduleEvent(EVENT_MOVE_TO_POOL, 1000);
                             break;
@@ -1283,8 +1283,8 @@ class npc_chu_helper : public CreatureScript
             }
 
         private:
-            uint64 barrelTargetGUID;
-            uint64 barrelGUID;
+            ObjectGuid barrelTargetGUID;
+            ObjectGuid barrelGUID;
             uint8 side;
             bool eventInProgress;
             EventMap events;
@@ -1377,7 +1377,7 @@ class npc_mantid_tar_keg : public CreatureScript
                 jumptimer = 0;
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 targetGUID = guid;
                 jumptimer = 250;
@@ -1393,9 +1393,9 @@ class npc_mantid_tar_keg : public CreatureScript
             {
                 me->SetPosition(me->GetHomePosition());
                 if (me->m_movementInfo.transport.guid)
-                    me->m_movementInfo.transport.guid = 0;
+                    me->m_movementInfo.transport.guid = ObjectGuid::Empty;
                 me->SendMovementFlagUpdate();
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 me->GetMotionMaster()->MoveIdle();
                 me->SetReactState(REACT_PASSIVE);
                 me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
@@ -1440,7 +1440,7 @@ class npc_mantid_tar_keg : public CreatureScript
 
         private:
             uint32 jumptimer;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             InstanceScript * instance;
         };
 

@@ -269,7 +269,7 @@ class boss_jedoga_shadowseeker : public CreatureScript
                 }
                 else
                 {
-                    if (Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_PL_JEDOGA_TARGET)))
+                    if (Unit* target = Unit::GetUnit(*me, instance->GetGuidData(DATA_PL_JEDOGA_TARGET)))
                     {
                         AttackStart(target);
                         instance->SetData(DATA_JEDOGA_RESET_INITIANDS, 0);
@@ -311,7 +311,7 @@ class boss_jedoga_shadowseeker : public CreatureScript
                 if (!instance)
                     return;
 
-                uint64 opfer = instance->GetData64(DATA_ADD_JEDOGA_INITIAND);
+                ObjectGuid opfer = instance->GetGuidData(DATA_ADD_JEDOGA_INITIAND);
 
                 if (opfer)
                 {
@@ -454,7 +454,7 @@ class npc_jedoga_initiand : public CreatureScript
 
                 if (bWalking)
                 {
-                    if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_JEDOGA_SHADOWSEEKER)))
+                    if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_JEDOGA_SHADOWSEEKER)))
                     {
                         if (!CAST_AI(boss_jedoga_shadowseeker::boss_jedoga_shadowseekerAI, boss->AI())->bOpFerok)
                             CAST_AI(boss_jedoga_shadowseeker::boss_jedoga_shadowseekerAI, boss->AI())->bOpFerokFail = true;
@@ -502,7 +502,7 @@ class npc_jedoga_initiand : public CreatureScript
                 {
                     case 1:
                         {
-                            Creature* boss = me->GetMap()->GetCreature(instance->GetData64(DATA_JEDOGA_SHADOWSEEKER));
+                            Creature* boss = me->GetMap()->GetCreature(instance->GetGuidData(DATA_JEDOGA_SHADOWSEEKER));
                             if (boss)
                             {
                                 CAST_AI(boss_jedoga_shadowseeker::boss_jedoga_shadowseekerAI, boss->AI())->bOpFerok = true;
@@ -525,7 +525,7 @@ class npc_jedoga_initiand : public CreatureScript
             {
                 if (instance && bCheckTimer <= diff)
                 {
-                    if (me->GetGUID() == instance->GetData64(DATA_ADD_JEDOGA_OPFER) && !bWalking)
+                    if (me->GetGUID() == instance->GetGuidData(DATA_ADD_JEDOGA_OPFER) && !bWalking)
                     {
                         me->SetMaxHealth(DUNGEON_MODE(25705, 58648)); // TODO: implement npc entry 30385
                         me->SetHealth(DUNGEON_MODE(25705, 58648));

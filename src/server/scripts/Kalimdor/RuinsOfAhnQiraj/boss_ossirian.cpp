@@ -91,8 +91,8 @@ class boss_ossirian : public CreatureScript
                 SaidIntro = false;
             }
 
-            uint64 TriggerGUID;
-            uint64 CrystalGUID;
+            ObjectGuid TriggerGUID;
+            ObjectGuid CrystalGUID;
             uint8 CrystalIterator;
             bool SaidIntro;
 
@@ -100,8 +100,8 @@ class boss_ossirian : public CreatureScript
             {
                 _Reset();
                 CrystalIterator = 0;
-                TriggerGUID = 0;
-                CrystalGUID = 0;
+                TriggerGUID = ObjectGuid::Empty;
+                CrystalGUID = ObjectGuid::Empty;
             }
 
             void SpellHit(Unit* caster, SpellInfo const* spell) override

@@ -141,7 +141,7 @@ public:
         bool first = true;
 
         std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
-        HashMapHolder<Player>::MapType const&m = sObjectAccessor->GetPlayers();
+        HashMapHolder<Player>::MapType const&m = ObjectAccessor::GetPlayers();
         for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
         {
             AccountTypes itr_sec = itr->second->GetSession()->GetSecurity();

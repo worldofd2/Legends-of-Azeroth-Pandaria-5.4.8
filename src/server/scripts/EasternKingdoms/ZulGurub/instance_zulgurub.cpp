@@ -44,21 +44,21 @@ class instance_zulgurub : public InstanceMapScript
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doordata);
-                venoxisGUID            = 0;
-                mandokirGUID           = 0;
-                kilnaraGUID            = 0;
-                zanzilGUID             = 0;
-                jindoGUID              = 0;
-                cacheOfMadnessBossGUID = 0;
+                venoxisGUID = ObjectGuid::Empty;
+                mandokirGUID = ObjectGuid::Empty;
+                kilnaraGUID = ObjectGuid::Empty;
+                zanzilGUID = ObjectGuid::Empty;
+                jindoGUID = ObjectGuid::Empty;
+                cacheOfMadnessBossGUID = ObjectGuid::Empty;
                 uiBosses               = 0;
 
-                cacheOfMadnessSummonerGUID = 0;
+                cacheOfMadnessSummonerGUID = ObjectGuid::Empty;
 
                 for (uint32 type = 0; type < ARTIFACT_TYPE_COUNT; ++type)
                 {
                     uint32 count = ARTIFACT_GUIDS_BY_TYPE[type][0];
                     int selected = rand() % count;
-                    randomArtifactGUID[type] = ARTIFACT_GUIDS_BY_TYPE[type][selected + 1];
+                    randomArtifactGUID[type] = ObjectGuid(uint64(ARTIFACT_GUIDS_BY_TYPE[type][selected + 1]));
                 }
                 artifactsActivated = 0;
 
@@ -258,7 +258,7 @@ class instance_zulgurub : public InstanceMapScript
                 return targets;
             }
 
-            uint64 GetData64(uint32 type) const override
+            ObjectGuid GetGuidData(uint32 type) const override
             {
                 switch (type)
                 {
@@ -286,7 +286,7 @@ class instance_zulgurub : public InstanceMapScript
                         break;
                 }
 
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             std::string GetSaveData() override
@@ -338,14 +338,14 @@ class instance_zulgurub : public InstanceMapScript
             }
 
         protected:
-             uint64 venoxisGUID;
-             uint64 mandokirGUID;
-             uint64 kilnaraGUID;
-             uint64 zanzilGUID;
-             uint64 jindoGUID;
-             uint64 cacheOfMadnessBossGUID;
-             uint64 cacheOfMadnessSummonerGUID;
-             uint64 randomArtifactGUID[ARTIFACT_TYPE_COUNT];
+             ObjectGuid venoxisGUID;
+             ObjectGuid mandokirGUID;
+             ObjectGuid kilnaraGUID;
+             ObjectGuid zanzilGUID;
+             ObjectGuid jindoGUID;
+             ObjectGuid cacheOfMadnessBossGUID;
+             ObjectGuid cacheOfMadnessSummonerGUID;
+             ObjectGuid randomArtifactGUID[ARTIFACT_TYPE_COUNT];
              uint32 artifactsActivated;
              uint32 uiBosses;
              uint32 archaeologyQuestAura;

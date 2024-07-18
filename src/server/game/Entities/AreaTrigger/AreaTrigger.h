@@ -126,7 +126,7 @@ class IAreaTriggerAura : public IAreaTrigger
         struct Triggering
         {
             uint32 UpdateNumber;
-            uint64 Guid;
+            ObjectGuid Guid;
         };
         typedef std::list<Triggering> TriggeringList;
 
@@ -166,7 +166,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>, public M
         int32 GetDuration() const { return m_duration; }
         void  SetDuration(int32 newDuration) { m_duration = newDuration; }
         Unit* GetCaster() const { return m_caster; }
-        uint64 GetCasterGUID() const { return GetUInt64Value(AREATRIGGER_FIELD_CASTER); }
+        ObjectGuid GetCasterGUID() const { return GetGuidValue(AREATRIGGER_FIELD_CASTER); }
         void BindToCaster();
         void UnbindFromCaster();
 
@@ -195,7 +195,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>, public M
         int32 m_duration = 0;
         Unit* m_caster = nullptr;
         WorldObject* m_effectTarget = nullptr;
-        uint64 m_auraOwner = 0;
+        ObjectGuid m_auraOwner = ObjectGuid::Empty;
         uint32 m_effectIndex = 0;
 
         float m_scaleX = 0.0f;

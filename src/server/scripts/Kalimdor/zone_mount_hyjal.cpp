@@ -239,8 +239,8 @@ class npc_marion_wormswing : public CreatureScript
                     if (Player* owner = attacker->GetCharmerOrOwnerPlayerOrPlayerItself())
                         if (owner->GetQuestStatus(25731) == QUEST_STATUS_INCOMPLETE)
                         {
-                            owner->KilledMonsterCredit(41169, 0);
-                            owner->KilledMonsterCredit(41170, 0);
+                            owner->KilledMonsterCredit(41169, ObjectGuid::Empty);
+                            owner->KilledMonsterCredit(41170, ObjectGuid::Empty);
                         }
                     me->SetFaction(35);
                     me->DespawnOrUnsummon(5000);
@@ -554,11 +554,11 @@ class npc_morthis_whisperwing : public CreatureScript
                 return false;
 
             for (uint32 i = 0; i < 100; ++i)
-                player->KilledMonsterCredit(NPC_FLAMEWAKER_CENTURION, 0);
+                player->KilledMonsterCredit(NPC_FLAMEWAKER_CENTURION, ObjectGuid::Empty);
             for (uint32 i = 0; i < 40; ++i)
-                player->KilledMonsterCredit(NPC_CINDERWEB_MATRIARCH, 0);
+                player->KilledMonsterCredit(NPC_CINDERWEB_MATRIARCH, ObjectGuid::Empty);
             for (uint32 i = 0; i < 3; ++i)
-                player->KilledMonsterCredit(NPC_MOLTEN_LORD, 0);
+                player->KilledMonsterCredit(NPC_MOLTEN_LORD, ObjectGuid::Empty);
 
             player->CastSpell(player, SPELL_RAGEPYRE, true);
             player->CastSpell(player, SPELL_FLASHFIRE, true);
@@ -737,7 +737,7 @@ struct npc_hyjal_aronus_ride : public CreatureAI
     npc_hyjal_aronus_ride(Creature* creature) : CreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override

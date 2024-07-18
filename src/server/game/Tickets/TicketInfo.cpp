@@ -32,9 +32,9 @@
 // @ TicketInfo
 // Stores all common data needed for a Ticket : id, mapid, createtime, closedby, assignedTo, Position
 
-TicketInfo::TicketInfo() : _ticketId(0), _mapId(0), _ticketCreateTime(0), _closedBy(0), _assignedTo(0) { }
+TicketInfo::TicketInfo() : _ticketId(0), _mapId(0), _ticketCreateTime(0), _closedBy(), _assignedTo() { }
 
-TicketInfo::TicketInfo(Player* player) : _ticketId(0), _mapId(0), _ticketCreateTime(time(NULL)), _closedBy(0), _assignedTo(0)
+TicketInfo::TicketInfo(Player* player) : _ticketId(0), _mapId(0), _ticketCreateTime(time(NULL)), _closedBy(), _assignedTo()
 {
     _playerGuid = player->GetGUID();
 }
@@ -82,7 +82,7 @@ void GmTicket::SetUnassigned()
     if (_escalatedStatus != TICKET_IN_ESCALATION_QUEUE)
         _escalatedStatus = TICKET_UNASSIGNED;
 
-    _assignedTo = 0;
+    _assignedTo.Clear();
 }
 
 void GmTicket::SetChatLog(std::list<uint32> time, std::string const& log)
@@ -115,7 +115,7 @@ void GmTicket::LoadFromDB(Field* fields)
 {
     uint8 index = 0;
     _ticketId = fields[index].GetUInt32();
-    _playerGuid = MAKE_NEW_GUID(fields[++index].GetUInt64(), 0, HIGHGUID_PLAYER);
+    _playerGuid = ObjectGuid(HighGuid::Player, fields[++index].GetUInt32());
     _playerName = fields[++index].GetString();
     _message = fields[++index].GetString();
     _ticketCreateTime = fields[++index].GetUInt32();
@@ -125,17 +125,17 @@ void GmTicket::LoadFromDB(Field* fields)
     _pos.z = fields[++index].GetFloat();
     _lastModifiedTime = fields[++index].GetUInt32();
 
-    int64 closedBy = fields[++index].GetInt64();
+    int32 closedBy = fields[++index].GetInt32();
     if (closedBy <= 0)
-        _closedBy = 0;
+        _closedBy = ObjectGuid::Empty;
     else
-        _closedBy = MAKE_NEW_GUID(uint64(closedBy), 0, HIGHGUID_PLAYER);
+        _closedBy = ObjectGuid(HighGuid::Player, uint32(closedBy));
 
-    uint64 assignedTo = fields[++index].GetUInt64();
+    uint32 assignedTo = fields[++index].GetUInt32();
     if (assignedTo <= 0)
-        _assignedTo = 0;
+        _assignedTo = ObjectGuid::Empty;
     else
-        _assignedTo = MAKE_NEW_GUID(uint64(_assignedTo), 0, HIGHGUID_PLAYER);
+        _assignedTo = ObjectGuid(HighGuid::Player, uint32(_assignedTo));
 
     _comment = fields[++index].GetString();
     _response = fields[++index].GetString();
@@ -150,7 +150,7 @@ void GmTicket::SaveToDB(CharacterDatabaseTransaction trans) const
     uint8 index = 0;
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GM_TICKET);
     stmt->setUInt32(index, _ticketId);
-    stmt->setUInt64(++index, GUID_LOPART(_playerGuid));
+    stmt->setUInt32(++index, _playerGuid.GetCounter());
     stmt->setString(++index, _playerName);
     stmt->setString(++index, _message);
     stmt->setUInt32(++index, _ticketCreateTime);
@@ -159,8 +159,8 @@ void GmTicket::SaveToDB(CharacterDatabaseTransaction trans) const
     stmt->setFloat(++index, _pos.y);
     stmt->setFloat(++index, _pos.z);
     stmt->setUInt32(++index, uint32(_lastModifiedTime));
-    stmt->setInt64(++index, GUID_LOPART(_closedBy));
-    stmt->setUInt64(++index, GUID_LOPART(_assignedTo));
+    stmt->setInt32(++index, _closedBy.GetCounter());
+    stmt->setUInt32(++index, _assignedTo.GetCounter());
     stmt->setString(++index, _comment);
     stmt->setString(++index, _response);
     stmt->setBool(++index, _completed);
@@ -260,7 +260,7 @@ void BugTicket::LoadFromDB(Field* fields)
 {
     uint8 index = 0;
     _ticketId = fields[index].GetUInt32();
-    _playerGuid = MAKE_NEW_GUID(fields[++index].GetUInt64(), 0, HIGHGUID_PLAYER);
+    _playerGuid = ObjectGuid(HighGuid::Player, fields[++index].GetUInt32());
     _bugnote = fields[++index].GetString();
     _ticketCreateTime = fields[++index].GetUInt32();
     _mapId = fields[++index].GetUInt32();
@@ -269,17 +269,17 @@ void BugTicket::LoadFromDB(Field* fields)
     _pos.z = fields[++index].GetFloat();
     _Orientation = fields[++index].GetFloat();
 
-    int64 closedBy = fields[++index].GetInt64();
-    if (closedBy < 0)
-        _closedBy = 0;
+    int32 closedBy = fields[++index].GetInt32();
+    if (closedBy <= 0)
+        _closedBy = ObjectGuid::Empty;
     else
-        _closedBy = MAKE_NEW_GUID(uint64(closedBy), 0, HIGHGUID_PLAYER);
+        _closedBy = ObjectGuid(HighGuid::Player, uint32(closedBy));
 
-    uint64 assignedTo = fields[++index].GetUInt64();
-    if (assignedTo < 0)
-        _assignedTo = 0;
+    uint32 assignedTo = fields[++index].GetUInt32();
+    if (assignedTo <= 0)
+        _assignedTo = ObjectGuid::Empty;
     else
-        _assignedTo = MAKE_NEW_GUID(assignedTo, 0, HIGHGUID_PLAYER);
+        _assignedTo = ObjectGuid(HighGuid::Player, assignedTo);
 
     _comment = fields[++index].GetString();
 }
@@ -289,15 +289,15 @@ void BugTicket::SaveToDB(CharacterDatabaseTransaction trans) const
     uint8 index = 0;
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GM_BUG);
     stmt->setUInt32(index, _ticketId);
-    stmt->setUInt32(++index, GUID_LOPART(_playerGuid));
+    stmt->setUInt32(++index, _playerGuid.GetCounter());
     stmt->setString(++index, _bugnote);
     stmt->setUInt32(++index, _mapId);
     stmt->setFloat(++index, _pos.x);
     stmt->setFloat(++index, _pos.y);
     stmt->setFloat(++index, _pos.z);
     stmt->setFloat(++index, _Orientation);
-    stmt->setUInt32(++index, GUID_LOPART(_closedBy));
-    stmt->setUInt32(++index, GUID_LOPART(_assignedTo));
+    stmt->setUInt32(++index, _closedBy.GetCounter());
+    stmt->setUInt32(++index, _assignedTo.GetCounter());
     stmt->setString(++index, _comment);
 
     CharacterDatabase.ExecuteOrAppend(trans, stmt);

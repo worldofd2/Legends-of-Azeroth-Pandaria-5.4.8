@@ -269,13 +269,13 @@ class npc_zandalari_spearshaper : public CreatureScript
             {
                 events.Reset();
                 summons.DespawnAll();
-                m_triggerGuid = 0;
+                m_triggerGuid = ObjectGuid::Empty;
 
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             }
 
-            uint64 m_triggerGuid;
+            ObjectGuid m_triggerGuid;
 
             void JustSummoned(Creature* summon) override
             {
@@ -409,10 +409,10 @@ class npc_zandalari_stormcaller : public CreatureScript
 
                 if (InstanceScript* instance = me->GetInstanceScript())
                 {
-                    if (Creature* jinRokh = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_JINROKH)))
+                    if (Creature* jinRokh = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_JINROKH)))
                         jinRokh->AI()->DoAction(ACTION_START_INTRO);
 
-                    instance->HandleGameObject(instance->GetData64(GO_JIN_ROKH_PREDOOR), true, NULL);
+                    instance->HandleGameObject(instance->GetGuidData(GO_JIN_ROKH_PREDOOR), true, NULL);
                 }
             }
 
@@ -488,15 +488,15 @@ class npc_focused_lightning_trash : public CreatureScript
                 Initialize();
             }
 
-            uint64 m_targetGuid;
+            ObjectGuid m_targetGuid;
             EventMap m_mEvents;
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 m_targetGuid = guid;
             }
 
-            uint64 GetGUID(int32 /*type*/) const override
+            ObjectGuid GetGUID(int32 /*type*/) const override
             {
                 return m_targetGuid;
             }
@@ -505,7 +505,7 @@ class npc_focused_lightning_trash : public CreatureScript
             {
                 m_mEvents.ScheduleEvent(EVENT_PULSE, 500);
                 m_mEvents.ScheduleEvent(EVENT_FIXATE_CHECK, 1500);
-                m_targetGuid = 0;
+                m_targetGuid = ObjectGuid::Empty;
                 me->AddAura(SPELL_FOCUSED_LIGHTNING_VISUAL, me);
 
                 DoCast(SPELL_FOCUSED_LIGHTNING_TARGET);
@@ -1109,7 +1109,7 @@ struct tribeAI : public ScriptedAI
         events.Reset();
     }
 
-    uint64 GetLowestFriendlyGUID()
+    ObjectGuid GetLowestFriendlyGUID()
     {
         std::list<Creature*> tmpTargets;
 
@@ -1122,14 +1122,14 @@ struct tribeAI : public ScriptedAI
         GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_GURUBASHI_BERSERKER, 80.0f);
 
         if (tmpTargets.empty())
-            return 0;
+            return ObjectGuid::Empty;
 
         tmpTargets.sort(Trinity::HealthPctOrderPred());
 
         if (Creature* lowestTarget = tmpTargets.front())
             return lowestTarget->GetGUID();
 
-        return 0;
+        return ObjectGuid::Empty;
     }
 };
 
@@ -1655,7 +1655,7 @@ class npc_zandalari_prelate : public CreatureScript
             }
 
             private:
-                uint64 GetLowestFriendlyGUID()
+                ObjectGuid GetLowestFriendlyGUID()
                 {
                     std::list<Creature*> tmpTargets;
 
@@ -1663,14 +1663,14 @@ class npc_zandalari_prelate : public CreatureScript
                     GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_ZANDALARI_PROPHET, 80.0f);
 
                     if (tmpTargets.empty())
-                        return 0;
+                        return ObjectGuid::Empty;
 
                     tmpTargets.sort(Trinity::HealthPctOrderPred());
 
                     if (Creature* lowestTarget = tmpTargets.front())
                         return lowestTarget->GetGUID();
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
         };
     
@@ -1697,14 +1697,14 @@ class npc_zandalari_warlord : public CreatureScript
             EventMap events;
             InstanceScript* instance;
             uint32 pctHealth;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             bool hasTriggered;
     
             void Reset() override
             {
                 events.Reset();
                 pctHealth = 66;
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
             }
     
             void JustEngagedWith(Unit* who) override
@@ -1843,7 +1843,7 @@ class npc_garajal_spirit_binder_event : public CreatureScript
             uint32 GetData(uint32 type) const override
             {
                 for (auto&& itr : tribesList)
-                    if (itr->GetGUIDLow() == type)
+                    if (itr->GetGUID().GetCounter() == type)
                         return 1;
 
                 return 0;
@@ -2074,7 +2074,7 @@ class npc_lei_shen_tortos : public CreatureScript
                             break;
                         case EVENT_LEI_SHEN_DESTROY_BRIDGE:
                         {
-                            if (GameObject* bridge = ObjectAccessor::GetGameObject(*me, instance ? instance->GetData64(GO_TORTOS_BRIDGE) : 0))
+                            if (GameObject* bridge = ObjectAccessor::GetGameObject(*me, instance ? instance->GetGuidData(GO_TORTOS_BRIDGE) : ObjectGuid::Empty))
                                 bridge->SetDestructibleState(GO_DESTRUCTIBLE_DESTROYED);
                         
                             events.ScheduleEvent(EVENT_LEI_SHEN_TELEPORT_PLAYERS, 16000); // at 41 seconds.
@@ -2344,12 +2344,12 @@ struct npc_eternal_guardian : public customCreatureAI
     }
 
     InstanceScript* instance;
-    uint64 nearBellGUID;
+    ObjectGuid nearBellGUID;
 
     void InitializeAI() override
     {
         instance = me->GetInstanceScript();
-        nearBellGUID = 0;
+        nearBellGUID = ObjectGuid::Empty;
 
         // Delay for load
         me->m_Events.Schedule(1500, [this]()
@@ -2378,7 +2378,7 @@ struct npc_eternal_guardian : public customCreatureAI
             instance->SetData(DATA_MEGERA_EVENT, IN_PROGRESS);
 
             if (instance->GetData(DATA_MEGERA_EVENT) >= 3)
-                if (Creature* megaera = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MEGAERA)))
+                if (Creature* megaera = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MEGAERA)))
                     megaera->AI()->DoAction(ACTION_MEGAERA_EMERGE);
         }
 
@@ -2753,7 +2753,7 @@ struct npc_manchu : public customCreatureAI
 
     void JustEngagedWith(Unit* /*who*/) override
     {
-        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_IRON_QON) : 0))
+        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_IRON_QON) : ObjectGuid::Empty))
             ironQon->AI()->Talk(0);
 
         me->CallForHelp(35.0f);
@@ -2763,7 +2763,7 @@ struct npc_manchu : public customCreatureAI
 
     void JustDied(Unit* killer) override
     {
-        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_IRON_QON) : 0))
+        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_IRON_QON) : ObjectGuid::Empty))
             ironQon->AI()->Talk(1);
     }
 
@@ -2806,7 +2806,7 @@ struct npc_weishen : public customCreatureAI
 
     void JustEngagedWith(Unit* /*who*/) override
     {
-        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_IRON_QON) : 0))
+        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_IRON_QON) : ObjectGuid::Empty))
             ironQon->AI()->Talk(2);
 
         me->CallForHelp(35.0f);
@@ -2815,7 +2815,7 @@ struct npc_weishen : public customCreatureAI
 
     void JustDied(Unit* killer) override
     {
-        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_IRON_QON) : 0))
+        if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_IRON_QON) : ObjectGuid::Empty))
             ironQon->AI()->Talk(3);
     }
 
@@ -3403,7 +3403,7 @@ class SummonShadowyMinionsPredicate
     
         bool operator()(WorldObject* object)
         {
-            if (_caster->AI()->GetData(object->GetGUIDLow()))
+            if (_caster->AI()->GetData(object->GetGUID().GetCounter()))
                 return false;
 
             return true;

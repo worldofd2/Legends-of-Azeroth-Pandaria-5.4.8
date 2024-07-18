@@ -203,7 +203,7 @@ class npc_pygmy_brute_tv : public CreatureScript
 
 struct SlipstreamPlayer
 {
-    uint64 uiPlayerGUID;
+    ObjectGuid uiPlayerGUID;
     uint32 uiPersonalTimer;
 };
 

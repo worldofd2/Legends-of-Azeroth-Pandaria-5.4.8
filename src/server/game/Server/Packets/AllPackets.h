@@ -20,5 +20,6 @@
 
 #include "CharacterPackets.h"
 #include "MiscPackets.h"
+#include "QuestPackets.h"
 
 #endif // AllPackets_h__

@@ -101,8 +101,8 @@ class boss_ymiron : public CreatureScript
                     _activeOrder[r] = temp;
                 }
 
-                _activeGhostGUID = 0;
-                _bjornSpiritGUID = 0;
+                _activeGhostGUID = ObjectGuid::Empty;
+                _bjornSpiritGUID = ObjectGuid::Empty;
             }
 
             InstanceScript* instance;
@@ -142,8 +142,8 @@ class boss_ymiron : public CreatureScript
 
                 DespawnBoatGhosts(_activeGhostGUID);
                 DespawnBoatGhosts(_bjornSpiritGUID);
-                _activeGhostGUID = 0;
-                _bjornSpiritGUID = 0;
+                _activeGhostGUID = ObjectGuid::Empty;
+                _bjornSpiritGUID = ObjectGuid::Empty;
 
                 me->HandleEmoteStateCommand(EMOTE_STATE_SIT_CHAIR_HIGH);
                 me->GetMap()->SetWorldState(WORLDSTATE_KINGS_BANE, 1);
@@ -380,13 +380,13 @@ class boss_ymiron : public CreatureScript
                     instance->SetData(DATA_KING_YMIRON_EVENT, DONE);
             }
 
-            void DespawnBoatGhosts(uint64 creatureGUID)
+            void DespawnBoatGhosts(ObjectGuid creatureGUID)
             {
                 if (creatureGUID)
                     if (Creature* despawnCreature = ObjectAccessor::GetCreature(*me, creatureGUID))
                         despawnCreature->DisappearAndDie();
 
-                creatureGUID = 0;
+                creatureGUID = ObjectGuid::Empty;
             }
 
             private:
@@ -414,8 +414,8 @@ class boss_ymiron : public CreatureScript
                 uint32 _healthAmountModifier;
                 uint32 _healthAmountMultipler;
 
-                uint64 _activeGhostGUID;
-                uint64 _bjornSpiritGUID;
+                ObjectGuid _activeGhostGUID;
+                ObjectGuid _bjornSpiritGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

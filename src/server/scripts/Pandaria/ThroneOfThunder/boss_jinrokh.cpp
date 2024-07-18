@@ -210,14 +210,14 @@ class boss_jinrokh : public CreatureScript
             }
 
             uint32 m_uiPushTimer;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             bool inStorm;
 
             void Reset() override
             {
                 _Reset();
                 ResetStatues();
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 me->SetReactState(REACT_AGGRESSIVE);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 inStorm = false;
@@ -536,9 +536,9 @@ struct npc_focused_lightning : public ScriptedAI
 
     TaskScheduler scheduler;
     InstanceScript* instance;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
-    void SetGUID(uint64 guid, int32 /*type*/) override
+    void SetGUID(ObjectGuid guid, int32 /*type*/) override
     {
         targetGUID = guid;
     }
@@ -546,7 +546,7 @@ struct npc_focused_lightning : public ScriptedAI
     void IsSummonedBy(Unit* summoner) override
     {
         instance = me->GetInstanceScript();
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
         me->SetInCombatWithZone();
         me->SetObjectScale(0.15f);
         me->SetDisplayId(47698);
@@ -765,7 +765,7 @@ class spell_focused_lightning_aoe : public SpellScript
 
                     if (!should_conduct)
                     {
-                        if (Unit* pBoss = ObjectAccessor::GetUnit(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(DATA_JINROKH) : 0))
+                        if (Unit* pBoss = ObjectAccessor::GetUnit(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetGuidData(DATA_JINROKH) : ObjectGuid::Empty))
                             pBoss->CastSpell(unit, SPELL_LIGHTNING_FISSURE_SUMMON, true);
                     }
 
@@ -966,7 +966,7 @@ class spell_thundering_throw_silence : public SpellScript
     void HandleScriptEffect(SpellEffIndex effIdx)
     {
         if (Unit* caster = GetCaster())
-            if (Creature* jinRokh = ObjectAccessor::GetCreature(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(NPC_JINROKH) : 0))
+            if (Creature* jinRokh = ObjectAccessor::GetCreature(*caster, caster->GetInstanceScript() ? caster->GetInstanceScript()->GetGuidData(NPC_JINROKH) : ObjectGuid::Empty))
                 caster->CastSpell(jinRokh, SPELL_THUNDERING_THROW_VEHICLE, true);
     }
 
@@ -1130,22 +1130,22 @@ class npc_jinrokh_statue : public CreatureScript
         {
             npc_jinrokh_statueAI(Creature* creature) : ScriptedAI(creature) 
             {
-                statueGuid = 0;
+                statueGuid = ObjectGuid::Empty;
                 statueData = 0;
                 m_phase = 0;
-                playerGuid = 0;
+                playerGuid = ObjectGuid::Empty;
                 me->SetFloatValue(OBJECT_FIELD_SCALE, me->GetFloatValue(OBJECT_FIELD_SCALE) * 1.4f);
             }
 
             uint32 statueData;
             uint32 m_phase;
-            uint64 playerGuid;
-            uint64 statueGuid;
+            ObjectGuid playerGuid;
+            ObjectGuid statueGuid;
             EventMap events;
 
             void InitializeStatue()
             {
-                statueGuid = 0;
+                statueGuid = ObjectGuid::Empty;
 
                 float fDist = 1000.f;
 
@@ -1153,7 +1153,7 @@ class npc_jinrokh_statue : public CreatureScript
                 {
                     for (uint32 i = 0; i < 4; ++i)
                     {
-                        if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_MOGU_STATUE_1 + i)))
+                        if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_MOGU_STATUE_1 + i)))
                         {
                             if (go->GetExactDist2d(me) < fDist)
                             {
@@ -1186,7 +1186,7 @@ class npc_jinrokh_statue : public CreatureScript
                 return 0;
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 playerGuid = guid;
             }
@@ -1205,7 +1205,7 @@ class npc_jinrokh_statue : public CreatureScript
                     case ACTION_RESET:
                         HandleStatue(false);
                         m_phase = 0;
-                        playerGuid = 0;
+                        playerGuid = ObjectGuid::Empty;
                         me->SetVisible(false);
                         me->SetVisible(true);
                         me->UpdateObjectVisibility();
@@ -1270,7 +1270,7 @@ class npc_jinrokh_statue : public CreatureScript
                 player->RemoveAurasDueToSpell(SPELL_THUNDERING_THROW_SILENCE);
 
                 m_phase = 0;
-                playerGuid = 0;
+                playerGuid = ObjectGuid::Empty;
             }
 
             void UpdateAI(uint32 diff) override
@@ -1653,7 +1653,7 @@ class spell_ionization_aura : public AuraScript
     {
         if (Unit* owner = GetOwner()->ToUnit())
         {
-            if (Creature* jinrokh = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetData64(DATA_JINROKH) : 0))
+            if (Creature* jinrokh = ObjectAccessor::GetCreature(*owner, owner->GetInstanceScript() ? owner->GetInstanceScript()->GetGuidData(DATA_JINROKH) : ObjectGuid::Empty))
             {
                 int32 bp = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
                 jinrokh->CastCustomSpell(owner, SPELL_IONIZATION_PROC, &bp, 0, 0, true);

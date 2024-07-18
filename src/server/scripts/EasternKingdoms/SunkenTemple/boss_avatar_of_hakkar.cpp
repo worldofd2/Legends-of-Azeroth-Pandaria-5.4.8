@@ -210,7 +210,7 @@ class go_shrine_of_soulflayer : public GameObjectScript
             go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
 
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* m_Hakkar = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_AVATAR_OF_HAKKAR)))
+                if (Creature* m_Hakkar = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_AVATAR_OF_HAKKAR)))
                     m_Hakkar->AI()->DoAction(ACTION_HAKKAR_RISE);
 
             return true;

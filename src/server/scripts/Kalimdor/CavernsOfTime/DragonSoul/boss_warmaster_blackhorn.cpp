@@ -224,7 +224,7 @@ class boss_warmaster_blackhorn: public CreatureScript
                 uiWave = 0;
                 drakeDied = 0;
                 phase = 0;
-                shockwaveTarget = 0;
+                shockwaveTarget = ObjectGuid::Empty;
                 clearShockwaveTarget = false;
             }
 
@@ -311,7 +311,7 @@ class boss_warmaster_blackhorn: public CreatureScript
                     me->GetMap()->SetWorldState(WORLDSTATE_DECK_DEFENDER, 0);
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 shockwaveTarget = guid;
             }
@@ -406,7 +406,7 @@ class boss_warmaster_blackhorn: public CreatureScript
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                 {
-                    if (clearShockwaveTarget && me->GetUInt64Value(UNIT_FIELD_TARGET))
+                    if (clearShockwaveTarget && me->GetGuidValue(UNIT_FIELD_TARGET))
                     {
                         me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
                         clearShockwaveTarget = false;
@@ -542,7 +542,7 @@ class boss_warmaster_blackhorn: public CreatureScript
             uint8 uiWave;
             uint8 drakeDied;
             uint8 phase;
-            uint64 shockwaveTarget;
+            ObjectGuid shockwaveTarget;
             bool clearShockwaveTarget;
 
             void DespawnCreatures(uint32 entry)
@@ -1957,7 +1957,7 @@ class spell_warmaster_blackhorn_shockwave_aoe : public SpellScriptLoader
                 if (!GetCaster() || !GetHitUnit())
                     return;
 
-                GetCaster()->SetTarget(0);
+                GetCaster()->SetTarget(ObjectGuid::Empty);
                 GetCaster()->GetAI()->SetGUID(GetHitUnit()->GetGUID());
                 Position pos = GetCaster()->GetNearPosition(1, GetCaster()->GetRelativeAngle(GetHitUnit()));
                 GetCaster()->GetMotionMaster()->MovePoint(POINT_SHOCKWAVE, pos);

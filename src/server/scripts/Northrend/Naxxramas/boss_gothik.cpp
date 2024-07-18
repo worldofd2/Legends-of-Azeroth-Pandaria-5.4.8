@@ -172,8 +172,8 @@ class boss_gothik : public CreatureScript
             bool phaseTwo;
             bool thirtyPercentReached;
 
-            std::vector<uint64> LiveTriggerGUID;
-            std::vector<uint64> DeadTriggerGUID;
+            std::vector<ObjectGuid> LiveTriggerGUID;
+            std::vector<ObjectGuid> DeadTriggerGUID;
 
             void Reset() override
             {

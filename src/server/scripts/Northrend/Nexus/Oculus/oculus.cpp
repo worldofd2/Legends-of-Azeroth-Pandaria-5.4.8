@@ -216,7 +216,7 @@ class npc_image_belgaristrasz : public CreatureScript
             {
                 DoCast(me, SPELL_SIMPLE_TELEPORT, true);
 
-                uint64 summonerGUID = summoner->GetGUID();
+                ObjectGuid summonerGUID = summoner->GetGUID();
                 if (summoner->GetEntry() == NPC_VAROS)
                 {
                     uint32 delay = 0;

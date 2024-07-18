@@ -82,13 +82,13 @@ public:
     {
         npc_inner_demonAI(Creature* creature) : ScriptedAI(creature)
         {
-            victimGUID = 0;
+            victimGUID = ObjectGuid::Empty;
         }
 
         uint32 ShadowBolt_Timer;
 
         uint32 Link_Timer;
-        uint64 victimGUID;
+        ObjectGuid victimGUID;
 
         void Reset() override
         {
@@ -96,17 +96,17 @@ public:
             Link_Timer = 1000;
         }
 
-        void SetGUID(uint64 guid, int32 id/* = 0 */) override
+        void SetGUID(ObjectGuid guid, int32 id/* = 0 */) override
         {
             if (id == INNER_DEMON_VICTIM)
                 victimGUID = guid;
         }
 
-        uint64 GetGUID(int32 id/* = 0 */) const override
+        ObjectGuid GetGUID(int32 id/* = 0 */) const override
         {
             if (id == INNER_DEMON_VICTIM)
                 return victimGUID;
-            return 0;
+            return ObjectGuid::Empty;
         }
 
         void JustDied(Unit* /*killer*/) override
@@ -189,10 +189,10 @@ public:
         {
             creature->GetPosition(x, y, z);
             instance = creature->GetInstanceScript();
-            Demon = 0;
+            Demon = ObjectGuid::Empty;
 
             for (uint8 i = 0; i < 3; ++i)//clear guids
-                SpellBinderGUID[i] = 0;
+                SpellBinderGUID[i] = ObjectGuid::Empty;
         }
 
         InstanceScript* instance;
@@ -212,10 +212,10 @@ public:
         bool EnrageUsed;
         float x, y, z;
 
-        uint64 InnderDemon[5];
+        ObjectGuid InnderDemon[5];
         uint32 InnerDemon_Count;
-        uint64 Demon;
-        uint64 SpellBinderGUID[3];
+        ObjectGuid Demon;
+        ObjectGuid SpellBinderGUID[3];
 
         void Reset() override
         {
@@ -318,10 +318,10 @@ public:
                 // and reseting equipment
                 me->LoadEquipment();
 
-                if (instance && instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
+                if (instance && instance->GetGuidData(DATA_LEOTHERAS_EVENT_STARTER))
                 {
                     Unit* victim = NULL;
-                    victim = Unit::GetUnit(*me, instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
+                    victim = Unit::GetUnit(*me, instance->GetGuidData(DATA_LEOTHERAS_EVENT_STARTER));
                     if (victim)
                         me->getThreatManager().addThreat(victim, 1);
                     StartEvent();
@@ -356,7 +356,7 @@ public:
                         {
                             creature->DespawnOrUnsummon();
                         }
-                        InnderDemon[i] = 0;
+                        InnderDemon[i] = ObjectGuid::Empty;
                 }
             }
 
@@ -684,13 +684,13 @@ public:
         npc_greyheart_spellbinderAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            leotherasGUID = 0;
+            leotherasGUID = ObjectGuid::Empty;
             AddedBanish = false;
         }
 
         InstanceScript* instance;
 
-        uint64 leotherasGUID;
+        ObjectGuid leotherasGUID;
 
         uint32 Mindblast_Timer;
         uint32 Earthshock_Timer;
@@ -742,12 +742,12 @@ public:
             if (instance)
             {
                 if (!leotherasGUID)
-                    leotherasGUID = instance->GetData64(DATA_LEOTHERAS);
+                    leotherasGUID = instance->GetGuidData(DATA_LEOTHERAS);
 
-                if (!me->IsInCombat() && instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
+                if (!me->IsInCombat() && instance->GetGuidData(DATA_LEOTHERAS_EVENT_STARTER))
                 {
                     Unit* victim = NULL;
-                    victim = Unit::GetUnit(*me, instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
+                    victim = Unit::GetUnit(*me, instance->GetGuidData(DATA_LEOTHERAS_EVENT_STARTER));
                     if (victim)
                         AttackStart(victim);
                 }
@@ -759,7 +759,7 @@ public:
                 return;
             }
 
-            if (instance && !instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
+            if (instance && !instance->GetGuidData(DATA_LEOTHERAS_EVENT_STARTER))
             {
                 EnterEvadeMode();
                 return;

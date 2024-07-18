@@ -828,7 +828,7 @@ struct npc_start_stink_bombs_away : public ScriptedAI
         player->CastSpell(player, stinkBombsAwaySummonBroom[team]);
         Creature* broom = GetClosestCreatureWithEntry(me, stinkBombsAwayBroom[team], 50.0f, true);
         Creature* starter = broom->SummonCreature(me->GetEntry(), me->GetPosition(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 420000);
-        uint64 guid = player->GetGUID();
+        ObjectGuid guid = player->GetGUID();
         if (broom && starter && guid)
         {
             player->EnterVehicle(broom, 1);
@@ -844,7 +844,7 @@ struct npc_start_stink_bombs_away : public ScriptedAI
             {
                 broom->CastSpell(broom, stinkBombsAwayTeleport[team], true);
                 starter->UpdatePosition(stinkBombsAwayTeleportPos[team], true);
-                if (Player* player = sObjectAccessor->GetPlayer(*broom, guid))
+                if (Player* player = ObjectAccessor::GetPlayer(*broom, guid))
                     player->m_Events.Schedule(3000, [broom, team]()
                     {
                         broom->CastSpell(broom, stinkBombsAwayTeleport[team]);
@@ -1118,7 +1118,7 @@ class spell_stink_bombs_away_aura : public AuraScript
 
             uint8 team = player->GetTeamId();
             Creature* starter = GetClosestCreatureWithEntry(player, stinkBombsAwayStarter[team], 50.0f, true);
-            uint64 guid = player->GetGUID();
+            ObjectGuid guid = player->GetGUID();
 
             if (broom && starter)
             {
@@ -1129,7 +1129,7 @@ class spell_stink_bombs_away_aura : public AuraScript
                 broom->m_Events.Schedule(1000, [broom, team]() { broom->GetMotionMaster()->MovePoint(0, stinkBombsAwayOutroPos[team]); });
                 broom->m_Events.Schedule(14000, [broom, starter, guid]()
                 {
-                    if (Player* player = sObjectAccessor->GetPlayer(*broom, guid))
+                    if (Player* player = ObjectAccessor::GetPlayer(*broom, guid))
                         player->ExitVehicle();
                     broom->DespawnOrUnsummon();
                     starter->DespawnOrUnsummon();
@@ -1202,7 +1202,7 @@ class at_shopping_around : public AreaTriggerScript
             {
                 Creature* delian = player->FindNearestCreature(54146, 50.0f);
                 Creature* dran = player->FindNearestCreature(6986, 50.0f);
-                uint64 guid = player->GetGUID();
+                ObjectGuid guid = player->GetGUID();
                 if (delian && dran && !dran->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
                 {
                     dran->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED); // just for prevent multiple triggering
@@ -1214,7 +1214,7 @@ class at_shopping_around : public AreaTriggerScript
                     dran->m_Events.Schedule(30000, [dran]() { dran->AI()->Talk(2); });
                     delian->m_Events.Schedule(35000, [delian, guid]()
                     {
-                        if (Player* player = sObjectAccessor->GetPlayer(*delian, guid))
+                        if (Player* player = ObjectAccessor::GetPlayer(*delian, guid))
                         {
                             player->KilledMonsterCredit(54022);
                             delian->AI()->Talk(3);
@@ -1228,7 +1228,7 @@ class at_shopping_around : public AreaTriggerScript
             {
                 Creature* hudson = player->FindNearestCreature(54021, 50.0f);
                 Creature* quincy = player->FindNearestCreature(53991, 50.0f);
-                uint64 guid = player->GetGUID();
+                ObjectGuid guid = player->GetGUID();
                 if (hudson && quincy && !quincy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
                 {
                     quincy->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED); // just for prevent multiple triggering
@@ -1240,7 +1240,7 @@ class at_shopping_around : public AreaTriggerScript
                     quincy->m_Events.Schedule(30000, [quincy]() { quincy->AI()->Talk(2); });
                     hudson->m_Events.Schedule(35000, [hudson, guid]()
                     {
-                        if (Player* player = sObjectAccessor->GetPlayer(*hudson, guid))
+                        if (Player* player = ObjectAccessor::GetPlayer(*hudson, guid))
                         {
                             player->KilledMonsterCredit(54022);
                             hudson->AI()->Talk(3, player);
@@ -1265,7 +1265,7 @@ class at_the_collectors_agent : public AreaTriggerScript
             {
                 if (Creature* sanath = player->FindNearestCreature(54072, 50.0f))
                 {
-                    uint64 guid = player->GetGUID();
+                    ObjectGuid guid = player->GetGUID();
                     if (!sanath->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
                     {
                         sanath->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED); // just for prevent multiple triggering
@@ -1283,7 +1283,7 @@ class at_the_collectors_agent : public AreaTriggerScript
 
                             Position pos = trigger->ID == 6924 ? Position({ 1579.189f, 61.371f, 62.5377f, 6.26843f }) : Position({ -8496.792f, 758.109f, 72.758f, 2.210720f });
                             if (Creature* uvoid = sanath->SummonCreature(54114, pos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, MINUTE * 2 * IN_MILLISECONDS))
-                                if (Player* player = sObjectAccessor->GetPlayer(*sanath, guid))
+                                if (Player* player = ObjectAccessor::GetPlayer(*sanath, guid))
                                     uvoid->Attack(player, true);
 
                         });

@@ -438,9 +438,9 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
             void Reset() override
             {
                 _events.Reset();
-                _theLichKing = 0;
-                _bolvarFordragon = 0;
-                _factionNPC = 0;
+                _theLichKing = ObjectGuid::Empty;
+                _bolvarFordragon = ObjectGuid::Empty;
+                _factionNPC = ObjectGuid::Empty;
                 _damnedKills = 0;
             }
 
@@ -625,9 +625,9 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
         private:
             EventMap _events;
             InstanceScript* const _instance;
-            uint64 _theLichKing;
-            uint64 _bolvarFordragon;
-            uint64 _factionNPC;
+            ObjectGuid _theLichKing;
+            ObjectGuid _bolvarFordragon;
+            ObjectGuid _factionNPC;
             uint16 _damnedKills;
         };
 
@@ -988,7 +988,7 @@ class boss_sister_svalna : public CreatureScript
                 uint64 delay = 1;
                 for (uint32 i = 0; i < 4; ++i)
                 {
-                    if (Creature* crusader = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CAPTAIN_ARNATH + i)))
+                    if (Creature* crusader = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CAPTAIN_ARNATH + i)))
                     {
                         if (crusader->IsAlive() && crusader->GetEntry() == crusader->GetCreatureData()->id)
                         {
@@ -998,14 +998,14 @@ class boss_sister_svalna : public CreatureScript
                     }
                 }
 
-                if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CROK_SCOURGEBANE)))
+                if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
                     crok->m_Events.Schedule(delay + 3000, [crok]() { crok->GetMotionMaster()->MovePoint(POINT_CROK_FINAL, 4335.371094f, 2484.422363f, 358.441711f); });
             }
 
             void JustEngagedWith(Unit* /*who*/) override
             {
                 _JustEngagedWith();
-                if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CROK_SCOURGEBANE)))
+                if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
                     crok->AI()->Talk(SAY_CROK_COMBAT_SVALNA);
                 events.ScheduleEvent(EVENT_SVALNA_COMBAT, 1);
                 events.ScheduleEvent(EVENT_IMPALING_SPEAR, urand(40000, 50000));
@@ -1231,7 +1231,7 @@ class npc_crok_scourgebane : public CreatureScript
                     _isEventDone = true;
                     // Load Grid with Sister Svalna
                     me->GetMap()->LoadGrid(4356.71f, 2484.33f);
-                    if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_SISTER_SVALNA)))
+                    if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_SISTER_SVALNA)))
                         svalna->AI()->DoAction(ACTION_START_GAUNTLET);
                     Talk(SAY_CROK_INTRO_1);
                     _events.ScheduleEvent(EVENT_ARNATH_INTRO_2, 7000);
@@ -1239,7 +1239,7 @@ class npc_crok_scourgebane : public CreatureScript
                     _events.ScheduleEvent(EVENT_START_PATHING, 37000);
                     me->setActive(true);
                     for (uint32 i = 0; i < 4; ++i)
-                        if (Creature* crusader = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_CAPTAIN_ARNATH + i)))
+                        if (Creature* crusader = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_CAPTAIN_ARNATH + i)))
                             crusader->AI()->DoAction(ACTION_START_GAUNTLET);
 
                     std::list<Creature*> ymirjar;
@@ -1259,7 +1259,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void SetGUID(uint64 guid, int32 type/* = 0*/) override
+            void SetGUID(ObjectGuid guid, int32 type/* = 0*/) override
             {
                 if (type == ACTION_VRYKUL_DEATH)
                 {
@@ -1273,7 +1273,7 @@ class npc_crok_scourgebane : public CreatureScript
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             me->setActive(false);
                             Talk(SAY_CROK_FINAL_WP);
-                            if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_SISTER_SVALNA)))
+                            if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_SISTER_SVALNA)))
                                 svalna->AI()->DoAction(ACTION_RESURRECT_CAPTAINS);
                         }
                     }
@@ -1302,7 +1302,7 @@ class npc_crok_scourgebane : public CreatureScript
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             me->setActive(false);
                             Talk(SAY_CROK_FINAL_WP);
-                            if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_SISTER_SVALNA)))
+                            if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_SISTER_SVALNA)))
                                 svalna->AI()->DoAction(ACTION_RESURRECT_CAPTAINS);
                         }
                         break;
@@ -1328,7 +1328,7 @@ class npc_crok_scourgebane : public CreatureScript
                             minY -= 50.0f;
                             maxY -= 50.0f;
                             // at waypoints 1 and 2 she kills one captain
-                            if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_SISTER_SVALNA)))
+                            if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_SISTER_SVALNA)))
                                 svalna->AI()->DoAction(ACTION_KILL_CAPTAIN);
                         }
                         else if (waypointId == 4)
@@ -1351,7 +1351,7 @@ class npc_crok_scourgebane : public CreatureScript
                     }
                     // at waypoints 1 and 2 she kills one captain
                     case 2:
-                        if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_SISTER_SVALNA)))
+                        if (Creature* svalna = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_SISTER_SVALNA)))
                             svalna->AI()->DoAction(ACTION_KILL_CAPTAIN);
                         break;
                     default:
@@ -1420,7 +1420,7 @@ class npc_crok_scourgebane : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ARNATH_INTRO_2:
-                            if (Creature* arnath = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_CAPTAIN_ARNATH)))
+                            if (Creature* arnath = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_CAPTAIN_ARNATH)))
                                 arnath->AI()->Talk(SAY_ARNATH_INTRO_2);
                             break;
                         case EVENT_CROK_INTRO_3:
@@ -1465,7 +1465,7 @@ class npc_crok_scourgebane : public CreatureScript
                 {
                     Talk(SAY_CROK_VICTORY);
                     for (uint32 i = 0; i < 4; ++i)
-                        if (Creature* crusader = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_CAPTAIN_ARNATH + i)))
+                        if (Creature* crusader = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_CAPTAIN_ARNATH + i)))
                             crusader->DespawnOrUnsummon(30000);
                     me->DespawnOrUnsummon(30000);
                 }
@@ -1529,7 +1529,7 @@ struct npc_argent_captainAI : public ScriptedAI
         {
             if (action == ACTION_START_GAUNTLET)
             {
-                if (Creature* crok = ObjectAccessor::GetCreature(*me, Instance->GetData64(DATA_CROK_SCOURGEBANE)))
+                if (Creature* crok = ObjectAccessor::GetCreature(*me, Instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
                 {
                     me->SetReactState(REACT_DEFENSIVE);
                     FollowAngle = me->GetAngle(crok) + me->GetOrientation();
@@ -1576,7 +1576,7 @@ struct npc_argent_captainAI : public ScriptedAI
             if (!me->GetVehicle())
             {
                 me->GetMotionMaster()->Clear(false);
-                if (Creature* crok = ObjectAccessor::GetCreature(*me, Instance->GetData64(DATA_CROK_SCOURGEBANE)))
+                if (Creature* crok = ObjectAccessor::GetCreature(*me, Instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
                     me->GetMotionMaster()->MoveFollow(crok, FollowDist, FollowAngle, MOTION_SLOT_IDLE);
             }
 
@@ -2429,7 +2429,7 @@ class at_icc_start_frostwing_gauntlet : public AreaTriggerScript
                 return true;
 
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* crok = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_CROK_SCOURGEBANE)))
+                if (Creature* crok = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_CROK_SCOURGEBANE)))
                     crok->AI()->DoAction(ACTION_START_GAUNTLET);
             return true;
         }
@@ -2484,8 +2484,8 @@ class npc_sindragosas_ward : public CreatureScript
 
                 // Open this door only once, it should be closed, when Sindragosa npcs get infight
                 // Server crashes can be ignored in this case, since teleporter to Sindragosa is active now
-                if (GameObject* sindragosaDoor = instance->instance->GetGameObject(instance->GetData64(GO_SINDRAGOSA_ENTRANCE_DOOR)))
-                    instance->HandleGameObject(instance->GetData64(GO_SINDRAGOSA_ENTRANCE_DOOR), true, sindragosaDoor);
+                if (GameObject* sindragosaDoor = instance->instance->GetGameObject(instance->GetGuidData(GO_SINDRAGOSA_ENTRANCE_DOOR)))
+                    instance->HandleGameObject(instance->GetGuidData(GO_SINDRAGOSA_ENTRANCE_DOOR), true, sindragosaDoor);
             }
 
             void DoSummonWave(uint8 number)
@@ -2941,7 +2941,7 @@ class at_icc_start_sindragosa_gauntlet : public AreaTriggerScript
                 return true;
 
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* ward = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_SINDRAGOSA_GAUNTLET)))
+                if (Creature* ward = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_SINDRAGOSA_GAUNTLET)))
                     ward->AI()->DoAction(ACTION_START_GAUNTLET);
 
             return true;
@@ -3194,7 +3194,7 @@ class npc_putricide_trap : public CreatureScript
         private:
             InstanceScript* instance;
             EventMap events;
-            uint64 spawnerGuids[4];
+            ObjectGuid spawnerGuids[4];
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -3440,11 +3440,11 @@ class npc_icc_empowering_orb_controller : public CreatureScript
                                 events.Reset();
 
                                 if (me->GetPositionZ() < 370.0f)
-                                    instance->HandleGameObject(instance->GetData64(GO_CRIMSON_HALL_DOOR), true);
+                                    instance->HandleGameObject(instance->GetGuidData(GO_CRIMSON_HALL_DOOR), true);
                                 break;
                             }
                             if (me->GetPositionZ() < 370.0f)
-                                instance->HandleGameObject(instance->GetData64(GO_CRIMSON_HALL_DOOR), false);
+                                instance->HandleGameObject(instance->GetGuidData(GO_CRIMSON_HALL_DOOR), false);
 
                             if (!inCombat)
                                 break;
@@ -3470,10 +3470,10 @@ class npc_icc_empowering_orb_controller : public CreatureScript
         private:
             InstanceScript* instance;
             EventMap events;
-            uint64 trashGuids[6];
-            uint64 visualGuid = 0;
-            uint64 orbGuid = 0;
-            uint64 channelerGuid = 0;
+            ObjectGuid trashGuids[6];
+            ObjectGuid visualGuid = ObjectGuid::Empty;
+            ObjectGuid orbGuid = ObjectGuid::Empty;
+            ObjectGuid channelerGuid = ObjectGuid::Empty;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

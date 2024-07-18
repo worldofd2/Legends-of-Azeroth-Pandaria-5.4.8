@@ -261,7 +261,7 @@ class boss_sha_of_fear : public CreatureScript
 
             uint32 delay;
             uint32 prevStep, curStep;
-            uint64 VictimGUID;
+            ObjectGuid VictimGUID;
             std::vector<uint32> m_dEvents;
 
             bool isDuringP2Transition;
@@ -328,7 +328,7 @@ class boss_sha_of_fear : public CreatureScript
                 attacksCounter = 0;
                 attackCounterDread = 0;
                 terrorCounter  = 0;
-                VictimGUID     = 0;
+                VictimGUID = ObjectGuid::Empty;
                 m_dEvents.clear();
                 berserkEvents.Reset();
 
@@ -662,10 +662,10 @@ class boss_sha_of_fear : public CreatureScript
                         Talk(SAY_INTRO);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NON_ATTACKABLE);
 
-                        if (GameObject* pVortex = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_SHA_VORTEX)))
+                        if (GameObject* pVortex = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_SHA_VORTEX)))
                             pVortex->SetGoState(GO_STATE_ACTIVE);
 
-                        if (GameObject* pVortexWall = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_SHA_VORTEX_WALL)))
+                        if (GameObject* pVortexWall = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_SHA_VORTEX_WALL)))
                             pVortexWall->SetGoState(GO_STATE_ACTIVE);
                         break;
                     case ACTION_BERSERK:
@@ -833,7 +833,7 @@ class boss_sha_of_fear : public CreatureScript
                             {
                                 if (m_uiPhase == PHASE_TERRACE)
                                 {
-                                    if (Creature* pureLight = Creature::GetCreature(*me, instance->GetData64(NPC_PURE_LIGHT_TERRACE)))
+                                    if (Creature* pureLight = Creature::GetCreature(*me, instance->GetGuidData(NPC_PURE_LIGHT_TERRACE)))
                                         me->CastSpell(pureLight, SPELL_BREATH_OF_FEAR, false);
                                     Talk(SAY_BREATH_OF_FEAR);
                                 }
@@ -1097,7 +1097,7 @@ class npc_terror_spawn : public CreatureScript
             void Reset() override
             {
                 if (instance)
-                    if (Creature* pureLight = Creature::GetCreature(*me, instance->GetData64(NPC_PURE_LIGHT_TERRACE)))
+                    if (Creature* pureLight = Creature::GetCreature(*me, instance->GetGuidData(NPC_PURE_LIGHT_TERRACE)))
                         me->SetFacingToObject(pureLight);
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -1185,7 +1185,7 @@ class npc_dread_spawn : public CreatureScript
                 events.ScheduleEvent(EVENT_SPEED, 8 * IN_MILLISECONDS);
             }
 
-            uint64 LightTargetGUID()
+            ObjectGuid LightTargetGUID()
             {
                 std::list<Player*> m_players;
                 GetPlayerListInGrid(m_players, me, 300.0f);
@@ -1194,7 +1194,7 @@ class npc_dread_spawn : public CreatureScript
                     if (itr->HasAura(SPELL_CHAMPION_OF_THE_LIGHT))
                         return itr->GetGUID();
 
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             void DoAction(int32 actionId) override
@@ -1458,11 +1458,11 @@ class spell_penetrating_bolt : public SpellScriptLoader
         {
             PrepareSpellScript(spell_penetrating_bolt_SpellScript);
 
-            uint64 targetGuid;
+            ObjectGuid targetGuid;
 
             void CorrectRange(std::list<WorldObject*>& targets)
             {
-                targetGuid = 0;
+                targetGuid = ObjectGuid::Empty;
 
                 if (!targets.empty())
                     Trinity::Containers::RandomResizeList(targets, 1);
@@ -1479,7 +1479,7 @@ class spell_penetrating_bolt : public SpellScriptLoader
                     if (InstanceScript* instance = caster->GetInstanceScript())
                     {
                         if (Player* target = Player::GetPlayer(*caster, targetGuid))
-                            caster->CastSpell(target, SPELL_PENETRATING_BOLT_MISSILE, true, NULL, NULL, instance->GetData64(NPC_SHA_OF_FEAR));
+                            caster->CastSpell(target, SPELL_PENETRATING_BOLT_MISSILE, true, NULL, NULL, instance->GetGuidData(NPC_SHA_OF_FEAR));
                     }
                 }
             }
@@ -1961,7 +1961,7 @@ class spell_dread_spray : public SpellScriptLoader
             {
                 if (Unit*  owner = GetUnitOwner())
                 {
-                    owner->SetTarget(0);
+                    owner->SetTarget(ObjectGuid::Empty);
                     float ori = float(rand_norm())*static_cast<float>(2 * M_PI);
                     owner->SetOrientation(ori);
                     owner->SetFacingTo(ori);

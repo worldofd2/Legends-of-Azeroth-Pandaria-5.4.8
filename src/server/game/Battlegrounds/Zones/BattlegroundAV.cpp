@@ -495,7 +495,7 @@ void BattlegroundAV::EndBattleground(uint32 winner)
     Battleground::EndBattleground(winner);
 }
 
-void BattlegroundAV::RemovePlayer(Player* player, uint64 guid, uint32 team)
+void BattlegroundAV::RemovePlayer(Player* player, ObjectGuid guid, uint32 team)
 {
     Battleground::RemovePlayer(player, guid, team);
     if (!player)

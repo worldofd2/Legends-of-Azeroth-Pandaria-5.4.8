@@ -40,6 +40,6 @@ class TotemAI : public CreatureAI
 
     private:
         AssistBehavior m_assist{ me };
-        uint64 m_victimGuid = 0;
+        ObjectGuid m_victimGuid;
 };
 #endif

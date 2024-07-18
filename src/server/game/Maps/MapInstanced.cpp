@@ -214,6 +214,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
     ASSERT(map->IsDungeon() || map->IsScenario());
 
     map->LoadRespawnTimes();
+    map->LoadCorpseData();
 
     map->SetLFGMap(isLfgMap);
 

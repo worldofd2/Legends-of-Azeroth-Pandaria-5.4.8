@@ -1799,7 +1799,7 @@ class spell_sha_healing_stream : public SpellScript
 {
     PrepareSpellScript(spell_sha_healing_stream);
 
-    uint64 bonusTarget = 0;
+    ObjectGuid bonusTarget = ObjectGuid::Empty;
 
     void SelectTarget(std::list<WorldObject*>& targets)
     {
@@ -2486,7 +2486,7 @@ class spell_sha_stormlash_totem : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        // If it’s periodic damage, it doesn’t Stormlash, unless it’s Mind Flay, Malefic Grasp, or Drain Soul.
+        // If itï¿½s periodic damage, it doesnï¿½t Stormlash, unless itï¿½s Mind Flay, Malefic Grasp, or Drain Soul.
         if (eventInfo.GetTypeMask() & PROC_FLAG_DONE_PERIODIC)
             if (!eventInfo.GetSpellInfo()->IsChanneled())
                 return false;

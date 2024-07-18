@@ -109,17 +109,17 @@ public:
                 me->SetCurrentEquipmentId(me->GetOriginalEquipmentId());
         }
 
-        uint64 playerGUID;
+        ObjectGuid playerGUID;
         UnworthyInitiatePhase phase;
         uint32 wait_timer;
         float anchorX, anchorY;
-        uint64 anchorGUID;
+        ObjectGuid anchorGUID;
 
         EventMap events;
 
         void Reset() override
         {
-            anchorGUID = 0;
+            anchorGUID = ObjectGuid::Empty;
             phase = PHASE_CHAINED;
             events.Reset();
             me->SetFaction(7);
@@ -291,17 +291,17 @@ public:
 
     struct npc_unworthy_initiate_anchorAI : public PassiveAI
     {
-        npc_unworthy_initiate_anchorAI(Creature* creature) : PassiveAI(creature), prisonerGUID(0) { }
+        npc_unworthy_initiate_anchorAI(Creature* creature) : PassiveAI(creature), prisonerGUID() { }
 
-        uint64 prisonerGUID;
+        ObjectGuid prisonerGUID;
 
-        void SetGUID(uint64 guid, int32 /*id*/) override
+        void SetGUID(ObjectGuid guid, int32 /*id*/) override
         {
             if (!prisonerGUID)
                 prisonerGUID = guid;
         }
 
-        uint64 GetGUID(int32 /*id*/) const override
+        ObjectGuid GetGUID(int32 /*id*/) const override
         {
             return prisonerGUID;
         }
@@ -316,7 +316,7 @@ public:
     bool OnGossipHello(Player* player, GameObject* go) override
     {
         if (Creature* anchor = go->FindNearestCreature(29521, 15))
-            if (uint64 prisonerGUID = anchor->AI()->GetGUID())
+            if (ObjectGuid prisonerGUID = anchor->AI()->GetGUID())
                 if (Creature* prisoner = Creature::GetCreature(*player, prisonerGUID))
                     CAST_AI(npc_unworthy_initiate::npc_unworthy_initiateAI, prisoner->AI())->EventStart(anchor, player);
 
@@ -567,7 +567,7 @@ public:
         }
 
         bool lose;
-        uint64 m_uiDuelerGUID;
+        ObjectGuid m_uiDuelerGUID;
         uint32 m_uiDuelTimer;
         bool m_bIsDuelInProgress;
 
@@ -579,7 +579,7 @@ public:
 
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CAN_SWIM);
 
-            m_uiDuelerGUID = 0;
+            m_uiDuelerGUID = ObjectGuid::Empty;
             m_uiDuelTimer = 5000;
             m_bIsDuelInProgress = false;
         }
@@ -684,7 +684,7 @@ class npc_dark_rider_of_acherus : public CreatureScript
                 PhaseTimer = 4000;
                 Phase = 0;
                 Intro = false;
-                TargetGUID = 0;
+                TargetGUID = ObjectGuid::Empty;
             }
 
             void UpdateAI(uint32 diff) override
@@ -740,7 +740,7 @@ class npc_dark_rider_of_acherus : public CreatureScript
             uint32 PhaseTimer;
             uint32 Phase;
             bool Intro;
-            uint64 TargetGUID;
+            ObjectGuid TargetGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -1077,7 +1077,7 @@ class npc_scarlet_miner_cart : public CreatureScript
 
         struct npc_scarlet_miner_cartAI : public PassiveAI
         {
-            npc_scarlet_miner_cartAI(Creature* creature) : PassiveAI(creature), _minerGUID(0), _playerGUID(0)
+            npc_scarlet_miner_cartAI(Creature* creature) : PassiveAI(creature), _minerGUID(), _playerGUID()
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid1); // Modelid2 is a horse.
@@ -1095,7 +1095,7 @@ class npc_scarlet_miner_cart : public CreatureScript
             void SummonedCreatureDespawn(Creature* summon) override
             {
                 if (summon->GetEntry() == NPC_MINER)
-                    _minerGUID = 0;
+                    _minerGUID = ObjectGuid::Empty;
             }
 
             void DoAction(int32 /*param*/) override
@@ -1121,15 +1121,15 @@ class npc_scarlet_miner_cart : public CreatureScript
                 }
                 else
                 {
-                    _playerGUID = 0;
+                    _playerGUID = ObjectGuid::Empty;
                     if (Creature* miner = ObjectAccessor::GetCreature(*me, _minerGUID))
                         miner->DespawnOrUnsummon();
                 }
             }
 
         private:
-            uint64 _minerGUID;
-            uint64 _playerGUID;
+            ObjectGuid _minerGUID;
+            ObjectGuid _playerGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -1162,11 +1162,11 @@ class npc_scarlet_miner : public CreatureScript
 
             uint32 IntroTimer;
             uint32 IntroPhase;
-            uint64 carGUID;
+            ObjectGuid carGUID;
 
             void Reset() override
             {
-                carGUID = 0;
+                carGUID = ObjectGuid::Empty;
                 IntroTimer = 0;
                 IntroPhase = 0;
             }
@@ -1209,7 +1209,7 @@ class npc_scarlet_miner : public CreatureScript
                 }
             }
 
-            void SetGUID(uint64 guid, int32 /*id = 0*/) override
+            void SetGUID(ObjectGuid guid, int32 /*id = 0*/) override
             {
                 InitWaypoint();
                 Start(false, false, guid);

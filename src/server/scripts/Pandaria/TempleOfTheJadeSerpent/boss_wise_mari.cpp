@@ -125,7 +125,7 @@ class boss_wase_mari : public CreatureScript
             bool fightWon, canDead;
             uint8 phase, foutainCount;
             uint32 hydrolancePhase;
-            uint64 foutainTrigger[4];
+            ObjectGuid foutainTrigger[4];
 
             EventMap cosmeticEvents;
 
@@ -458,7 +458,7 @@ class npc_corrupt_living_water : public CreatureScript
 
             InstanceScript* instance;
             bool canDead;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             float x, y;
 
             void InitializeAI() override
@@ -475,7 +475,7 @@ class npc_corrupt_living_water : public CreatureScript
             {
                 if (me->GetEntry() == NPC_CORRUPT_WATER_WISE)
                 {
-                    if (Creature* wise = Unit::GetCreature(*me, instance->GetData64(DATA_WISE_MARI)))
+                    if (Creature* wise = Unit::GetCreature(*me, instance->GetGuidData(DATA_WISE_MARI)))
                        if (wise->IsAIEnabled)
                            wise->AI()->DoAction(ACTION_LIVING_WATER_DEAD);
                 }

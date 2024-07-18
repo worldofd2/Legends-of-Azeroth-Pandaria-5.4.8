@@ -61,7 +61,7 @@ class boss_slabhide : public CreatureScript
 
             EventMap events, nonCombatEvents;
             bool PreEventDone;
-            uint64 doorGuid;
+            ObjectGuid doorGuid;
 
             void InitializeAI() override
             {
@@ -98,7 +98,7 @@ class boss_slabhide : public CreatureScript
                 summons.DespawnAll();
                 nonCombatEvents.Reset();
                 HandleCloseEntranceRockwall();
-                doorGuid = 0;
+                doorGuid = ObjectGuid::Empty;
 
                 me->SetAnimationTier(UnitAnimationTier::Ground);
                 me->OverrideInhabitType(INHABIT_GROUND);
@@ -360,7 +360,7 @@ class AreaTrigger_at_behind_slabhide : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* Slabhide = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_SLABHIDE)))
+                if (Creature* Slabhide = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_SLABHIDE)))
                     Slabhide->AI()->DoAction(ACTION_STALACTITE_REMOVE);
 
             return false;

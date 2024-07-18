@@ -80,10 +80,10 @@ class npc_frost_tomb : public CreatureScript
         {
             npc_frost_tombAI(Creature* creature) : ScriptedAI(creature)
             {
-                FrostTombGUID = 0;
+                FrostTombGUID = ObjectGuid::Empty;
             }
 
-            uint64 FrostTombGUID;
+            ObjectGuid FrostTombGUID;
 
             void SetPrisoner(Unit* uPrisoner)
             {
@@ -92,7 +92,7 @@ class npc_frost_tomb : public CreatureScript
 
             void Reset() override
             {
-                FrostTombGUID = 0;
+                FrostTombGUID = ObjectGuid::Empty;
             }
 
             void JustEngagedWith(Unit* /*who*/) override { }
@@ -146,7 +146,7 @@ class boss_keleseth : public CreatureScript
             uint32 SummonSkeletonsTimer;
             uint32 RespawnSkeletonsTimer;
             uint32 ShadowboltTimer;
-            uint64 SkeletonGUID[5];
+            ObjectGuid SkeletonGUID[5];
             bool Skeletons;
             bool RespawnSkeletons;
 
@@ -284,7 +284,7 @@ class npc_vrykul_skeleton : public CreatureScript
 
             InstanceScript* instance;
             uint32 Respawn_Time;
-            uint64 Target_Guid;
+            ObjectGuid Target_Guid;
             uint32 Decrepify_Timer;
 
             bool isDead;

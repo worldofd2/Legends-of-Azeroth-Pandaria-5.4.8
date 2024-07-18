@@ -52,8 +52,24 @@ void WorldSession::HandleBattlePayStartPurchase(WorldPacket& recvData)
     uint32 clientToken = recvData.read<uint32>();
 
     ObjectGuid guid;
-    recvData.ReadGuidMask(guid, 2, 3, 5, 1, 4, 7, 0, 6);
-    recvData.ReadGuidBytes(guid, 5, 3, 7, 1, 4, 0, 6, 2);
+
+    guid[2] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[4] = recvData.ReadBit();
+    guid[7] = recvData.ReadBit();
+    guid[0] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[7]);
+    recvData.ReadByteSeq(guid[1]);
+    recvData.ReadByteSeq(guid[4]);
+    recvData.ReadByteSeq(guid[0]);
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[2]);
 
     uint32 purchaseId = irand(1, 999999); // temp solution
 
@@ -96,28 +112,40 @@ void WorldSession::HandleBattlePayCharBoost(WorldPacket& recvData)
     ObjectGuid guid, guid2;
 
     recvData.read_skip<uint32>();
-    recvData.ReadGuidMask(guid2, 1);
-    recvData.ReadGuidMask(guid, 0);
-    recvData.ReadGuidMask(guid2, 5, 4);
-    recvData.ReadGuidMask(guid, 3);
-    recvData.ReadGuidMask(guid2, 6, 0);
-    recvData.ReadGuidMask(guid, 5);
-    recvData.ReadGuidMask(guid2, 3, 7);
-    recvData.ReadGuidMask(guid, 1);
-    recvData.ReadGuidMask(guid2, 2);
-    recvData.ReadGuidMask(guid, 2);
+    guid2[1] = recvData.ReadBit();
+    guid[0] = recvData.ReadBit();
+    guid2[5] = recvData.ReadBit();
+    guid2[4] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+    guid2[6] = recvData.ReadBit();
+    guid2[0] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    guid2[3] = recvData.ReadBit();
+    guid2[7] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid2[2] = recvData.ReadBit();
+    guid[2] = recvData.ReadBit();
     bool hasCharInfo = !recvData.ReadBit();
-    recvData.ReadGuidMask(guid, 7, 4, 6);
+    guid[7] = recvData.ReadBit();
+    guid[4] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
 
-    recvData.ReadGuidBytes(guid, 2);
-    recvData.ReadGuidBytes(guid2, 0);
-    recvData.ReadGuidBytes(guid, 0, 7);
-    recvData.ReadGuidBytes(guid2, 7);
-    recvData.ReadGuidBytes(guid, 3);
-    recvData.ReadGuidBytes(guid2, 6, 4, 5);
-    recvData.ReadGuidBytes(guid, 1, 6, 4);
-    recvData.ReadGuidBytes(guid2, 1, 2, 3);
-    recvData.ReadGuidBytes(guid, 5);
+    guid[2] = recvData.ReadBit();
+    guid2[0] = recvData.ReadBit();
+    guid[0] = recvData.ReadBit();
+    guid[7] = recvData.ReadBit();
+    guid2[7] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+    guid2[6] = recvData.ReadBit();
+    guid2[4] = recvData.ReadBit();
+    guid2[5] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+    guid[4] = recvData.ReadBit();
+    guid2[1] = recvData.ReadBit();
+    guid2[2] = recvData.ReadBit();
+    guid2[3] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
 
     if (hasCharInfo)
     {
@@ -127,8 +155,22 @@ void WorldSession::HandleBattlePayCharBoost(WorldPacket& recvData)
         GetBoost()->SetBoostedCharInfo(guid, CHARACTER_BOOST_ITEMS, (charInfo & CHARACTER_BOOST_SPEC_MASK), (charInfo & CHARACTER_BOOST_FACTION_ALLIANCE));
 
         WorldPacket data(SMSG_CHARACTER_UPGRADE_STARTED, 8);
-        data.WriteGuidMask(guid, 6, 2, 5, 4, 7, 0, 3, 1);
-        data.WriteGuidBytes(guid, 4, 1, 6, 0, 7, 5, 2, 3);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[1]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[3]);
         SendPacket(&data);
     }
 }

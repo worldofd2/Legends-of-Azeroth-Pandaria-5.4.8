@@ -39,7 +39,7 @@ PathGenerator::PathGenerator(WorldObject const* owner) :
 {
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
-    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::PathGenerator for %u \n", _source->GetGUIDLow());
+    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::PathGenerator for %u \n", _source->GetGUID().GetCounter());
 
     uint32 mapId = _source->GetMapId();
     if (DisableMgr::IsPathfindingEnabled(mapId))
@@ -54,7 +54,7 @@ PathGenerator::PathGenerator(WorldObject const* owner) :
 
 PathGenerator::~PathGenerator()
 {
-    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::~PathGenerator() for %u \n", _source->GetGUIDLow());
+    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::~PathGenerator() for %u \n", _source->GetGUID().GetCounter());
     delete visualizePathWaypointGUIDs;
     delete visualizeNavmeshWaypointGUIDs;
 }
@@ -78,7 +78,7 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
 
     _forceDestination = forceDest;
 
-    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for %u \n", _source->GetGUIDLow());
+    TC_LOG_DEBUG("maps.mmaps", "++ PathGenerator::CalculatePath() for %u \n", _source->GetGUID().GetCounter());
 
     bool skip = false;
 
@@ -404,7 +404,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
         dtStatus dtResult;
         if (_useRaycast)
         {
-            TC_LOG_ERROR("maps.mmaps", "PathGenerator::BuildPolyPath() called with _useRaycast with a previous path for unit %u", _source->GetGUIDLow());
+            TC_LOG_ERROR("maps.mmaps", "PathGenerator::BuildPolyPath() called with _useRaycast with a previous path for unit %u", _source->GetGUID().GetCounter());
             BuildShortcut();
             _type = PATHFIND_NOPATH;
             return;
@@ -427,7 +427,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // this is probably an error state, but we'll leave it
             // and hopefully recover on the next Update
             // we still need to copy our preffix
-            TC_LOG_ERROR("maps.mmaps", "%u's Path Build failed: 0 length path", _source->GetGUIDLow());
+            TC_LOG_ERROR("maps.mmaps", "%u's Path Build failed: 0 length path", _source->GetGUID().GetCounter());
         }
 
         TC_LOG_DEBUG("maps.mmaps", "++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u", _polyLength, prefixPolyLength, suffixPolyLength);
@@ -532,7 +532,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
         if (!_polyLength || dtStatusFailed(dtResult))
         {
             // only happens if we passed bad data to findPath(), or navmesh is messed up
-            TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _source->GetGUIDLow());
+            TC_LOG_ERROR("maps", "%u's Path Build failed: 0 length path", _source->GetGUID().GetCounter());
             BuildShortcut();
             _type = PATHFIND_NOPATH;
             return;
@@ -559,7 +559,7 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
     if (_useRaycast)
     {
         // _straightLine uses raycast and it currently doesn't support building a point path, only a 2-point path with start and hitpoint/end is returned
-        TC_LOG_ERROR("maps.mmaps", "PathGenerator::BuildPointPath() called with _useRaycast for unit %u", _source->GetGUIDLow());        
+        TC_LOG_ERROR("maps.mmaps", "PathGenerator::BuildPointPath() called with _useRaycast for unit %u", _source->GetGUID().GetCounter());
         BuildShortcut();
         _type = PATHFIND_NOPATH;
         return;
@@ -964,7 +964,7 @@ dtStatus PathGenerator::FindSmoothPath(float const* startPos, float const* endPo
         npolys = FixupCorridor(polys, npolys, MAX_PATH_LENGTH, visited, nvisited);
 
         if (dtStatusFailed(_navMeshQuery->getPolyHeight(polys[0], result, &result[1])))
-            TC_LOG_DEBUG("maps.mmaps", "Cannot find height at position X: %f Y: %f Z: %f for %u", result[2], result[0], result[1], _source->GetGUIDLow());
+            TC_LOG_DEBUG("maps.mmaps", "Cannot find height at position X: %f Y: %f Z: %f for %u", result[2], result[0], result[1], _source->GetGUID().GetCounter());
         result[1] += 0.5f;
         dtVcopy(iterPos, result);
 
@@ -1065,7 +1065,7 @@ float PathGenerator::GetLinearPathLength() const
 
 void PathGenerator::VisualizePath(uint32 duration)
 {
-    static auto const DespawnWaypoint = [](Unit const* source, uint64& guid)
+    static auto const DespawnWaypoint = [](Unit const* source, ObjectGuid guid)
     {
         if (Creature* waypoint = ObjectAccessor::GetCreature(*source, guid))
         {
@@ -1074,16 +1074,16 @@ void PathGenerator::VisualizePath(uint32 duration)
             waypoint->SetDisplayId(11686);
             waypoint->DespawnOrUnsummon(500);
         }
-        guid = 0;
+        guid = ObjectGuid::Empty;
     };
-    static auto const SpawnWaypoint = [](Unit const* source, uint64 prevGUID, G3D::Vector3 const& pos, uint32 duration) -> uint64
+    static auto const SpawnWaypoint = [](Unit const* source, uint64 prevGUID, G3D::Vector3 const& pos, uint32 duration) -> ObjectGuid
     {
         if (TempSummon* waypoint = new TempSummon(nullptr, nullptr, false))
         {
-            if (!waypoint->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, pos.x, pos.y, pos.z, 0))
+            if (!waypoint->Create(source->GetMap()->GenerateLowGuid<HighGuid::Unit>(), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, pos.x, pos.y, pos.z, 0))
             {
                 delete waypoint;
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             waypoint->SetHomePosition(waypoint->GetPosition());
@@ -1100,9 +1100,8 @@ void PathGenerator::VisualizePath(uint32 duration)
             waypoint->SetTempSummonType(TEMPSUMMON_TIMED_DESPAWN);
             return waypoint->GetGUID();
         }
-        return 0;
     };
-    static auto const UpdateWaypoint = [](Unit const* source, uint64 prevGUID, G3D::Vector3 const& pos, uint32 duration, uint64& guid)
+    static auto const UpdateWaypoint = [](Unit const* source, ObjectGuid prevGUID, G3D::Vector3 const& pos, uint32 duration, ObjectGuid guid)
     {
         if (Creature* waypoint = ObjectAccessor::GetCreature(*source, guid))
         {
@@ -1114,7 +1113,7 @@ void PathGenerator::VisualizePath(uint32 duration)
     };
 
     if (!visualizePathWaypointGUIDs)
-        visualizePathWaypointGUIDs = new std::vector<uint64>();
+        visualizePathWaypointGUIDs = new std::vector<ObjectGuid>();
 
     if (visualizePathMap != _source->GetMap())
         visualizePathWaypointGUIDs->clear();
@@ -1127,7 +1126,7 @@ void PathGenerator::VisualizePath(uint32 duration)
     {
         Unit const* _sourceUnit = _source->ToUnit();
         if (i < GetPath().size())
-            UpdateWaypoint(_sourceUnit, i ? (*visualizePathWaypointGUIDs)[i - 1] : (uint64)0, GetPath()[i], duration, (*visualizePathWaypointGUIDs)[i]);
+            UpdateWaypoint(_sourceUnit, i ? (*visualizePathWaypointGUIDs)[i - 1] : ObjectGuid::Empty, GetPath()[i], duration, (*visualizePathWaypointGUIDs)[i]);
         else
             DespawnWaypoint(_sourceUnit, (*visualizePathWaypointGUIDs)[i]);
     }
@@ -1135,7 +1134,7 @@ void PathGenerator::VisualizePath(uint32 duration)
 
 void PathGenerator::VisualizeNavmesh(uint32 duration)
 {
-    static auto const DespawnWaypoint = [](Unit const* source, uint64& guid)
+    static auto const DespawnWaypoint = [](Unit const* source, ObjectGuid guid)
     {
         if (Creature* waypoint = ObjectAccessor::GetCreature(*source, guid))
         {
@@ -1144,19 +1143,19 @@ void PathGenerator::VisualizeNavmesh(uint32 duration)
             waypoint->SetDisplayId(11686);
             waypoint->DespawnOrUnsummon(500);
         }
-        guid = 0;
+        guid.Clear();
     };
-    static auto const SpawnWaypoint = [](Unit const* source, uint64 prevGUID, G3D::Vector3 const& pos, uint32 duration) -> uint64
+    static auto const SpawnWaypoint = [](Unit const* source, uint64 prevGUID, G3D::Vector3 const& pos, uint32 duration) -> ObjectGuid
     {
         if (TempSummon* waypoint = new TempSummon(nullptr, nullptr, false))
         {
             G3D::Vector3 wpos{ pos };
             if (Transport* transport = source->GetTransport())
                 transport->CalculatePassengerPosition(wpos.x, wpos.y, wpos.z);
-            if (!waypoint->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, wpos.x, wpos.y, wpos.z, 0))
+            if (!waypoint->Create(source->GetMap()->GenerateLowGuid<HighGuid::Unit>(), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, wpos.x, wpos.y, wpos.z, 0))
             {
                 delete waypoint;
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             waypoint->SetHomePosition(waypoint->GetPosition());
@@ -1174,9 +1173,8 @@ void PathGenerator::VisualizeNavmesh(uint32 duration)
             waypoint->SetTempSummonType(TEMPSUMMON_TIMED_DESPAWN);
             return waypoint->GetGUID();
         }
-        return 0;
     };
-    static auto const UpdateWaypoint = [](Unit const* source, uint64 prevGUID, G3D::Vector3 const& pos, uint32 duration, uint64& guid)
+    static auto const UpdateWaypoint = [](Unit const* source, ObjectGuid prevGUID, G3D::Vector3 const& pos, uint32 duration, ObjectGuid guid)
     {
         if (Creature* waypoint = ObjectAccessor::GetCreature(*source, guid))
         {
@@ -1196,7 +1194,7 @@ void PathGenerator::VisualizeNavmesh(uint32 duration)
     };
 
     if (!visualizeNavmeshWaypointGUIDs)
-        visualizeNavmeshWaypointGUIDs = new std::vector<uint64>();
+        visualizeNavmeshWaypointGUIDs = new std::vector<ObjectGuid>();
 
     if (visualizePathMap != _source->GetMap())
         visualizeNavmeshWaypointGUIDs->clear();
@@ -1205,7 +1203,7 @@ void PathGenerator::VisualizeNavmesh(uint32 duration)
 
     visualizePathMap = _source->GetMap();
 
-    auto at = [this](uint32 polygon, uint32 vertex) -> uint64& { return (*visualizeNavmeshWaypointGUIDs)[polygon * (DT_VERTS_PER_POLYGON + 1) + vertex]; };
+    auto at = [this](uint32 polygon, uint32 vertex) -> ObjectGuid { return (*visualizeNavmeshWaypointGUIDs)[polygon * (DT_VERTS_PER_POLYGON + 1) + vertex]; };
     auto vec = [this](float* verts, uint32 count, uint32 index) -> G3D::Vector3 { return G3D::Vector3{ verts[(index * 3 + 2) % (count * 3)], verts[(index * 3 + 0) % (count * 3)], verts[(index * 3 + 1) % (count * 3)] }; };
 
     Unit const* _sourceUnit = _source->ToUnit();
@@ -1221,7 +1219,7 @@ void PathGenerator::VisualizeNavmesh(uint32 duration)
                 dtVcopy(&verts[j * 3], &tile->verts[poly->verts[j] * 3]);
 
             for (uint32 j = 0; j <= poly->vertCount; ++j)
-                UpdateWaypoint(_sourceUnit, j ? at(i, j - 1) : (uint64)0, vec(verts, poly->vertCount, j), duration, at(i, j));
+                UpdateWaypoint(_sourceUnit, j ? at(i, j - 1) : ObjectGuid::Empty, vec(verts, poly->vertCount, j), duration, at(i, j));
 
             for (uint32 j = poly->vertCount + 1; j <= DT_VERTS_PER_POLYGON; ++j)
                 DespawnWaypoint(_sourceUnit, at(i, j));

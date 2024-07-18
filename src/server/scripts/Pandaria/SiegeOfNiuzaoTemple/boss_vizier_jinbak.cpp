@@ -28,7 +28,7 @@ enum
     NPC_SAPPLING                    = 61623
 };
 
-typedef std::pair<float, uint64> SapplingTrigger;
+typedef std::pair<float, ObjectGuid> SapplingTrigger;
 
 const Position centerPos = { 1529.520020f, 5163.240234f, 160.570999f, 0.0f };
 
@@ -66,7 +66,7 @@ class boss_vizier_jinbak : public CreatureScript
             boss_vizier_jinbakAI(Creature* creature) : BossAI(creature, BOSS_JINBAK)
             {
                 visualTimer = 5000;
-                puddleGUID = 0;
+                puddleGUID = ObjectGuid::Empty;
                 introDone = false;
             }
 
@@ -270,7 +270,7 @@ class boss_vizier_jinbak : public CreatureScript
             uint32 evadeCheckCooldown;
             uint32 visualTimer;
             std::list<SapplingTrigger > summonDestList;
-            uint64 puddleGUID;
+            ObjectGuid puddleGUID;
             bool introDone;
         };
 

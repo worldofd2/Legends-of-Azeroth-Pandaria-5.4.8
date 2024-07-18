@@ -1137,11 +1137,11 @@ public:
         }
         EventMap events;
 
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
 
         void Reset() override
         {
-            targetGuid = 0;
+            targetGuid = ObjectGuid::Empty;
             events.Reset();
         }
 

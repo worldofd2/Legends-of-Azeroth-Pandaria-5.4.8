@@ -97,7 +97,7 @@ class at_tott_lady_nazjar_event : public AreaTriggerScript
                     && instance->GetBossState(DATA_COMMANDER_ULTHOK) != DONE)
                 {
                     instance->SetData(DATA_LADY_NAZJAR_EVENT, DONE);
-                    if (Creature* pLadyNazjarEvent = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_LADY_NAZJAR_EVENT)))
+                    if (Creature* pLadyNazjarEvent = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_LADY_NAZJAR_EVENT)))
                         pLadyNazjarEvent->AI()->DoAction(ACTION_LADY_NAZJAR_START_EVENT);
                 }
             }

@@ -38,13 +38,13 @@
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
 
-void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recvData*/)
+void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: got MSG_MOVE_WORLDPORT_ACK.");
-    HandleMoveWorldportAckOpcode();
+    HandleMoveWorldportAck();
 }
 
-void WorldSession::HandleMoveWorldportAckOpcode()
+void WorldSession::HandleMoveWorldportAck()
 {
     // ignore unexpected far teleports
     if (!GetPlayer()->IsBeingTeleportedFar())
@@ -76,7 +76,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     if (GetPlayer()->IsInWorld())
     {
-        TC_LOG_ERROR("network", "Player %s (GUID: %u) is still in world when teleported from map %s (%u) to new map %s (%u)", GetPlayer()->GetName().c_str(), GUID_LOPART(GetPlayer()->GetGUID()), oldMap->GetMapName(), oldMap->GetId(), newMap ? newMap->GetMapName() : "Unknown", loc.GetMapId());
+        TC_LOG_ERROR("network", "Player %s (GUID: %u) is still in world when teleported from map %s (%u) to new map %s (%u)", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter(), oldMap->GetMapName(), oldMap->GetId(), newMap ? newMap->GetMapName() : "Unknown", loc.GetMapId());
         oldMap->RemovePlayerFromMap(GetPlayer(), false);
     }
 
@@ -86,7 +86,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (!newMap || !newMap->CanEnter(GetPlayer()))
     {
         GetPlayer()->SetrSemaphoreTeleportForcedFar(false);
-        TC_LOG_ERROR("network", "Map %d (%s) could not be created for player %d (%s), porting player to homebind", loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str());
+        TC_LOG_ERROR("network", "Map %d (%s) could not be created for player %d (%s), porting player to homebind", loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown", GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str());
         GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
         return;
     }
@@ -109,7 +109,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (invalidZ || !GetPlayer()->GetMap()->AddPlayerToMap(GetPlayer()))
     {
         TC_LOG_ERROR("network", "WORLD: failed to teleport player %s (%d) to map %d (%s) because of unknown reason!",
-            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
+            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
         GetPlayer()->ResetMap();
         GetPlayer()->SetMap(oldMap);
         GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
@@ -152,14 +152,11 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
-    Corpse* corpse = GetPlayer()->GetCorpse();
-    if (corpse && corpse->GetType() != CORPSE_BONES && corpse->GetMapId() == GetPlayer()->GetMapId())
+    if (mEntry->IsDungeon() && !GetPlayer()->IsAlive())
+        if (GetPlayer()->GetCorpseLocation().GetMapId() == mEntry->MapID)
     {
-        if (mEntry->IsDungeon())
-        {
-            GetPlayer()->ResurrectPlayer(0.5f, false);
-            GetPlayer()->SpawnCorpseBones();
-        }
+        GetPlayer()->ResurrectPlayer(0.5f, false);
+        GetPlayer()->SpawnCorpseBones();
     }
 
     bool allowMount = !mEntry->IsDungeon() || mEntry->IsBattlegroundOrArena();
@@ -373,7 +370,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         }
 
         if (!mover->GetTransport() && !mover->GetVehicle())
-            movementInfo.transport.guid = 0;
+            movementInfo.transport.guid.Clear();
     }
     else if (plrMover && plrMover->GetTransport())                // if we were on a transport, leave
     {
@@ -566,7 +563,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
     if (GetPlayer()->IsInWorld())
     {
         if (guid != _player->GetClientMoverGuid())
-            TC_LOG_ERROR("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is " UI64FMTD " (%s - Entry: %u) and should be " UI64FMTD, uint64(guid), GetLogNameForGuid(guid), GUID_ENPART(guid), _player->GetClientMoverGuid());
+            TC_LOG_ERROR("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is " UI64FMTD " (%s - Entry: %u) and should be " UI64FMTD, guid.GetRawValue(), guid.GetTypeName(), guid.GetEntry(), _player->GetClientMoverGuid());
     }
     // Unit* newActivelyMovedUnit = ObjectAccessor::GetUnit(*_player, guid); // todo
     // _player->SetMover(newActivelyMovedUnit);

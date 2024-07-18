@@ -3331,7 +3331,7 @@ class spell_dru_shooting_stars_proc : public AuraScript
                 AddTarget(itr->GetUnitOwner());
         if (uniqueTargets.empty())
         {
-            TC_LOG_ERROR("misc", "spell_dru_shooting_stars_proc::CheckProc - Shit happened! GUID: %u", druid->GetGUIDLow());
+            TC_LOG_ERROR("misc", "spell_dru_shooting_stars_proc::CheckProc - Shit happened! GUID: %u", druid->GetGUID().GetCounter());
             return false;
         }
         size_t targetCount = uniqueTargets.size();
@@ -3949,7 +3949,7 @@ class spell_dru_feral_rage : public AuraScript
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
-        uint64 targetGuid = eventInfo.GetActionTarget()->GetGUID();
+        ObjectGuid targetGuid = eventInfo.GetActionTarget()->GetGUID();
         if (GetUnitOwner() == eventInfo.GetActionTarget())  // Savage Roar
             targetGuid = GetUnitOwner()->GetTarget();
 
@@ -4090,10 +4090,10 @@ class spell_dru_symbiosis_caster_aura : public AuraScript
     PrepareAuraScript(spell_dru_symbiosis_caster_aura);
 
     uint32 targetSpellId = 0;
-    uint64 targetGuid = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
 
 public:
-    void Bind(uint32 overrideSpellId, uint32 targetSpell, uint64 target)
+    void Bind(uint32 overrideSpellId, uint32 targetSpell, ObjectGuid target)
     {
         GetEffect(EFFECT_0)->ChangeAmount(overrideSpellId);
         targetSpellId = targetSpell;

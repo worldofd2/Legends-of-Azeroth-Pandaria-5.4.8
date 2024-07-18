@@ -52,13 +52,13 @@ void WorldSession::HandleTaxiNodeStatusQueryOpcode(WorldPacket& recvData)
     SendTaxiStatus(guid);
 }
 
-void WorldSession::SendTaxiStatus(uint64 guid)
+void WorldSession::SendTaxiStatus(ObjectGuid guid)
 {
     // cheating checks
     Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "WorldSession::SendTaxiStatus - Unit (GUID: %u) not found.", uint32(GUID_LOPART(guid)));
+        TC_LOG_DEBUG("network", "WorldSession::SendTaxiStatus - Unit (GUID: %u) not found.", guid.GetCounter());
         return;
     }
 
@@ -127,7 +127,7 @@ void WorldSession::HandleTaxiQueryAvailableNodes(WorldPacket& recvData)
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleTaxiQueryAvailableNodes - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)));
+        TC_LOG_DEBUG("network", "WORLD: HandleTaxiQueryAvailableNodes - Unit (GUID: %u) not found or you can't interact with him.", guid.GetCounter());
         return;
     }
 
@@ -146,13 +146,27 @@ void WorldSession::HandleTaxiQueryAvailableNodes(WorldPacket& recvData)
 void WorldSession::HandleEnableTaxi(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
-    recvPacket.ReadGuidMask(guid, 3, 1, 6, 0, 4, 7, 2, 5);
-    recvPacket.ReadGuidBytes(guid, 1, 6, 3, 0, 4, 5, 7, 2);
+    guid[3] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[0]);
+    recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[2]);
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "HandleEnableTaxi - Unit (GUID: %u) not found or player (GUID: %u) can't interact with him.", uint32(GUID_LOPART(guid)), GetPlayer()->GetGUIDLow());
+        TC_LOG_DEBUG("network", "HandleEnableTaxi - Unit (GUID: %u) not found or player (GUID: %u) can't interact with him.", guid.GetCounter(), GetPlayer()->GetGUID().GetCounter());
         return;
     }
     SendLearnNewTaxiNode(unit);
@@ -313,7 +327,7 @@ void WorldSession::HandleActivateTaxiExpressOpcode(WorldPacket& recvData)
     Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(Guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!npc)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiExpressOpcode - Unit (GUID: %u) not found or you can't interact with it.", uint32(GUID_LOPART(Guid)));
+        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiExpressOpcode - Unit (GUID: %u) not found or you can't interact with it.", Guid.GetCounter());
         return;
     }
 
@@ -438,7 +452,7 @@ void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recvData)
     Creature* npc = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!npc)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiOpcode - Unit (GUID: %u) not found or you can't interact with it.", uint32(GUID_LOPART(guid)));
+        TC_LOG_DEBUG("network", "WORLD: HandleActivateTaxiOpcode - Unit (GUID: %u) not found or you can't interact with it.", guid.GetCounter());
         return;
     }
 

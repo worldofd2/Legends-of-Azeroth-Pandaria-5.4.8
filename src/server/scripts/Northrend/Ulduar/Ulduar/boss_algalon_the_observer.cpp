@@ -580,7 +580,7 @@ class boss_algalon_the_observer : public CreatureScript
                 {
                     for (auto&& ref : me->getThreatManager().getOfflineContainer().getThreatList())
                     {
-                        if (IS_PLAYER_GUID(ref->getUnitGuid()))
+                        if (ref->getUnitGuid().IsPlayer())
                         {
                             if (Unit* target = ref->getTarget())
                             {
@@ -1186,10 +1186,10 @@ class go_celestial_planetarium_access : public GameObjectScript
                 if (InstanceScript* instance = me->GetInstanceScript())
                 {
                     instance->SetData(DATA_ALGALON_SUMMON_STATE, 1);
-                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_SIGILDOOR_01)))
+                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_SIGILDOOR_01)))
                         sigil->SetGoState(GO_STATE_ACTIVE);
 
-                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_SIGILDOOR_02)))
+                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_SIGILDOOR_02)))
                         sigil->SetGoState(GO_STATE_ACTIVE);
                 }
 

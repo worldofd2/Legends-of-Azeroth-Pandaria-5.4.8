@@ -79,7 +79,7 @@ public:
             _Reset();
 
             me->SetStandState(UNIT_STAND_STATE_DEAD);
-            PlayerGUID = 0;
+            PlayerGUID.Clear();
 
             HasYelled = false;
         }
@@ -226,7 +226,7 @@ public:
         }
 
         private:
-            uint64 PlayerGUID;
+            ObjectGuid PlayerGUID;
             bool HasYelled;
     };
 

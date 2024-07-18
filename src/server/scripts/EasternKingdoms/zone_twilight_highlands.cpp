@@ -148,7 +148,7 @@ enum CrucibleYells
 class dunwald_victim_credit_store
 {
 public:
-    uint64 player_guid;
+    ObjectGuid player_guid;
     int32 repeat_timer;
 };
 
@@ -183,7 +183,7 @@ struct npc_dunwald_victim : public ScriptedAI
         plrs_credited.remove_if([](dunwald_victim_credit_store const &i) { return i.repeat_timer <= 0; });
     }
 
-    uint64 player_guid;
+    ObjectGuid player_guid;
     int32 repeat_timer;
 
     private:
@@ -324,14 +324,14 @@ class npc_gurgthock_twilands : public CreatureScript
 
             TaskScheduler scheduler;
             SummonList summons;
-            uint64 championGUID;
+            ObjectGuid championGUID;
             bool hasTrialBegun;
             uint32 delay;
 
             void Reset() override
             {
                 hasTrialBegun = false;
-                championGUID  = 0;
+                championGUID = ObjectGuid::Empty;
                 delay         = 0;
                 scheduler.CancelAll();
 
@@ -342,12 +342,12 @@ class npc_gurgthock_twilands : public CreatureScript
                     itr->RemoveAurasDueToSpell(SPELL_LAVA_POOL);
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override 
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 championGUID = guid;
             }
 
-            uint64 GetGUID(int32 /*type*/) const override
+            ObjectGuid GetGUID(int32 /*type*/) const override
             {
                 return championGUID;
             }

@@ -162,7 +162,7 @@ struct advisorbase_ai : public ScriptedAI
     bool FakeDeath;
     bool m_bDoubled_Health;
     uint32 DelayRes_Timer;
-    uint64 DelayRes_Target;
+    ObjectGuid DelayRes_Target;
 
     void Reset() override
     {
@@ -174,7 +174,7 @@ struct advisorbase_ai : public ScriptedAI
 
         FakeDeath = false;
         DelayRes_Timer = 0;
-        DelayRes_Target = 0;
+        DelayRes_Target = ObjectGuid::Empty;
 
         me->SetStandState(UNIT_STAND_STATE_STAND);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -182,7 +182,7 @@ struct advisorbase_ai : public ScriptedAI
 
         //reset encounter
         if (instance && (instance->GetData(DATA_KAELTHASEVENT) == 1 || instance->GetData(DATA_KAELTHASEVENT) == 3))
-            if (Creature* Kaelthas = Unit::GetCreature(*me, instance->GetData64(DATA_KAELTHAS)))
+            if (Creature* Kaelthas = Unit::GetCreature(*me, instance->GetGuidData(DATA_KAELTHAS)))
                 Kaelthas->AI()->EnterEvadeMode();
     }
 
@@ -244,7 +244,7 @@ struct advisorbase_ai : public ScriptedAI
             me->ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, false);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->ClearAllReactives();
-            me->SetTarget(0);
+            me->SetTarget(ObjectGuid::Empty);
             me->GetMotionMaster()->Clear();
             me->GetMotionMaster()->MoveIdle();
             me->SetStandState(UNIT_STAND_STATE_DEAD);
@@ -315,7 +315,7 @@ class boss_kaelthas : public CreatureScript
 
             SummonList summons;
 
-            uint64 m_auiAdvisorGuid[MAX_ADVISORS];
+            ObjectGuid m_auiAdvisorGuid[MAX_ADVISORS];
 
             void Reset() override
             {
@@ -366,10 +366,10 @@ class boss_kaelthas : public CreatureScript
                 if (!instance)
                     return;
 
-                m_auiAdvisorGuid[0] = instance->GetData64(DATA_THALADREDTHEDARKENER);
-                m_auiAdvisorGuid[1] = instance->GetData64(DATA_LORDSANGUINAR);
-                m_auiAdvisorGuid[2] = instance->GetData64(DATA_GRANDASTROMANCERCAPERNIAN);
-                m_auiAdvisorGuid[3] = instance->GetData64(DATA_MASTERENGINEERTELONICUS);
+                m_auiAdvisorGuid[0] = instance->GetGuidData(DATA_THALADREDTHEDARKENER);
+                m_auiAdvisorGuid[1] = instance->GetGuidData(DATA_LORDSANGUINAR);
+                m_auiAdvisorGuid[2] = instance->GetGuidData(DATA_GRANDASTROMANCERCAPERNIAN);
+                m_auiAdvisorGuid[3] = instance->GetGuidData(DATA_MASTERENGINEERTELONICUS);
 
                 if (!m_auiAdvisorGuid[0] || !m_auiAdvisorGuid[1] || !m_auiAdvisorGuid[2] || !m_auiAdvisorGuid[3])
                 {

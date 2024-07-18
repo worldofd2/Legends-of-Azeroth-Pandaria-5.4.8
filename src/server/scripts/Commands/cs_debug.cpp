@@ -312,7 +312,7 @@ public:
             return false;
 
         SellResult msg = SellResult(atoi(args));
-        handler->GetSession()->GetPlayer()->SendSellError(msg, 0, 0);
+        handler->GetSession()->GetPlayer()->SendSellError(msg, 0, ObjectGuid::Empty);
         return true;
     }
 
@@ -386,7 +386,7 @@ public:
         uint32 opcode;
         parsedStream >> opcode;
 
-        WorldPacket data(Opcodes(opcode), 0);
+        WorldPacket data(opcode, 0);
 
         while (!parsedStream.eof())
         {
@@ -434,11 +434,11 @@ public:
             }
             else if (type == "appitsguid")
             {
-                data.append(unit->GetPackGUID());
+                data << unit->GetPackGUID();
             }
             else if (type == "appmyguid")
             {
-                data.append(player->GetPackGUID());
+                data << player->GetPackGUID();
             }
             else if (type == "appgoguid")
             {
@@ -450,7 +450,7 @@ public:
                     ifs.close();
                     return false;
                 }
-                data.append(obj->GetPackGUID());
+                data << obj->GetPackGUID();
             }
             else if (type == "goguid")
             {
@@ -573,7 +573,7 @@ public:
             return false;
 
         handler->PSendSysMessage("Loot recipient for creature %s (GUID %u, DB GUID %u) is %s",
-            target->GetName().c_str(), target->GetGUIDLow(), target->GetDBTableGUIDLow(),
+            target->GetName().c_str(), target->GetGUID().GetCounter(), target->GetDBTableGUIDLow(),
             target->HasLootRecipient() ? (target->GetLootRecipient() ? target->GetLootRecipient()->GetName().c_str() : "offline") : "no loot recipient");
         return true;
     }
@@ -631,10 +631,10 @@ public:
                         for (uint8 j = 0; j < bag->GetBagSize(); ++j)
                             if (Item* item2 = bag->GetItemByPos(j))
                                 if (item2->GetState() == state)
-                                    handler->PSendSysMessage("bag: 255 slot: %d guid: %d owner: %d", item2->GetSlot(), item2->GetGUIDLow(), GUID_LOPART(item2->GetOwnerGUID()));
+                                    handler->PSendSysMessage("bag: 255 slot: %d guid: %d owner: %d", item2->GetSlot(), item2->GetGUID().GetCounter(), item2->GetOwnerGUID().GetCounter());
                     }
                     else if (item->GetState() == state)
-                        handler->PSendSysMessage("bag: 255 slot: %d guid: %d owner: %d", item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()));
+                        handler->PSendSysMessage("bag: 255 slot: %d guid: %d owner: %d", item->GetSlot(), item->GetGUID().GetCounter(), item->GetOwnerGUID().GetCounter());
                 }
             }
         }
@@ -668,7 +668,7 @@ public:
                         break;
                 }
 
-                handler->PSendSysMessage("bag: %d slot: %d guid: %d - state: %s", bagSlot, item->GetSlot(), item->GetGUIDLow(), st.c_str());
+                handler->PSendSysMessage("bag: %d slot: %d guid: %d - state: %s", bagSlot, item->GetSlot(), item->GetGUID().GetCounter(), st.c_str());
             }
             if (updateQueue.empty())
                 handler->PSendSysMessage("The player's updatequeue is empty");
@@ -689,21 +689,21 @@ public:
 
                 if (item->GetSlot() != i)
                 {
-                    handler->PSendSysMessage("Item with slot %d and guid %d has an incorrect slot value: %d", i, item->GetGUIDLow(), item->GetSlot());
+                    handler->PSendSysMessage("Item with slot %d and guid %d has an incorrect slot value: %d", i, item->GetGUID().GetCounter(), item->GetSlot());
                     error = true;
                     continue;
                 }
 
                 if (item->GetOwnerGUID() != player->GetGUID())
                 {
-                    handler->PSendSysMessage("The item with slot %d and itemguid %d does have non-matching owner guid (%d) and player guid (%d) !", item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
+                    handler->PSendSysMessage("The item with slot %d and itemguid %d does have non-matching owner guid (%d) and player guid (%d) !", item->GetSlot(), item->GetGUID().GetCounter(), item->GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
                     error = true;
                     continue;
                 }
 
                 if (Bag* container = item->GetContainer())
                 {
-                    handler->PSendSysMessage("The item with slot %d and guid %d has a container (slot: %d, guid: %d) but shouldn't!", item->GetSlot(), item->GetGUIDLow(), container->GetSlot(), container->GetGUIDLow());
+                    handler->PSendSysMessage("The item with slot %d and guid %d has a container (slot: %d, guid: %d) but shouldn't!", item->GetSlot(), item->GetGUID().GetCounter(), container->GetSlot(), container->GetGUID().GetCounter());
                     error = true;
                     continue;
                 }
@@ -713,28 +713,28 @@ public:
                     uint16 qp = item->GetQueuePos();
                     if (qp > updateQueue.size())
                     {
-                        handler->PSendSysMessage("The item with slot %d and guid %d has its queuepos (%d) larger than the update queue size! ", item->GetSlot(), item->GetGUIDLow(), qp);
+                        handler->PSendSysMessage("The item with slot %d and guid %d has its queuepos (%d) larger than the update queue size! ", item->GetSlot(), item->GetGUID().GetCounter(), qp);
                         error = true;
                         continue;
                     }
 
                     if (updateQueue[qp] == NULL)
                     {
-                        handler->PSendSysMessage("The item with slot %d and guid %d has its queuepos (%d) pointing to NULL in the queue!", item->GetSlot(), item->GetGUIDLow(), qp);
+                        handler->PSendSysMessage("The item with slot %d and guid %d has its queuepos (%d) pointing to NULL in the queue!", item->GetSlot(), item->GetGUID().GetCounter(), qp);
                         error = true;
                         continue;
                     }
 
                     if (updateQueue[qp] != item)
                     {
-                        handler->PSendSysMessage("The item with slot %d and guid %d has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", item->GetSlot(), item->GetGUIDLow(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUIDLow());
+                        handler->PSendSysMessage("The item with slot %d and guid %d has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", item->GetSlot(), item->GetGUID().GetCounter(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUID().GetCounter());
                         error = true;
                         continue;
                     }
                 }
                 else if (item->GetState() != ITEM_UNCHANGED)
                 {
-                    handler->PSendSysMessage("The item with slot %d and guid %d is not in queue but should be (state: %d)!", item->GetSlot(), item->GetGUIDLow(), item->GetState());
+                    handler->PSendSysMessage("The item with slot %d and guid %d is not in queue but should be (state: %d)!", item->GetSlot(), item->GetGUID().GetCounter(), item->GetState());
                     error = true;
                     continue;
                 }
@@ -749,14 +749,14 @@ public:
 
                         if (item2->GetSlot() != j)
                         {
-                            handler->PSendSysMessage("The item in bag %d and slot %d (guid: %d) has an incorrect slot value: %d", bag->GetSlot(), j, item2->GetGUIDLow(), item2->GetSlot());
+                            handler->PSendSysMessage("The item in bag %d and slot %d (guid: %d) has an incorrect slot value: %d", bag->GetSlot(), j, item2->GetGUID().GetCounter(), item2->GetSlot());
                             error = true;
                             continue;
                         }
 
                         if (item2->GetOwnerGUID() != player->GetGUID())
                         {
-                            handler->PSendSysMessage("The item in bag %d at slot %d and with itemguid %d, the owner's guid (%d) and the player's guid (%d) don't match!", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow(), GUID_LOPART(item2->GetOwnerGUID()), player->GetGUIDLow());
+                            handler->PSendSysMessage("The item in bag %d at slot %d and with itemguid %d, the owner's guid (%d) and the player's guid (%d) don't match!", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter(), item2->GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
                             error = true;
                             continue;
                         }
@@ -764,14 +764,14 @@ public:
                         Bag* container = item2->GetContainer();
                         if (!container)
                         {
-                            handler->PSendSysMessage("The item in bag %d at slot %d with guid %d has no container!", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow());
+                            handler->PSendSysMessage("The item in bag %d at slot %d with guid %d has no container!", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter());
                             error = true;
                             continue;
                         }
 
                         if (container != bag)
                         {
-                            handler->PSendSysMessage("The item in bag %d at slot %d with guid %d has a different container(slot %d guid %d)!", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow(), container->GetSlot(), container->GetGUIDLow());
+                            handler->PSendSysMessage("The item in bag %d at slot %d with guid %d has a different container(slot %d guid %d)!", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter(), container->GetSlot(), container->GetGUID().GetCounter());
                             error = true;
                             continue;
                         }
@@ -781,28 +781,28 @@ public:
                             uint16 qp = item2->GetQueuePos();
                             if (qp > updateQueue.size())
                             {
-                                handler->PSendSysMessage("The item in bag %d at slot %d having guid %d has a queuepos (%d) larger than the update queue size! ", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow(), qp);
+                                handler->PSendSysMessage("The item in bag %d at slot %d having guid %d has a queuepos (%d) larger than the update queue size! ", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter(), qp);
                                 error = true;
                                 continue;
                             }
 
                             if (updateQueue[qp] == NULL)
                             {
-                                handler->PSendSysMessage("The item in bag %d at slot %d having guid %d has a queuepos (%d) that points to NULL in the queue!", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow(), qp);
+                                handler->PSendSysMessage("The item in bag %d at slot %d having guid %d has a queuepos (%d) that points to NULL in the queue!", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter(), qp);
                                 error = true;
                                 continue;
                             }
 
                             if (updateQueue[qp] != item2)
                             {
-                                handler->PSendSysMessage("The item in bag %d at slot %d having guid %d has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUIDLow());
+                                handler->PSendSysMessage("The item in bag %d at slot %d having guid %d has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUID().GetCounter());
                                 error = true;
                                 continue;
                             }
                         }
                         else if (item2->GetState() != ITEM_UNCHANGED)
                         {
-                            handler->PSendSysMessage("The item in bag %d at slot %d having guid %d is not in queue but should be (state: %d)!", bag->GetSlot(), item2->GetSlot(), item2->GetGUIDLow(), item2->GetState());
+                            handler->PSendSysMessage("The item in bag %d at slot %d having guid %d is not in queue but should be (state: %d)!", bag->GetSlot(), item2->GetSlot(), item2->GetGUID().GetCounter(), item2->GetState());
                             error = true;
                             continue;
                         }
@@ -818,14 +818,14 @@ public:
 
                 if (item->GetOwnerGUID() != player->GetGUID())
                 {
-                    handler->PSendSysMessage("queue(%lu): For the item with guid %d, the owner's guid (%d) and the player's guid (%d) don't match!", i, item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
+                    handler->PSendSysMessage("queue(%lu): For the item with guid %d, the owner's guid (%d) and the player's guid (%d) don't match!", i, item->GetGUID().GetCounter(), item->GetOwnerGUID().GetCounter(), player->GetGUID().GetCounter());
                     error = true;
                     continue;
                 }
 
                 if (item->GetQueuePos() != i)
                 {
-                    handler->PSendSysMessage("queue(%lu): For the item with guid %d, the queuepos doesn't match it's position in the queue!", i, item->GetGUIDLow());
+                    handler->PSendSysMessage("queue(%lu): For the item with guid %d, the queuepos doesn't match it's position in the queue!", i, item->GetGUID().GetCounter());
                     error = true;
                     continue;
                 }
@@ -837,14 +837,14 @@ public:
 
                 if (test == NULL)
                 {
-                    handler->PSendSysMessage("queue(%lu): The bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have any item at that position!", i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
+                    handler->PSendSysMessage("queue(%lu): The bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have any item at that position!", i, item->GetBagSlot(), item->GetSlot(), item->GetGUID().GetCounter());
                     error = true;
                     continue;
                 }
 
                 if (test != item)
                 {
-                    handler->PSendSysMessage("queue(%lu): The bag(%d) and slot(%d) values for the item with guid %d are incorrect, an item which guid is %d is there instead!", i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
+                    handler->PSendSysMessage("queue(%lu): The bag(%d) and slot(%d) values for the item with guid %d are incorrect, an item which guid is %d is there instead!", i, item->GetBagSlot(), item->GetSlot(), item->GetGUID().GetCounter(), test->GetGUID().GetCounter());
                     error = true;
                     continue;
                 }
@@ -883,14 +883,14 @@ public:
         ThreatContainer::StorageType const &threatList = target->getThreatManager().getThreatList();
         ThreatContainer::StorageType::const_iterator itr;
         uint32 count = 0;
-        handler->PSendSysMessage("Threat list of %s (guid %u)", target->GetName().c_str(), target->GetGUIDLow());
+        handler->PSendSysMessage("Threat list of %s (guid %u)", target->GetName().c_str(), target->GetGUID().GetCounter());
         for (itr = threatList.begin(); itr != threatList.end(); ++itr)
         {
             Unit* unit = (*itr)->getTarget();
             if (!unit)
                 continue;
             ++count;
-            handler->PSendSysMessage("   %u.   %s   (guid %u)  - threat %f", count, unit->GetName().c_str(), unit->GetGUIDLow(), (*itr)->getThreat());
+            handler->PSendSysMessage("   %u.   %s   (guid %u)  - threat %f", count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), (*itr)->getThreat());
         }
         handler->SendSysMessage("End of threat list.");
         return true;
@@ -903,13 +903,13 @@ public:
             target = handler->GetSession()->GetPlayer();
         HostileReference* ref = target->getHostileRefManager().getFirst();
         uint32 count = 0;
-        handler->PSendSysMessage("Hostil reference list of %s (guid %u)", target->GetName().c_str(), target->GetGUIDLow());
+        handler->PSendSysMessage("Hostil reference list of %s (guid %u)", target->GetName().c_str(), target->GetGUID().GetCounter());
         while (ref)
         {
             if (Unit* unit = ref->GetSource()->GetOwner())
             {
                 ++count;
-                handler->PSendSysMessage("   %u.   %s   (guid %u)  - threat %f", count, unit->GetName().c_str(), unit->GetGUIDLow(), ref->getThreat());
+                handler->PSendSysMessage("   %u.   %s   (guid %u)  - threat %f", count, unit->GetName().c_str(), unit->GetGUID().GetCounter(), ref->getThreat());
             }
             ref = ref->next();
         }
@@ -1006,7 +1006,7 @@ public:
 
         Map* map = handler->GetSession()->GetPlayer()->GetMap();
 
-        if (!v->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_VEHICLE), map, handler->GetSession()->GetPlayer()->GetPhaseMask(), entry, id, handler->GetSession()->GetPlayer()->GetTeam(), x, y, z, o))
+        if (!v->Create(map->GenerateLowGuid<HighGuid::Vehicle>(), map, handler->GetSession()->GetPlayer()->GetPhaseMask(), entry, id, handler->GetSession()->GetPlayer()->GetTeam(), x, y, z, o))
         {
             delete v;
             return false;
@@ -1068,7 +1068,7 @@ public:
         uint32 guid = (uint32)atoi(e);
         uint32 index = (uint32)atoi(f);
 
-        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
+        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(ObjectGuid(HighGuid::Item, guid));
 
         if (!i)
             return false;
@@ -1099,7 +1099,7 @@ public:
         uint32 index = (uint32)atoi(f);
         uint32 value = (uint32)atoi(g);
 
-        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
+        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(ObjectGuid(HighGuid::Item, guid));
 
         if (!i)
             return false;
@@ -1123,7 +1123,7 @@ public:
 
         uint32 guid = (uint32)atoi(e);
 
-        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
+        Item* i = handler->GetSession()->GetPlayer()->GetItemByGuid(ObjectGuid(HighGuid::Item, guid));
 
         if (!i)
             return false;
@@ -1148,7 +1148,7 @@ public:
     static bool HandleDebugLoSCommand(ChatHandler* handler, char const* /*args*/)
     {
         if (Unit* unit = handler->getSelectedUnit())
-            handler->PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUIDLow(), handler->GetSession()->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
+            handler->PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUID().GetCounter(), handler->GetSession()->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
         return true;
     }
 
@@ -1202,12 +1202,12 @@ public:
             return false;
         }
 
-        uint64 guid = target->GetGUID();
+        ObjectGuid guid = target->GetGUID();
 
         uint32 opcode = (uint32)atoi(x);
         if (opcode >= target->GetValuesCount())
         {
-            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, GUID_LOPART(guid), target->GetValuesCount());
+            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, guid.GetCounter(), target->GetValuesCount());
             return false;
         }
 
@@ -1219,13 +1219,13 @@ public:
         {
             uint32 value = (uint32)atoi(y);
             target->SetUInt32Value(opcode, value);
-            handler->PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), opcode, value);
+            handler->PSendSysMessage(LANG_SET_UINT_FIELD, guid.GetCounter(), opcode, value);
         }
         else
         {
             float value = (float)atof(y);
             target->SetFloatValue(opcode, value);
-            handler->PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), opcode, value);
+            handler->PSendSysMessage(LANG_SET_FLOAT_FIELD, guid.GetCounter(), opcode, value);
         }
 
         return true;
@@ -1250,12 +1250,12 @@ public:
             return false;
         }
 
-        uint64 guid = target->GetGUID();
+        ObjectGuid guid = target->GetGUID();
 
         uint32 opcode = (uint32)atoi(x);
         if (opcode >= target->GetValuesCount())
         {
-            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, GUID_LOPART(guid), target->GetValuesCount());
+            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, guid.GetCounter(), target->GetValuesCount());
             return false;
         }
 
@@ -1266,12 +1266,12 @@ public:
         if (isInt32)
         {
             uint32 value = target->GetUInt32Value(opcode);
-            handler->PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), opcode, value);
+            handler->PSendSysMessage(LANG_GET_UINT_FIELD, guid.GetCounter(), opcode, value);
         }
         else
         {
             float value = target->GetFloatValue(opcode);
-            handler->PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), opcode, value);
+            handler->PSendSysMessage(LANG_GET_FLOAT_FIELD, guid.GetCounter(), opcode, value);
         }
 
         return true;
@@ -1293,7 +1293,7 @@ public:
 
         if (opcode >= handler->GetSession()->GetPlayer()->GetValuesCount())
         {
-            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, handler->GetSession()->GetPlayer()->GetGUIDLow(), handler->GetSession()->GetPlayer()->GetValuesCount());
+            handler->PSendSysMessage(LANG_TOO_BIG_INDEX, opcode, handler->GetSession()->GetPlayer()->GetGUID().GetCounter(), handler->GetSession()->GetPlayer()->GetValuesCount());
             return false;
         }
 
@@ -1343,13 +1343,13 @@ public:
         {
             value = unit->GetUInt32Value(updateIndex);
 
-            handler->PSendSysMessage(LANG_UPDATE, unit->GetGUIDLow(), updateIndex, value);
+            handler->PSendSysMessage(LANG_UPDATE, unit->GetGUID().GetCounter(), updateIndex, value);
             return true;
         }
 
         value = atoi(val);
 
-        handler->PSendSysMessage(LANG_UPDATE_CHANGE, unit->GetGUIDLow(), updateIndex, value);
+        handler->PSendSysMessage(LANG_UPDATE_CHANGE, unit->GetGUID().GetCounter(), updateIndex, value);
 
         unit->SetUInt32Value(updateIndex, value);
 
@@ -1609,7 +1609,7 @@ public:
             return false;
 
         uint32 vignetteID = atoi(vignetteIDStr);
-        uint64 vignetteGUID = MAKE_NEW_GUID(selectedUnit->GetGUIDLow(), vignetteID, HIGHGUID_VIGNETTE);
+        ObjectGuid vignetteGUID(HighGuid::Vignette, vignetteID, selectedUnit->GetGUID().GetCounter());
 
         ByteBuffer playersAddBuffer, objectAddBuffer;
         WorldPacket data(SMSG_VIGNETTE_UPDATE);
@@ -1625,20 +1625,46 @@ public:
 
         data.WriteBits(1, 24);                                // Added count
         {
-            data.WriteGuidMask(vignetteGUID, 1, 4, 3, 6, 2, 0, 7, 5);
-            playersAddBuffer.WriteGuidBytes(vignetteGUID, 7, 1, 0, 6, 2, 3, 4, 5);
+            data.WriteBit(vignetteGUID[1]);
+            data.WriteBit(vignetteGUID[4]);
+            data.WriteBit(vignetteGUID[3]);
+            data.WriteBit(vignetteGUID[6]);
+            data.WriteBit(vignetteGUID[2]);
+            data.WriteBit(vignetteGUID[0]);
+            data.WriteBit(vignetteGUID[7]);
+            data.WriteBit(vignetteGUID[5]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[7]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[1]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[0]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[6]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[2]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[3]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[4]);
+            playersAddBuffer.WriteByteSeq(vignetteGUID[5]);
         }
 
         data.WriteBits(1, 20);
         {
-            data.WriteGuidMask(vignetteGUID, 5, 3, 7, 4, 2, 0, 6, 1);
-            objectAddBuffer.WriteGuidBytes(vignetteGUID, 2, 5);
+            data.WriteBit(vignetteGUID[5]);
+            data.WriteBit(vignetteGUID[3]);
+            data.WriteBit(vignetteGUID[7]);
+            data.WriteBit(vignetteGUID[4]);
+            data.WriteBit(vignetteGUID[2]);
+            data.WriteBit(vignetteGUID[0]);
+            data.WriteBit(vignetteGUID[6]);
+            data.WriteBit(vignetteGUID[1]);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[2]);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[5]);
             objectAddBuffer << float(selectedUnit->GetPositionZ());
             objectAddBuffer << uint32(vignetteID);
             objectAddBuffer << float(selectedUnit->GetPositionY());
-            objectAddBuffer.WriteGuidBytes(vignetteGUID, 1);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[1]);
             objectAddBuffer << float(selectedUnit->GetPositionX());
-            objectAddBuffer.WriteGuidBytes(vignetteGUID, 6, 7, 4, 3, 0);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[6]);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[7]);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[4]);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[3]);
+            objectAddBuffer.WriteByteSeq(vignetteGUID[0]);
         }
 
         data.WriteBits(0, 20);                                // UpdateDataCount

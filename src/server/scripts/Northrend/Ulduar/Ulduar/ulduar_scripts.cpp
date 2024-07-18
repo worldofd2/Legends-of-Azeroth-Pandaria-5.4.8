@@ -194,11 +194,11 @@ class npc_ulduar_warmage : public CreatureScript
                 SetCombatMovement(false);
             }
 
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
 
             void Reset() override
             {
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
             }
 
             void UpdateAI(uint32 /*diff*/) override
@@ -402,7 +402,7 @@ class npc_brann_bronzebeard : public CreatureScript
                 steppingBrann++;
             }
 
-            void SetGUID(uint64 guid, int32 type) override
+            void SetGUID(ObjectGuid guid, int32 type) override
             {
                 switch (type)
                 {
@@ -469,7 +469,7 @@ class npc_brann_bronzebeard : public CreatureScript
         private:
             uint32 stepTimer;
             uint32 steppingBrann;
-            uint64 playerGUID = 0;
+            ObjectGuid playerGUID = ObjectGuid::Empty;
             bool loaded;
             InstanceScript* instance;
         };
@@ -603,7 +603,7 @@ class npc_ulduar_lorekeeper : public CreatureScript
                 instance = me->GetInstanceScript();
                 introStep = 0;
                 event = false;
-                playerGUID = 0;
+                playerGUID = ObjectGuid::Empty;
             }
 
             void DoAction(int32 action) override
@@ -639,7 +639,7 @@ class npc_ulduar_lorekeeper : public CreatureScript
                 {
                     instance->SetData(DATA_LEVI_HARD_MODE, true);
 
-                    if (Creature* leviathan = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_LEVIATHAN)))
+                    if (Creature* leviathan = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_LEVIATHAN)))
                         leviathan->AI()->DoAction(ACTION_START_HARD_MODE);
 
                     hardStep = 1;
@@ -764,7 +764,7 @@ class npc_ulduar_lorekeeper : public CreatureScript
                 }
             }
 
-            void HardMode(uint64 guid)
+            void HardMode(ObjectGuid guid)
             {
                 if (!hardStep)
                     return;
@@ -809,7 +809,7 @@ class npc_ulduar_lorekeeper : public CreatureScript
                         {
                             if (Creature* Keeper = me->FindNearestCreature(NPC_LOREKEEPER, 200.0f, true))
                             {
-                                dellorah->SetTarget(0);
+                                dellorah->SetTarget(ObjectGuid::Empty);
                                 dellorah->AI()->DoAction(ACTION_DELLORAH_LEAVE);
                             }
                         }
@@ -852,7 +852,7 @@ class npc_ulduar_lorekeeper : public CreatureScript
             uint32 introStep;
             uint32 hardTimer;
             uint32 hardStep;
-            uint64 playerGUID;
+            ObjectGuid playerGUID;
             bool event;
             InstanceScript* instance;
         };
@@ -1332,7 +1332,7 @@ class npc_storm_tempered_keeper : public CreatureScript
 
         private:
             EventMap events;
-            uint64 companionGUID = 0;
+            ObjectGuid companionGUID = ObjectGuid::Empty;
 
             bool IsPrimary() const { return me->GetEntry() == NPC_STORM_TEMPERED_KEEPER_1; }
             bool IsSecondary() const { return me->GetEntry() == NPC_STORM_TEMPERED_KEEPER_2; }
@@ -1412,7 +1412,7 @@ class npc_charged_sphere : public CreatureScript
                 targetPosition.Relocate(0.0f, 0.0f, 0.0f);
             }
 
-            void SetGUID(uint64 guid, int32 type) override
+            void SetGUID(ObjectGuid guid, int32 type) override
             {
                 targetGUID = guid;
                 events.ScheduleEvent(EVENT_UPDATE_MOVEMENT, 1);
@@ -1456,7 +1456,7 @@ class npc_charged_sphere : public CreatureScript
 
         private:
             EventMap events;
-            uint64 targetGUID = 0;
+            ObjectGuid targetGUID = ObjectGuid::Empty;
             Position targetPosition;
         };
 

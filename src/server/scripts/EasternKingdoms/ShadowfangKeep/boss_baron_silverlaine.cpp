@@ -210,7 +210,7 @@ class npc_silverlaine_worgen : public CreatureScript
             void IsSummonedBy(Unit* /*summoner*/) override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* _silverlaine = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SILVERLAINE)))
+                    if (Creature* _silverlaine = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SILVERLAINE)))
                         if (Unit* target = _silverlaine->AI()->SelectTarget(SELECT_TARGET_RANDOM))
                             AttackStart(target);
 
@@ -328,7 +328,7 @@ class npc_silverlaine_worgen_spirit : public CreatureScript
                 }
 
                 if (instance && m_spell)
-                    if (Creature* m_silverlaine = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SILVERLAINE)))
+                    if (Creature* m_silverlaine = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SILVERLAINE)))
                         m_silverlaine->CastSpell(me, m_spell, false);
             }
         };

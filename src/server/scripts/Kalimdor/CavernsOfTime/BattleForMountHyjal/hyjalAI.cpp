@@ -327,7 +327,7 @@ hyjalAI::hyjalAI(Creature* creature) : npc_escortAI(creature), Summons(me)
     VeinsSpawned[0] = false;
     VeinsSpawned[1] = false;
     for (uint8 i=0; i<14; ++i)
-        VeinGUID[i] = 0;
+        VeinGUID[i] = ObjectGuid::Empty;
     InfernalCount = 0;
     TeleportTimer = 1000;
     Overrun = false;
@@ -358,9 +358,9 @@ void hyjalAI::Reset()
     IsDummy = false;
     me->setActive(true);
     // GUIDs
-    PlayerGUID = 0;
-    BossGUID[0] = 0;
-    BossGUID[1] = 0;
+    PlayerGUID = ObjectGuid::Empty;
+    BossGUID[0] = ObjectGuid::Empty;
+    BossGUID[1] = ObjectGuid::Empty;
 
     // Timers
     NextWaveTimer = 10000;
@@ -691,7 +691,7 @@ void hyjalAI::DeSpawnVeins()
         return;
     if (Faction == 1)
     {
-        Creature* unit=Unit::GetCreature((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+        Creature* unit=Unit::GetCreature((*me), instance->GetGuidData(DATA_JAINAPROUDMOORE));
         if (!unit)return;
         hyjalAI* ai = CAST_AI(hyjalAI, unit->AI());
         if (!ai)return;
@@ -702,7 +702,7 @@ void hyjalAI::DeSpawnVeins()
         }
     } else if (Faction)
     {
-        Creature* unit=Unit::GetCreature((*me), instance->GetData64(DATA_THRALL));
+        Creature* unit=Unit::GetCreature((*me), instance->GetGuidData(DATA_THRALL));
         if (!unit)return;
         hyjalAI* ai = CAST_AI(hyjalAI, unit->AI());
         if (!ai)return;
@@ -846,7 +846,7 @@ void hyjalAI::UpdateAI(uint32 diff)
                     EventBegun = false;
                     CheckTimer = 0;
                     me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                    BossGUID[i] = 0;
+                    BossGUID[i] = ObjectGuid::Empty;
                     if (instance)
                         instance->DoUpdateWorldState(WORLD_STATE_ENEMY, 0); // Reset world state for enemies to disable it
                 }

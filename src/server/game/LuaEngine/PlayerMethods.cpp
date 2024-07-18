@@ -45,7 +45,7 @@ namespace LuaPlayer
 
         target->SetSummonPoint(map, x, y, z);
         WorldPacket data(SMSG_SUMMON_REQUEST, 8 + 4 + 4);
-        data << uint64(player->GetGUIDLow());
+        data << uint64(player->GetGUID().GetCounter());
         data << uint32(zoneId);
         data << uint32(delay ? delay* IN_MILLISECONDS : MAX_PLAYER_SUMMON_DELAY * IN_MILLISECONDS);
         target->GetSession()->SendPacket(&data);
@@ -89,7 +89,7 @@ namespace LuaPlayer
         uint32 spell = luaL_checkunsigned(L, 1);
         WorldObject* caster = sEluna->CHECK_WORLDOBJECT(L, 2);
 
-        sEluna->Push(L, player->HasAura(spell, caster ? caster->GetGUIDLow() : 0));
+        sEluna->Push(L, player->HasAura(spell, caster ? caster->GetGUID().GetCounter() : 0));
         return 1;
     }
 
@@ -127,7 +127,7 @@ namespace LuaPlayer
     {
         Creature* creature = sEluna->CHECK_CREATURE(L, 1);
 
-        uint64 guid = creature ? creature->GetGUIDLow() : player->GetGUIDLow();
+        uint64 guid = creature ? creature->GetGUID().GetCounter() : player->GetGUID().GetCounter();
 
         AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(player->GetFaction());
         if (!ahEntry)
@@ -147,7 +147,7 @@ namespace LuaPlayer
         if (!object)
             return 0;
         WorldPacket data(SMSG_SHOW_MAILBOX, 8);
-        data << uint64(object->GetGUIDLow());
+        data << uint64(object->GetGUID().GetCounter());
         player->GetSession()->HandleGetMailList(data);
         return 0;
     }
@@ -979,7 +979,7 @@ namespace LuaPlayer
     int KillGOCredit(lua_State* L, Player* player)
     {
         uint32 entry = luaL_checkunsigned(L, 1);
-        uint64 guid = sEluna->CHECK_ULONG(L, 2);
+        ObjectGuid guid(uint64(sEluna->CHECK_ULONG(L, 2)));
         player->KillCreditGO(entry, guid);
         return 0;
     }
@@ -994,7 +994,7 @@ namespace LuaPlayer
     {
         uint32 entry = luaL_checkunsigned(L, 1);
 
-        player->KilledMonsterCredit(entry, 0);
+        player->KilledMonsterCredit(entry, ObjectGuid::Empty);
         return 0;
     }
 
@@ -1159,7 +1159,7 @@ namespace LuaPlayer
     {
         std::string text = luaL_checkstring(L, 1);
         uint32 lang = luaL_checkunsigned(L, 2);
-        uint64 guid = sEluna->CHECK_ULONG(L, 3);
+        ObjectGuid guid(uint64(sEluna->CHECK_ULONG(L, 3)));
 
         player->Whisper(text, lang, guid);
         return 0;
@@ -1970,7 +1970,7 @@ namespace LuaPlayer
         WorldPacket* data = sEluna->CHECK_PACKET(L, 1);
         bool ignorePlayersInBg = luaL_optbool(L, 2, false);
         if (data && player->GetGroup())
-            player->GetGroup()->BroadcastPacket(data, ignorePlayersInBg, -1, player->GetGUIDLow());
+            player->GetGroup()->BroadcastPacket(data, ignorePlayersInBg, -1, player->GetGUID());
         return 0;
     }
 

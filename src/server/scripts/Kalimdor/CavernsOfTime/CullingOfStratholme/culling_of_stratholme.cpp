@@ -242,7 +242,7 @@ class npc_arthas : public CreatureScript
                 case GOSSIP_ACTION_INFO_DEF+1:
                     if (pAI->respawned)
                     {
-                        pAI->Start(true, true, 0, 0, false, false);
+                        pAI->Start(true, true, ObjectGuid::Empty, 0, false, false);
                         pAI->SetNextWaypoint(9, false);
                         pAI->respawned = false;
                     }
@@ -256,7 +256,7 @@ class npc_arthas : public CreatureScript
                 case GOSSIP_ACTION_INFO_DEF+3:
                     if (pAI->respawned)
                     {
-                        pAI->Start(true, true, 0, 0, false, false);
+                        pAI->Start(true, true, ObjectGuid::Empty, 0, false, false);
                         pAI->SetNextWaypoint(21, false);
                         pAI->respawned = false;
                     }
@@ -270,7 +270,7 @@ class npc_arthas : public CreatureScript
                 case GOSSIP_ACTION_INFO_DEF+5:
                     if (pAI->respawned)
                     {
-                        pAI->Start(true, true, 0, 0, false, false);
+                        pAI->Start(true, true, ObjectGuid::Empty, 0, false, false);
                         pAI->respawned = false;
                         pAI->SetNextWaypoint(46, false);
                     }
@@ -366,39 +366,39 @@ class npc_arthas : public CreatureScript
             uint32 uiWave;
             uint32 WavesCounter;
 
-            uint64 uiUtherGUID;
-            uint64 uiJainaGUID;
-            uint64 uiCitymenGUID[2];
-            uint64 uiWaveGUID[ENCOUNTER_WAVES_MAX_SPAWNS];
-            uint64 uiInfiniteDraconianGUID[ENCOUNTER_DRACONIAN_NUMBER];
-            uint64 uiStalkerGUID;
+            ObjectGuid uiUtherGUID;
+            ObjectGuid uiJainaGUID;
+            ObjectGuid uiCitymenGUID[2];
+            ObjectGuid uiWaveGUID[ENCOUNTER_WAVES_MAX_SPAWNS];
+            ObjectGuid uiInfiniteDraconianGUID[ENCOUNTER_DRACONIAN_NUMBER];
+            ObjectGuid uiStalkerGUID;
 
-            uint64 uiBossGUID; //uiMeathookGUID || uiSalrammGUID
-            uint64 uiEpochGUID;
-            uint64 uiMalganisGUID;
-            uint64 uiInfiniteGUID;
+            ObjectGuid uiBossGUID; //uiMeathookGUID || uiSalrammGUID
+            ObjectGuid uiEpochGUID;
+            ObjectGuid uiMalganisGUID;
+            ObjectGuid uiInfiniteGUID;
 
             uint32 uiExorcismTimer;
 
             void Reset() override
             {
-                uiUtherGUID = 0;
-                uiJainaGUID = 0;
+                uiUtherGUID = ObjectGuid::Empty;
+                uiJainaGUID = ObjectGuid::Empty;
 
                 for (uint8 i = 0; i < 2; ++i)
-                    uiCitymenGUID[i] = 0;
+                    uiCitymenGUID[i] = ObjectGuid::Empty;
 
                 for (uint8 i = 0; i < ENCOUNTER_WAVES_MAX_SPAWNS; ++i)
-                    uiWaveGUID[i] = 0;
+                    uiWaveGUID[i] = ObjectGuid::Empty;
 
                 for (uint8 i = 0; i < ENCOUNTER_DRACONIAN_NUMBER; ++i)
-                    uiInfiniteDraconianGUID[i] = 0;
+                    uiInfiniteDraconianGUID[i] = ObjectGuid::Empty;
 
-                uiStalkerGUID = 0;
-                uiBossGUID = 0;
-                uiEpochGUID = 0;
-                uiMalganisGUID = 0;
-                uiInfiniteGUID = 0;
+                uiStalkerGUID = ObjectGuid::Empty;
+                uiBossGUID = ObjectGuid::Empty;
+                uiEpochGUID = ObjectGuid::Empty;
+                uiMalganisGUID = ObjectGuid::Empty;
+                uiInfiniteGUID = ObjectGuid::Empty;
                 WavesCounter = 0;
 
                 if (instance) {
@@ -431,7 +431,7 @@ class npc_arthas : public CreatureScript
                     instance->SetData(DATA_ARTHAS_EVENT, FAIL);
             }
 
-            void SpawnTimeRift(uint32 timeRiftID, uint64* guidVector)
+            void SpawnTimeRift(uint32 timeRiftID, ObjectGuid* guidVector)
             {
                 me->SummonCreature((uint32)RiftAndSpawnsLocations[timeRiftID][0], RiftAndSpawnsLocations[timeRiftID][1], RiftAndSpawnsLocations[timeRiftID][2], RiftAndSpawnsLocations[timeRiftID][3], RiftAndSpawnsLocations[timeRiftID][4], TEMPSUMMON_TIMED_DESPAWN, 11000);
 
@@ -455,7 +455,7 @@ class npc_arthas : public CreatureScript
                 }
             }
 
-            void SpawnWaveGroup(uint32 waveID, uint64* guidVector)
+            void SpawnWaveGroup(uint32 waveID, ObjectGuid* guidVector)
             {
                 for (uint32 i = 0; i < ENCOUNTER_WAVES_MAX_SPAWNS; ++i)
                 {
@@ -570,7 +570,7 @@ class npc_arthas : public CreatureScript
                         break;
                     case 36:
                         if (instance)
-                            if (GameObject* pGate = instance->instance->GetGameObject(instance->GetData64(DATA_SHKAF_GATE)))
+                            if (GameObject* pGate = instance->instance->GetGameObject(instance->GetGuidData(DATA_SHKAF_GATE)))
                                 pGate->SetGoState(GO_STATE_ACTIVE);
                         SetRun(true);
                         break;
@@ -736,7 +736,7 @@ class npc_arthas : public CreatureScript
                             case 21:
                                 SetEscortPaused(false);
                                 bStepping = false;
-                                me->SetTarget(0);
+                                me->SetTarget(ObjectGuid::Empty);
                                 JumpToNextStep(0);
                                 break;
                             // After waypoint 3
@@ -756,7 +756,7 @@ class npc_arthas : public CreatureScript
                                 if (Creature* pUther = Unit::GetCreature(*me, uiUtherGUID))
                                     pUther->DisappearAndDie();
 
-                                me->SetTarget(0);
+                                me->SetTarget(ObjectGuid::Empty);
                                 JumpToNextStep(0);
                                 break;
                             // After Gossip 1 (waypoint 8)
@@ -776,7 +776,7 @@ class npc_arthas : public CreatureScript
                                 SetEscortPaused(false);
                                 bStepping = false;
                                 SetRun(false);
-                                me->SetTarget(0);
+                                me->SetTarget(ObjectGuid::Empty);
                                 JumpToNextStep(0);
                                 break;
                             // After waypoint 9
@@ -1181,7 +1181,7 @@ class npc_arthas : public CreatureScript
                                     pMalganis->SetReactState(REACT_PASSIVE);
                                 }
                                 if (instance)
-                                    if (GameObject* pGate = instance->instance->GetGameObject(instance->GetData64(DATA_MAL_GANIS_GATE_1)))
+                                    if (GameObject* pGate = instance->instance->GetGameObject(instance->GetGuidData(DATA_MAL_GANIS_GATE_1)))
                                         pGate->SetGoState(GO_STATE_ACTIVE);
                                 SetHoldState(false);
                                 bStepping = false;
@@ -1226,7 +1226,7 @@ class npc_arthas : public CreatureScript
                                 if (instance)
                                 {
                                     instance->SetData(DATA_ARTHAS_EVENT, DONE); // Rewards: Achiev & Chest ;D
-                                    me->SetTarget(instance->GetData64(DATA_MAL_GANIS_GATE_2)); // Look behind
+                                    me->SetTarget(instance->GetGuidData(DATA_MAL_GANIS_GATE_2)); // Look behind
                                 }
                                 Talk(SAY_PHASE504);
                                 bStepping = false;
@@ -1267,7 +1267,7 @@ class npc_arthas : public CreatureScript
 
             void SendCrierWarning(uint8 waveNumber)
             {
-                if (Creature* crier = me->GetCreature(*me, instance->GetData64(DATA_CRIER)))
+                if (Creature* crier = me->GetCreature(*me, instance->GetGuidData(DATA_CRIER)))
                 {
                     int32 textId = -1;
                     switch (waveNumber)

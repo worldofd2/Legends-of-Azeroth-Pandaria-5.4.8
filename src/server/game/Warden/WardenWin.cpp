@@ -128,7 +128,7 @@ void WardenWin::RequestData(WardenRequestContext* context)
     if (context)
         _responseReceiverGUID = context->ResponseReceiverGUID;
     else if (!_customChecks)
-        _responseReceiverGUID = 0;
+        _responseReceiverGUID.Clear();
 
     if (context)
         _customChecks = context->CheckCount;
@@ -149,7 +149,7 @@ void WardenWin::RequestData(WardenRequestContext* context)
         if (_memChecksTodo.empty() && _otherChecksTodo.empty())
         {
             _customChecks = 0;
-            _responseReceiverGUID = 0;
+            _responseReceiverGUID.Clear();
         }
 
         // If all checks were done, fill the todo list again
@@ -345,7 +345,7 @@ void WardenWin::RequestData(WardenRequestContext* context)
     TC_LOG_DEBUG("warden", "%s", stream.str().c_str());
 
     if (_responseReceiverGUID)
-        if (Player* receiver = ObjectAccessor::FindPlayerInOrOutOfWorld(_responseReceiverGUID))
+        if (Player* receiver = ObjectAccessor::FindPlayer(_responseReceiverGUID))
             ChatHandler(receiver->GetSession()).SendSysMessage(stream.str().c_str());
 }
 
@@ -355,7 +355,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
     Player* receiver = NULL;
     if (_responseReceiverGUID)
-        if (receiver = ObjectAccessor::FindPlayerInOrOutOfWorld(_responseReceiverGUID))
+        if (receiver = ObjectAccessor::FindPlayer(_responseReceiverGUID))
             ChatHandler(receiver->GetSession()).PSendSysMessage("Received warden check response from player %s (guid: %u, account: %u, map: %d). Handling...", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetPlayer() ? _session->GetPlayer()->GetMapId() : -1);
 
     _dataSent = false;
@@ -674,7 +674,7 @@ bool WardenWin::GetEndSceneAddress(int32& addr)
     return _endSceneCaptured;
 }
 
-void WardenWin::DoCustomMemCheck(uint32 addr, uint32 len, uint64 guid)
+void WardenWin::DoCustomMemCheck(uint32 addr, uint32 len, ObjectGuid guid)
 {
     WardenRequestContext ctx;
     WardenCheck check;

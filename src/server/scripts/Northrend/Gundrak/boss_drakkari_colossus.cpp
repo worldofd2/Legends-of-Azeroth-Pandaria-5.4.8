@@ -81,7 +81,7 @@ class boss_drakkari_colossus : public CreatureScript
                 _instance = creature->GetInstanceScript();
 
                 for (uint8 i = 0; i < 5; ++i)
-                    _mojoGUID[i] = 0;
+                    _mojoGUID[i] = ObjectGuid::Empty;
             }
 
             void Reset() override
@@ -118,7 +118,7 @@ class boss_drakkari_colossus : public CreatureScript
                         if (Creature* mojo = ObjectAccessor::GetCreature(*me, _mojoGUID[i]))
                             if (mojo->IsAlive())
                                 mojo->DespawnOrUnsummon();
-                    _mojoGUID[i] = 0;
+                    _mojoGUID[i] = ObjectGuid::Empty;
                 }
             }
 
@@ -261,7 +261,7 @@ class boss_drakkari_colossus : public CreatureScript
             InstanceScript* _instance;
             uint8 _phase;
             uint32 _mightyBlowTimer;
-            uint64 _mojoGUID[5];
+            ObjectGuid _mojoGUID[5];
             bool started = false;
         };
 
@@ -294,7 +294,7 @@ class boss_drakkari_elemental : public CreatureScript
 
             void EnterEvadeMode() override
             {
-                if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetGuidData(DATA_DRAKKARI_COLOSSUS) : ObjectGuid::Empty))
                     colossus->AI()->DoAction(ACTION_UNFREEZE);
 
                 me->DespawnOrUnsummon();
@@ -313,7 +313,7 @@ class boss_drakkari_elemental : public CreatureScript
 
                 Talk(EMOTE_ACTIVATE_ALTAR);
 
-                if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetGuidData(DATA_DRAKKARI_COLOSSUS) : ObjectGuid::Empty))
                 {
                     colossus->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NOT_SELECTABLE);
                     colossus->LowerPlayerDamageReq(colossus->GetMaxHealth());
@@ -330,7 +330,7 @@ class boss_drakkari_elemental : public CreatureScript
             void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (damage >= me->GetHealth())
-                    if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                    if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetGuidData(DATA_DRAKKARI_COLOSSUS) : ObjectGuid::Empty))
                         if (colossus->AI()->GetData(DATA_EMERGED))
                             damage = me->GetHealth() - 1;
             }
@@ -341,7 +341,7 @@ class boss_drakkari_elemental : public CreatureScript
                     return;
 
                 if (!_merging && HealthBelowPct(50))
-                    if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                    if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetGuidData(DATA_DRAKKARI_COLOSSUS) : ObjectGuid::Empty))
                         if (colossus->AI()->GetData(DATA_EMERGED))
                         {
                             me->AttackStop();
@@ -362,7 +362,7 @@ class boss_drakkari_elemental : public CreatureScript
                 {
                     if (_disappearTimer <= diff)
                     {
-                        if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                        if (Creature* colossus = Unit::GetCreature(*me, _instance ? _instance->GetGuidData(DATA_DRAKKARI_COLOSSUS) : ObjectGuid::Empty))
                             colossus->AI()->DoAction(ACTION_UNFREEZE);
 
                         me->DespawnOrUnsummon();
@@ -429,7 +429,7 @@ class npc_living_mojo : public CreatureScript
                     return;
                 }
 
-                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
+                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_DRAKKARI_COLOSSUS)))
                     boss->AI()->DoAction(ACTION_START);
             }
 
@@ -542,7 +542,7 @@ class spell_surge : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (InstanceScript* instance = caster->GetInstanceScript())
-                        caster->CastSpell(caster, SPELL_DRENCHED_IN_MOJO, true, NULL, NULL, instance->GetData64(DATA_DRAKKARI_COLOSSUS));
+                        caster->CastSpell(caster, SPELL_DRENCHED_IN_MOJO, true, NULL, NULL, instance->GetGuidData(DATA_DRAKKARI_COLOSSUS));
             }
 
             void TargetSelect(SpellDestination& dest)

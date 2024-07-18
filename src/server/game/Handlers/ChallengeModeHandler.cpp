@@ -98,14 +98,26 @@ void WorldSession::HandleChallengeModeRequestLeaders(WorldPacket& recvData)
         {
             ObjectGuid guid = guildChallenge->Members[j].Guid;
 
-            data.WriteGuidMask(guid, 5, 2, 3, 0, 7, 1, 4, 6);
+            data.WriteBit(guid[5]);
+            data.WriteBit(guid[2]);
+            data.WriteBit(guid[3]);
+            data.WriteBit(guid[0]);
+            data.WriteBit(guid[7]);
+            data.WriteBit(guid[1]);
+            data.WriteBit(guid[4]);
+            data.WriteBit(guid[6]);
 
-            guildBuffer.WriteGuidBytes(guid, 3);
+            guildBuffer.WriteByteSeq(guid[3]);
             guildBuffer << uint32(guildChallenge->Members[j].SpecId);
             guildBuffer << uint32(realm.Id.Realm);
-            guildBuffer.WriteGuidBytes(guid, 1, 5, 0);
+            guildBuffer.WriteByteSeq(guid[1]);
+            guildBuffer.WriteByteSeq(guid[5]);
+            guildBuffer.WriteByteSeq(guid[0]);
             guildBuffer << uint32(realm.Id.Realm);
-            guildBuffer.WriteGuidBytes(guid, 4, 7, 6, 2);
+            guildBuffer.WriteByteSeq(guid[4]);
+            guildBuffer.WriteByteSeq(guid[7]);
+            guildBuffer.WriteByteSeq(guid[6]);
+            guildBuffer.WriteByteSeq(guid[2]);
         }
 
         guildBuffer << uint32(guildChallenge->AttemptId);
@@ -126,13 +138,26 @@ void WorldSession::HandleChallengeModeRequestLeaders(WorldPacket& recvData)
         {
             ObjectGuid guid = groupChallenge->Members[j].Guid;
 
-            data.WriteGuidMask(guid, 5, 3, 0, 1, 2, 4, 6, 7);
+            data.WriteBit(guid[5]);
+            data.WriteBit(guid[3]);
+            data.WriteBit(guid[0]);
+            data.WriteBit(guid[1]);
+            data.WriteBit(guid[2]);
+            data.WriteBit(guid[4]);
+            data.WriteBit(guid[6]);
+            data.WriteBit(guid[7]);
 
-            realmBuffer.WriteGuidBytes(guid, 4, 3, 6, 7, 2, 1);
+            realmBuffer.WriteByteSeq(guid[4]);
+            realmBuffer.WriteByteSeq(guid[3]);
+            realmBuffer.WriteByteSeq(guid[6]);
+            realmBuffer.WriteByteSeq(guid[7]);
+            realmBuffer.WriteByteSeq(guid[2]);
+            realmBuffer.WriteByteSeq(guid[1]);
             realmBuffer << uint32(realm.Id.Realm);
             realmBuffer << uint32(groupChallenge->Members[j].SpecId);
             realmBuffer << uint32(realm.Id.Realm);
-            realmBuffer.WriteGuidBytes(guid, 0, 5);
+            realmBuffer.WriteByteSeq(guid[0]);
+            realmBuffer.WriteByteSeq(guid[5]);
         }
 
         realmBuffer << uint32(groupChallenge->CompletionDate);

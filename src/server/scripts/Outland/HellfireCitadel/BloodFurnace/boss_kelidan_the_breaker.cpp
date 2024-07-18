@@ -82,7 +82,7 @@ class boss_kelidan_the_breaker : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 for (uint8 i=0; i<5; ++i)
-                    Channelers[i] = 0;
+                    Channelers[i] = ObjectGuid::Empty;
             }
 
             InstanceScript* instance;
@@ -94,7 +94,7 @@ class boss_kelidan_the_breaker : public CreatureScript
             uint32 check_Timer;
             bool Firenova;
             bool addYell;
-            uint64 Channelers[5];
+            ObjectGuid Channelers[5];
 
             void Reset() override
             {
@@ -184,7 +184,7 @@ class boss_kelidan_the_breaker : public CreatureScript
                     if (channeler)
                         Channelers[i] = channeler->GetGUID();
                     else
-                        Channelers[i] = 0;
+                        Channelers[i] = ObjectGuid::Empty;
                 }
             }
 
@@ -196,8 +196,8 @@ class boss_kelidan_the_breaker : public CreatureScript
                     return;
 
                 instance->SetData(TYPE_KELIDAN_THE_BREAKER_EVENT, DONE);
-                instance->HandleGameObject(instance->GetData64(DATA_DOOR1), true);
-                instance->HandleGameObject(instance->GetData64(DATA_DOOR6), true);
+                instance->HandleGameObject(instance->GetGuidData(DATA_DOOR1), true);
+                instance->HandleGameObject(instance->GetGuidData(DATA_DOOR6), true);
             }
 
             void UpdateAI(uint32 diff) override
@@ -339,7 +339,7 @@ class npc_shadowmoon_channeler : public CreatureScript
                             if (Creature* Kelidan = me->FindNearestCreature(ENTRY_KELIDAN, 100))
                             {
                                 uint64 channeler = CAST_AI(boss_kelidan_the_breaker::boss_kelidan_the_breakerAI, Kelidan->AI())->GetChanneled(me);
-                                if (Unit* channeled = Unit::GetUnit(*me, channeler))
+                                if (Unit* channeled = Unit::GetUnit(*me, ObjectGuid(channeler)))
                                     DoCast(channeled, SPELL_CHANNELING);
                             }
                         check_Timer = 5000;

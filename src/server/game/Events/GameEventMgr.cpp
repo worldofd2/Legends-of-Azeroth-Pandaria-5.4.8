@@ -1210,25 +1210,34 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
 
 void GameEventMgr::UpdateEventNPCFlags(uint16 event_id)
 {
+    std::unordered_map<uint32, std::unordered_set<ObjectGuid::LowType>> creaturesByMap;
+
     // go through the creatures whose npcflags are changed in the event
     for (NPCFlagList::iterator itr = mGameEventNPCFlags[event_id].begin(); itr != mGameEventNPCFlags[event_id].end(); ++itr)
-    {
         // get the creature data from the low guid to get the entry, to be able to find out the whole guid
         if (CreatureData const* data = sObjectMgr->GetCreatureData(itr->first))
+            creaturesByMap[data->mapId].insert(itr->first);
+
+    for (auto const& p : creaturesByMap)
+    {
+        sMapMgr->DoForAllMapsWithMapId(p.first, [this, &p](Map* map)
         {
-            Creature* cr = HashMapHolder<Creature>::Find(MAKE_NEW_GUID(itr->first, data->id, HIGHGUID_UNIT));
-            // if we found the creature, modify its npcflag
-            if (cr)
+            for (auto& spawnId : p.second)
             {
-                uint32 npcflag = GetNPCFlag(cr);
-                if (const CreatureTemplate* ci = cr->GetCreatureTemplate())
-                    npcflag |= ci->npcflag;
-                cr->SetUInt32Value(UNIT_FIELD_NPC_FLAGS, npcflag);
-                // reset gossip options, since the flag change might have added / removed some
-                //cr->ResetGossipOptions();
+                auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(spawnId);
+                for (auto itr = creatureBounds.first; itr != creatureBounds.second; ++itr)
+                {
+                    Creature* creature = itr->second;
+                    uint32 npcflag = GetNPCFlag(creature);
+                    if (CreatureTemplate const* creatureTemplate = creature->GetCreatureTemplate())
+                        npcflag |= creatureTemplate->npcflag;
+
+                    creature->SetUInt32Value(UNIT_FIELD_NPC_FLAGS, npcflag);
+                    // reset gossip options, since the flag change might have added / removed some
+                    //cr->ResetGossipOptions();
+                }
             }
-            // if we didn't find it, then the npcflag will be updated when the creature is loaded
-        }
+        });
     }
 }
 
@@ -1323,7 +1332,15 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
     }
 
     for (IdList::iterator itr = mGameEventPoolIds[internal_event_id].begin(); itr != mGameEventPoolIds[internal_event_id].end(); ++itr)
-        sPoolMgr->SpawnPool(*itr);
+    {
+        if (PoolTemplateData const* poolTemplate = sPoolMgr->GetPoolTemplate(*itr))
+        {
+            sMapMgr->DoForAllMapsWithMapId(poolTemplate->MapId, [&itr](Map* map)
+            {
+                sPoolMgr->SpawnPool(map->GetPoolData(), *itr);
+            });
+        }
+    }
 }
 
 void GameEventMgr::GameEventUnspawn(int16 event_id)
@@ -1347,8 +1364,17 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
         {
             sObjectMgr->RemoveCreatureFromGrid(*itr, data);
 
-            if (Creature* creature = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT), (Creature*)NULL))
-                creature->AddObjectToRemoveList();
+            sMapMgr->DoForAllMapsWithMapId(data->mapId, [&itr](Map* map)
+            {
+                map->RemoveCreatureRespawnTime(*itr);
+                auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(*itr);
+                for (auto itr2 = creatureBounds.first; itr2 != creatureBounds.second;)
+                {
+                    Creature* creature = itr2->second;
+                    ++itr2;
+                    creature->AddObjectToRemoveList();
+                }
+            });
         }
     }
 
@@ -1369,10 +1395,20 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
         {
             sObjectMgr->RemoveGameobjectFromGrid(*itr, data);
 
-            if (GameObject* pGameobject = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL))
-                pGameobject->AddObjectToRemoveList();
+            sMapMgr->DoForAllMapsWithMapId(data->mapid, [&itr](Map* map)
+            {
+                map->RemoveGORespawnTime(*itr);
+                auto gameobjectBounds = map->GetGameObjectBySpawnIdStore().equal_range(*itr);
+                for (auto itr2 = gameobjectBounds.first; itr2 != gameobjectBounds.second;)
+                {
+                    GameObject* go = itr2->second;
+                    ++itr2;
+                    go->AddObjectToRemoveList();
+                }
+            });
         }
     }
+
     if (internal_event_id < 0 || internal_event_id >= int32(mGameEventPoolIds.size()))
     {
         TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventPoolIds element %u (size: %lu)", internal_event_id, mGameEventPoolIds.size());
@@ -1381,7 +1417,13 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
 
     for (IdList::iterator itr = mGameEventPoolIds[internal_event_id].begin(); itr != mGameEventPoolIds[internal_event_id].end(); ++itr)
     {
-        sPoolMgr->DespawnPool(*itr);
+        if (PoolTemplateData const* poolTemplate = sPoolMgr->GetPoolTemplate(*itr))
+        {
+            sMapMgr->DoForAllMapsWithMapId(poolTemplate->MapId, [&itr](Map* map)
+            {
+                sPoolMgr->DespawnPool(map->GetPoolData(), *itr);
+            });
+        }
     }
 }
 
@@ -1395,53 +1437,41 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
             continue;
 
         // Update if spawned
-        Creature* creature = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(itr->first, data->id, HIGHGUID_UNIT), (Creature*)NULL);
-        if (creature)
+        sMapMgr->DoForAllMapsWithMapId(data->mapId, [&itr, activate](Map* map)
         {
-            if (activate)
+            auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(itr->first);
+            for (auto it = creatureBounds.first; it != creatureBounds.second; ++it)
             {
-                itr->second.equipement_id_prev = creature->GetCurrentEquipmentId();
-                itr->second.modelid_prev = creature->GetDisplayId();
-                creature->LoadEquipment(itr->second.equipment_id, true);
-                if (itr->second.modelid > 0 && itr->second.modelid_prev != itr->second.modelid &&
-                    sObjectMgr->GetCreatureModelInfo(itr->second.modelid))
+                Creature* creature = it->second;
+                if (activate)
                 {
-                    creature->SetDisplayId(itr->second.modelid);
-                    creature->SetNativeDisplayId(itr->second.modelid);
+                    itr->second.equipement_id_prev = creature->GetCurrentEquipmentId();
+                    itr->second.modelid_prev = creature->GetDisplayId();
+                    creature->LoadEquipment(itr->second.equipment_id, true);
+                    if (itr->second.modelid > 0 && itr->second.modelid_prev != itr->second.modelid &&
+                        sObjectMgr->GetCreatureModelInfo(itr->second.modelid))
+                    {
+                        creature->SetDisplayId(itr->second.modelid);
+                    }
+                }
+                else
+                {
+                    creature->LoadEquipment(itr->second.equipement_id_prev, true);
+                    if (itr->second.modelid_prev > 0 && itr->second.modelid_prev != itr->second.modelid &&
+                        sObjectMgr->GetCreatureModelInfo(itr->second.modelid_prev))
+                    {
+                        creature->SetDisplayId(itr->second.modelid_prev);
+                    }
                 }
             }
-            else
-            {
-                creature->LoadEquipment(itr->second.equipement_id_prev, true);
-                if (itr->second.modelid_prev > 0 && itr->second.modelid_prev != itr->second.modelid &&
-                    sObjectMgr->GetCreatureModelInfo(itr->second.modelid_prev))
-                {
-                    creature->SetDisplayId(itr->second.modelid_prev);
-                    creature->SetNativeDisplayId(itr->second.modelid_prev);
-                }
-            }
-        }
-        else                                                // If not spawned
-        {
-            CreatureData const* data2 = sObjectMgr->GetCreatureData(itr->first);
-            if (data2 && activate)
-            {
-                CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(data2->id);
-                uint32 displayID = ObjectMgr::ChooseDisplayId(cinfo, data2);
-                sObjectMgr->GetCreatureModelRandomGender(&displayID);
+        });
 
-                if (data2->equipmentId == 0)
-                    itr->second.equipement_id_prev = 0; ///@todo: verify this line
-                else if (data2->equipmentId != -1)
-                    itr->second.equipement_id_prev = data->equipmentId;
-                itr->second.modelid_prev = displayID;
-            }
-        }
         // now last step: put in data
-                                                            // just to have write access to it
         CreatureData& data2 = sObjectMgr->NewOrExistCreatureData(itr->first);
         if (activate)
         {
+            itr->second.modelid_prev = data2.displayid;
+            itr->second.equipement_id_prev = data2.equipmentId;
             data2.displayid = itr->second.modelid;
             data2.equipmentId = itr->second.equipment_id;
         }
@@ -1518,7 +1548,7 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool activate)
     QuestRelList::iterator itr;
     for (itr = mGameEventCreatureQuests[event_id].begin(); itr != mGameEventCreatureQuests[event_id].end(); ++itr)
     {
-        QuestRelations* CreatureQuestMap = sObjectMgr->GetCreatureQuestRelationMap();
+        QuestRelations* CreatureQuestMap = sObjectMgr->GetCreatureQuestRelationMapHACK();
         if (activate)                                           // Add the pair(id, quest) to the multimap
             CreatureQuestMap->insert(QuestRelations::value_type(itr->first, itr->second));
         else
@@ -1543,7 +1573,7 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool activate)
     }
     for (itr = mGameEventGameObjectQuests[event_id].begin(); itr != mGameEventGameObjectQuests[event_id].end(); ++itr)
     {
-        QuestRelations* GameObjectQuestMap = sObjectMgr->GetGOQuestRelationMap();
+        QuestRelations* GameObjectQuestMap = sObjectMgr->GetGOQuestRelationMapHACK();
         if (activate)                                           // Add the pair(id, quest) to the multimap
             GameObjectQuestMap->insert(QuestRelations::value_type(itr->first, itr->second));
         else
@@ -1688,6 +1718,33 @@ void GameEventMgr::SendWorldStateUpdate(Player* player, uint16 event_id)
             player->SendUpdateWorldState(itr->second.max_world_state, (uint32)(itr->second.reqNum));
     }
 }
+
+class GameEventAIHookWorker
+{
+public:
+    GameEventAIHookWorker(uint16 eventId, bool activate) : _eventId(eventId), _activate(activate) { }
+
+    void Visit(std::unordered_map<ObjectGuid, Creature*>& creatureMap)
+    {
+        for (auto const& p : creatureMap)
+            if (p.second->IsInWorld() && p.second->IsAIEnabled)
+                p.second->AI()->sOnGameEvent(_activate, _eventId);
+    }
+
+    void Visit(std::unordered_map<ObjectGuid, GameObject*>& gameObjectMap)
+    {
+        for (auto const& p : gameObjectMap)
+            if (p.second->IsInWorld())
+                p.second->AI()->OnGameEvent(_activate, _eventId);
+    }
+
+    template<class T>
+    void Visit(std::unordered_map<ObjectGuid, T*>&) { }
+
+private:
+    uint16 _eventId;
+    bool _activate;
+};
 
 namespace AprilFoolsDay
 {
@@ -2081,86 +2138,88 @@ namespace AprilFoolsDay
 
         if (activate)
         {
-            std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
-            for (auto ref : ObjectAccessor::GetCreatures())
+            sMapMgr->DoForAllMaps([](Map* map)
             {
-                Creature* creature = ref.second;
-                if (!creature->IsInWorld())
-                    continue;
-
-                CreatureData* data = const_cast<CreatureData*>(creature->GetCreatureData());
-                if (!data)
-                    continue;
-
-                TeamId sourceTeam;
-                switch (creature->GetZoneId())
+                for (auto pair : map->GetCreatureBySpawnIdStore())
                 {
-                    case ZONE_DUROTAR:
-                    case ZONE_THE_BARRENS:
-                        if (creature->GetExactDist2d(1370.175781f, -4370.808594f) > 100.0f &&
-                            creature->GetExactDist2d(1669.299194f, -3874.211426f) > 100.0f)
-                            continue;
-                        // no break
-                    case ZONE_ORGRIMMAR:
-                        sourceTeam = TEAM_HORDE;
-                        break;
-                    case ZONE_ELWYNN_FOREST:
-                        if (creature->GetExactDist2d(-9120.416992f, 394.218079f) > 100.0f)
-                            continue;
-                        // no break
-                    case ZONE_STORMWIND_CITY:
-                        sourceTeam = TEAM_ALLIANCE;
-                        break;
-                    default:
+                    Creature* creature = pair.second;
+                    if (!creature->IsInWorld())
                         continue;
-                }
 
-                auto itr = creatureConversions[sourceTeam].find(data->id);
-                if (itr == creatureConversions[sourceTeam].end())
-                    continue;
-
-                guidToOriginalData[creature->GetDBTableGUIDLow()] = std::make_pair(sourceTeam, *data);
-
-                // Force hide flightmasters, otherwise players will be able to unlock other faction's taxi nodes
-                uint32 newEntry = itr->second;
-                if (CreatureTemplate const* proto = sObjectMgr->GetCreatureTemplate(newEntry))
-                    if (proto->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER)
-                        newEntry = 0;
-
-                if (creature->IsInCombat() && creature->IsAIEnabled)
-                    creature->AI()->EnterEvadeMode();
-
-                if (newEntry)
-                {
-                    if (CreatureTemplate* proto = const_cast<CreatureTemplate*>(sObjectMgr->GetCreatureTemplate(newEntry)))
+                    TeamId sourceTeam;
+                    switch (creature->GetZoneId())
                     {
-                        if (entryToOriginalTemplate.find(newEntry) == entryToOriginalTemplate.end())
-                            entryToOriginalTemplate[newEntry] = *proto;
-
-                        proto->minlevel = proto->maxlevel = 93;
-                        proto->dmg_multiplier = 50;
-                        proto->ModHealth = 100;
-                        proto->ModMana = 100;
+                        case ZONE_DUROTAR:
+                        case ZONE_THE_BARRENS:
+                            if (creature->GetExactDist2d(1370.175781f, -4370.808594f) > 100.0f &&
+                                creature->GetExactDist2d(1669.299194f, -3874.211426f) > 100.0f)
+                                continue;
+                            // no break
+                        case ZONE_ORGRIMMAR:
+                            sourceTeam = TEAM_HORDE;
+                            break;
+                        case ZONE_ELWYNN_FOREST:
+                            if (creature->GetExactDist2d(-9120.416992f, 394.218079f) > 100.0f)
+                                continue;
+                            // no break
+                        case ZONE_STORMWIND_CITY:
+                            sourceTeam = TEAM_ALLIANCE;
+                            break;
+                        default:
+                            continue;
                     }
 
-                    data->id = newEntry;
-                    data->displayid = 0;
-                    data->equipmentId = 0;
-                    creature->UpdateEntry(newEntry, sourceTeam == TEAM_HORDE ? ALLIANCE : HORDE, data);
-                    creature->SetOriginalEntry(newEntry);
-                }
-                else
-                {
-                    data->phaseMask = 0;
-                    creature->SetPhaseMask(0, true);
-                    creature->SetVisible(false);
-                }
-            }
+                    CreatureData* data = const_cast<CreatureData*>(creature->GetCreatureData());
+                    if (!data)
+                        continue;
 
-            if (GameObject* portal = HashMapHolder<GameObject>::Find(MAKE_NEW_GUID(161561, 195141, HIGHGUID_GAMEOBJECT)))
-                portal->SetFaction(1801);
-            if (GameObject* portal = HashMapHolder<GameObject>::Find(MAKE_NEW_GUID(163187, 195142, HIGHGUID_GAMEOBJECT)))
-                portal->SetFaction(1802);
+                    auto itr = creatureConversions[sourceTeam].find(data->id);
+                    if (itr == creatureConversions[sourceTeam].end())
+                        continue;
+
+                    guidToOriginalData[creature->GetDBTableGUIDLow()] = std::make_pair(sourceTeam, *data);
+
+                    // Force hide flightmasters, otherwise players will be able to unlock other faction's taxi nodes
+                    uint32 newEntry = itr->second;
+                    if (CreatureTemplate const* proto = sObjectMgr->GetCreatureTemplate(newEntry))
+                        if (proto->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER)
+                            newEntry = 0;
+
+                    if (creature->IsInCombat() && creature->IsAIEnabled)
+                        creature->AI()->EnterEvadeMode();
+
+                    if (newEntry)
+                    {
+                        if (CreatureTemplate* proto = const_cast<CreatureTemplate*>(sObjectMgr->GetCreatureTemplate(newEntry)))
+                        {
+                            if (entryToOriginalTemplate.find(newEntry) == entryToOriginalTemplate.end())
+                                entryToOriginalTemplate[newEntry] = *proto;
+
+                            proto->minlevel = proto->maxlevel = 93;
+                            proto->dmg_multiplier = 50;
+                            proto->ModHealth = 100;
+                            proto->ModMana = 100;
+                        }
+
+                        data->id = newEntry;
+                        data->displayid = 0;
+                        data->equipmentId = 0;
+                        creature->UpdateEntry(newEntry, sourceTeam == TEAM_HORDE ? ALLIANCE : HORDE, data);
+                        creature->SetOriginalEntry(newEntry);
+                    }
+                    else
+                    {
+                        data->phaseMask = 0;
+                        creature->SetPhaseMask(0, true);
+                        creature->SetVisible(false);
+                    }
+                }
+
+                if (GameObject* portal = map->GetGameObject(ObjectGuid(HighGuid::GameObject, uint32(195141), uint32(161561))))
+                    portal->SetFaction(1801);
+                if (GameObject* portal = map->GetGameObject(ObjectGuid(HighGuid::GameObject, uint32(195142), uint32(163187))))
+                    portal->SetFaction(1802);
+            });
         }
         else
         {
@@ -2169,38 +2228,41 @@ namespace AprilFoolsDay
                     *proto = pair.second;
             entryToOriginalTemplate.clear();
 
-            std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
-            for (auto ref : ObjectAccessor::GetCreatures())
+            sMapMgr->DoForAllMaps([](Map* map)
             {
-                Creature* creature = ref.second;
-                if (!creature->IsInWorld())
-                    continue;
+                for (auto pair : map->GetCreatureBySpawnIdStore())
+                {
+                    Creature *creature = pair.second;
+                    if (!creature->IsInWorld())
+                        continue;
 
-                CreatureData* data = const_cast<CreatureData*>(creature->GetCreatureData());
-                if (!data)
-                    continue;
+                    auto oitr = guidToOriginalData.find(creature->GetDBTableGUIDLow());
+                    if (oitr == guidToOriginalData.end())
+                        continue;
 
-                auto oitr = guidToOriginalData.find(creature->GetDBTableGUIDLow());
-                if (oitr == guidToOriginalData.end())
-                    continue;
+                    CreatureData *data = const_cast<CreatureData *>(creature->GetCreatureData());
+                    if (!data)
+                        continue;
 
-                TeamId sourceTeam = oitr->second.first;
+                    TeamId sourceTeam = oitr->second.first;
 
-                *data = oitr->second.second;
+                    *data = oitr->second.second;
 
-                if (creature->IsInCombat() && creature->IsAIEnabled)
-                    creature->AI()->EnterEvadeMode();
+                    if (creature->IsInCombat() && creature->IsAIEnabled)
+                        creature->AI()->EnterEvadeMode();
 
-                creature->UpdateEntry(data->id, sourceTeam == TEAM_HORDE ? HORDE : ALLIANCE, data);
-                creature->SetPhaseMask(data->phaseMask, true);
-                creature->SetVisible(true);
-            }
+                    creature->UpdateEntry(data->id, sourceTeam == TEAM_HORDE ? HORDE : ALLIANCE, data);
+                    creature->SetPhaseMask(data->phaseMask, true);
+                    creature->SetVisible(true);
+                }
+
+                if (GameObject *portal = map->GetGameObject(ObjectGuid(HighGuid::GameObject, uint32(195141), uint32(161561))))
+                  portal->SetFaction(1802);
+                if (GameObject *portal = map->GetGameObject(ObjectGuid(HighGuid::GameObject, uint32(195142), uint32(163187))))
+                  portal->SetFaction(1801);
+            });
+
             guidToOriginalData.clear();
-
-            if (GameObject* portal = HashMapHolder<GameObject>::Find(MAKE_NEW_GUID(161561, 195141, HIGHGUID_GAMEOBJECT)))
-                portal->SetFaction(1802);
-            if (GameObject* portal = HashMapHolder<GameObject>::Find(MAKE_NEW_GUID(163187, 195142, HIGHGUID_GAMEOBJECT)))
-                portal->SetFaction(1801);
         }
 
         if (GameObjectTemplate* protoS = const_cast<GameObjectTemplate*>(sObjectMgr->GetGameObjectTemplate(176296))) // Portal to Stormwind
@@ -2222,20 +2284,12 @@ void GameEventMgr::RunSmartAIScripts(uint16 event_id, bool activate)
 {
     //! Iterate over every supported source type (creature and gameobject)
     //! Not entirely sure how this will affect units in non-loaded grids.
+    sMapMgr->DoForAllMaps([event_id, activate](Map* map)
     {
-        std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
-        HashMapHolder<Creature>::MapType const& m = ObjectAccessor::GetCreatures();
-        for (HashMapHolder<Creature>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
-            if (iter->second->IsInWorld())
-                iter->second->AI()->sOnGameEvent(activate, event_id);
-    }
-    {
-        std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
-        HashMapHolder<GameObject>::MapType const& m = ObjectAccessor::GetGameObjects();
-        for (HashMapHolder<GameObject>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
-            if (iter->second->IsInWorld())
-                iter->second->AI()->OnGameEvent(activate, event_id);
-    }
+        GameEventAIHookWorker worker(event_id, activate);
+        TypeContainerVisitor<GameEventAIHookWorker, MapStoredObjectTypesContainer> visitor(worker);
+        visitor.Visit(map->GetObjectsStore());
+    });
 
     if (event_id == GAME_EVENT_APRIL_FOOLS_DAY)
         AprilFoolsDay::Run(activate);

@@ -357,19 +357,18 @@ void QuestMenu::ClearMenu()
     _questMenuItems.clear();
 }
 
-void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title, uint64 npcGUID)
+void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title, ObjectGuid npcGUID)
 {
     ByteBuffer questData;
-    ObjectGuid guid = npcGUID;
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_LIST, 100);      // guess size
     data << uint32(eEmote._Emote);                          // NPC emote
     data << uint32(eEmote._Delay);                          // player emote
 
-    data.WriteBit(guid[2]);
+    data.WriteBit(npcGUID[2]);
     data.WriteBits(Title.size(), 11);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
+    data.WriteBit(npcGUID[6]);
+    data.WriteBit(npcGUID[0]);
 
     uint32 count = 0;
     size_t countPos = data.bitwpos();
@@ -409,59 +408,57 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
         }
     }
 
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[7]);
+    data.WriteBit(npcGUID[1]);
+    data.WriteBit(npcGUID[3]);
+    data.WriteBit(npcGUID[4]);
+    data.WriteBit(npcGUID[5]);
+    data.WriteBit(npcGUID[7]);
     data.PutBits(countPos, count, 19);
     data.FlushBits();
 
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(npcGUID[1]);
+    data.WriteByteSeq(npcGUID[0]);
+    data.WriteByteSeq(npcGUID[6]);
+    data.WriteByteSeq(npcGUID[7]);
     data.append(questData);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(npcGUID[5]);
+    data.WriteByteSeq(npcGUID[3]);
+    data.WriteByteSeq(npcGUID[2]);
     data.WriteString(Title);
-    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(npcGUID[4]);
 
     _session->SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC Guid=%u", GUID_LOPART(npcGUID));
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC Guid=%u", npcGUID.GetCounter());
 }
 
-void PlayerMenu::SendQuestGiverStatus(QuestGiverStatus questStatus, uint64 npcGUID) const
+void PlayerMenu::SendQuestGiverStatus(QuestGiverStatus questStatus, ObjectGuid npcGUID) const
 {
-    ObjectGuid guid = npcGUID;
-
     WorldPacket data(SMSG_QUESTGIVER_STATUS, 1 + 8 + 4);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
+    data.WriteBit(npcGUID[1]);
+    data.WriteBit(npcGUID[7]);
+    data.WriteBit(npcGUID[4]);
+    data.WriteBit(npcGUID[2]);
+    data.WriteBit(npcGUID[5]);
+    data.WriteBit(npcGUID[3]);
+    data.WriteBit(npcGUID[6]);
+    data.WriteBit(npcGUID[0]);
 
-    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(npcGUID[7]);
     data << uint32(questStatus);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(npcGUID[4]);
+    data.WriteByteSeq(npcGUID[6]);
+    data.WriteByteSeq(npcGUID[1]);
+    data.WriteByteSeq(npcGUID[5]);
+    data.WriteByteSeq(npcGUID[2]);
+    data.WriteByteSeq(npcGUID[0]);
+    data.WriteByteSeq(npcGUID[3]);
 
     _session->SendPacket(&data);
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_STATUS NPC Guid=%u, status=%u", GUID_LOPART(npcGUID), questStatus);
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_STATUS NPC Guid=%u, status=%u", npcGUID.GetCounter(), questStatus);
 }
 
-void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, bool activateAccept, bool startedByAreaTrigger) const
+void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGUID, bool activateAccept, bool startedByAreaTrigger) const
 {
     std::string logTitle             = quest->GetLogTitle();
     std::string logDescription       = quest->GetLogDescription();
@@ -659,7 +656,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
 
     _session->SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_DETAILS NPCGuid=%u, questid=%u", GUID_LOPART(npcGUID), quest->GetQuestId());
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_DETAILS NPCGuid=%u, questid=%u", npcGUID.GetCounter(), quest->GetQuestId());
 }
 
 void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
@@ -847,7 +844,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", quest->GetQuestId());
 }
 
-void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, bool enableNext) const
+void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGuid, bool enableNext) const
 {
     std::string logTitle = quest->GetLogTitle();
     std::string rewardText = quest->GetOfferRewardText();
@@ -1020,10 +1017,10 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, b
 
     _session->SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_OFFER_REWARD NPCGuid=%u, questid=%u", GUID_LOPART(npcGuid), quest->GetQuestId());
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_OFFER_REWARD NPCGuid=%u, questid=%u", npcGuid.GetCounter(), quest->GetQuestId());
 }
 
-void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, bool canComplete, bool closeOnCancel) const
+void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGuid, bool canComplete, bool closeOnCancel) const
 {
     // We can always call to RequestItems, but this packet only goes out if there are actually
     // items.  Otherwise, we'll skip straight to the OfferReward
@@ -1110,25 +1107,36 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
 
     data.WriteBits(currencyCounter, 21);
     data.WriteBit(closeOnCancel);
-    data.WriteGuidMask(guid, 2, 5, 1);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[1]);
     data.WriteBits(questTitle.size(), 9);
     data.WriteBits(requestItemsText.size(), 12);
-    data.WriteGuidMask(guid, 6, 0);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
     data.WriteBits(itemCounter, 20);
-    data.WriteGuidMask(guid, 4, 7, 3);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[3]);
     data.FlushBits();
 
-    data.WriteGuidBytes(guid, 0, 2);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[2]);
     data.WriteString(questTitle);
     data.append(currencyData);
     data.append(itemData);
-    data.WriteGuidBytes(guid, 3, 1);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[1]);
     data.WriteString(requestItemsText);
-    data.WriteGuidBytes(guid, 4, 5, 7, 6);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[6]);
+
 
     _session->SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_REQUEST_ITEMS NPCGuid=%u, questid=%u", GUID_LOPART(npcGuid), quest->GetQuestId());
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_REQUEST_ITEMS NPCGuid=%u, questid=%u", npcGuid.GetCounter(), quest->GetQuestId());
 }
 
 void PlayerMenu::AddQuestLevelToTitle(std::string &title, int32 level)

@@ -67,7 +67,7 @@ class boss_lavanthor : public CreatureScript
             {
                 if (instance)
                 {
-                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_LAVANTHOR_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetGuidData(DATA_LAVANTHOR_CELL)))
                         if (pDoor->GetGoState() == GO_STATE_READY)
                         {
                             EnterEvadeMode();

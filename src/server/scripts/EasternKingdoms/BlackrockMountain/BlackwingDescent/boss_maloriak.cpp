@@ -557,11 +557,11 @@ class npc_maloriak_flash_freeze : public CreatureScript
         {
             npc_maloriak_flash_freezeAI(Creature* creature) : ScriptedAI(creature)
             {
-                trappedPlayer = 0;
+                trappedPlayer = ObjectGuid::Empty;
                 SetCombatMovement(false);
             }
 
-            uint64 trappedPlayer;
+            ObjectGuid trappedPlayer;
             uint32 existenceCheckTimer;
 
             void Reset() override
@@ -569,7 +569,7 @@ class npc_maloriak_flash_freeze : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void SetGUID(uint64 guid, int32 type) override
+            void SetGUID(ObjectGuid guid, int32 type) override
             {
                 if (type == DATA_TRAPPED_PLAYER)
                 {
@@ -582,7 +582,7 @@ class npc_maloriak_flash_freeze : public CreatureScript
             {
                 if (Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer))
                 {
-                    trappedPlayer = 0;
+                    trappedPlayer = ObjectGuid::Empty;
                     player->RemoveAurasDueToSpell(SPELL_FLASH_FREEZE);
                 }
                 DoCast(me, SPELL_SHATTER);
@@ -630,7 +630,7 @@ class npc_absolute_zero : public CreatureScript
                 creature->SetSpeed(MOVE_WALK, 0.5f);
             }
 
-            uint32 uiPauseTimer; //чтобы не срабатывало сразу при саммоне возле игрока
+            uint32 uiPauseTimer; //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             uint32 uiDespawnTimer;
             bool bCanExplode; 
 
@@ -716,7 +716,7 @@ class npc_magma_jet : public CreatureScript
                 {
                     Position newPos = me->GetNearPosition(5.5f, 0.0f);
                     me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-                    if (creOwner->GetDistance(me) >= 50.0f) // спавнить разломы на расстоянии до 50 от босса
+                    if (creOwner->GetDistance(me) >= 50.0f) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 50 пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
                         me->DespawnOrUnsummon();
                     else
                     {

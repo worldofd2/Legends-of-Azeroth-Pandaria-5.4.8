@@ -240,7 +240,7 @@ public:
 
 
         bool IsMovementActive;
-        uint64 TargetTubberGUID;
+        ObjectGuid TargetTubberGUID;
     };
 };
 

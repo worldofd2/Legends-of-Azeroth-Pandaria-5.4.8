@@ -249,7 +249,7 @@ class boss_olm_the_summoner : public CreatureScript
     
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAULGAR)))
+                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAULGAR)))
                     maulgar->AI()->DoAction(ACTION_ADD_DEATH);
     
                 instance->SetBossState(DATA_MAULGAR, DONE);
@@ -332,7 +332,7 @@ class boss_kiggler_the_crazed : public CreatureScript
     
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAULGAR)))
+                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAULGAR)))
                     maulgar->AI()->DoAction(ACTION_ADD_DEATH);
     
                 instance->SetBossState(DATA_MAULGAR, DONE);
@@ -418,7 +418,7 @@ class boss_blindeye_the_seer : public CreatureScript
     
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAULGAR)))
+                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAULGAR)))
                     maulgar->AI()->DoAction(ACTION_ADD_DEATH);
     
                 instance->SetBossState(DATA_MAULGAR, DONE);
@@ -495,7 +495,7 @@ class boss_krosh_firehand : public CreatureScript
     
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAULGAR)))
+                if (Creature* maulgar = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAULGAR)))
                     maulgar->AI()->DoAction(ACTION_ADD_DEATH);
     
                 instance->SetBossState(DATA_MAULGAR, DONE);

@@ -19,6 +19,7 @@
 #include "Player.h"
 #include "GridNotifiers.h"
 #include "Log.h"
+#include "GameTime.h"
 #include "GridStates.h"
 #include "CellImpl.h"
 #include "Map.h"
@@ -171,6 +172,12 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
     }
 }
 
+void InstanceSaveManager::UnloadInstanceSave(uint32 InstanceId)
+{
+    if (InstanceSave* save = GetInstanceSave(InstanceId))
+        save->UnloadIfEmpty();
+}
+
 InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset)
 : m_resetTime(resetTime), m_instanceid(InstanceId), m_mapid(MapId),
   m_difficulty(difficulty), m_canReset(canReset), m_toDelete(false) { }
@@ -245,14 +252,18 @@ bool InstanceSave::UnloadIfEmpty()
 {
     if (m_playerList.empty() && m_groupList.empty())
     {
+        // don't remove the save if there are still players inside the map
+        if (Map* map = sMapMgr->FindMap(GetMapId(), GetInstanceId()))
+            if (map->HavePlayers())
+                return true;
+
         if (!sInstanceSaveMgr->lock_instLists)
             sInstanceSaveMgr->RemoveInstanceSave(GetInstanceId());
 
         return false;
     }
     else
-        return true;
-}
+        return true;}
 
 void InstanceSaveManager::LoadInstances()
 {
@@ -293,7 +304,7 @@ void InstanceSaveManager::LoadInstances()
 
 void InstanceSaveManager::LoadResetTimes()
 {
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
 
     // NOTE: Use DirectPExecute for tables that will be queried later
 
@@ -317,11 +328,6 @@ void InstanceSaveManager::LoadResetTimes()
             Field* fields = result->Fetch();
 
             uint32 instanceId = fields[0].GetUInt32();
-
-            // Instances are pulled in ascending order from db and nextInstanceId is initialized with 1,
-            // so if the instance id is used, increment until we find the first unused one for a potential new instance
-            if (sMapMgr->GetNextInstanceId() == instanceId)
-                sMapMgr->SetNextInstanceId(instanceId + 1);
 
             // Mark instance id as being used
             sMapMgr->RegisterInstanceId(instanceId);
@@ -625,12 +631,12 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
     Map* iMap = ((MapInstanced*)map)->FindInstanceMap(instanceId);
-
-    if (iMap && (iMap->IsDungeon() || iMap->IsScenario()))
-        ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
-
     if (iMap)
+    {
+        ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
         iMap->DeleteRespawnTimes();
+        iMap->DeleteCorpseData();
+    }
     else
         Map::DeleteRespawnTimesInDB(mapid, instanceId);
 

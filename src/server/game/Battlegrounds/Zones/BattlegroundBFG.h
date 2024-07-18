@@ -209,7 +209,7 @@ public:
 
     /* inherited from BattlegroundClass */
     void AddPlayer(Player* player) override;
-    void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
+    void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
     void StartingEventCloseDoors() override;
     void StartingEventOpenDoors() override;
     void Reset() override;

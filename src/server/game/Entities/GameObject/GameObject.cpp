@@ -25,6 +25,7 @@
 #include "Group.h"
 #include "GroupMgr.h"
 #include "Guild.h"
+#include "IteratorPair.h"
 #include "ObjectMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "PoolMgr.h"
@@ -61,7 +62,7 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
 
     m_DBTableGuid = 0;
 
-    m_lootRecipient = 0;
+    m_lootRecipient = ObjectGuid::Empty;
     m_lootRecipientGroup = 0;
     m_groupLootTimer = 0;
     lootingGroupLowGUID = 0;
@@ -119,8 +120,8 @@ void GameObject::CleanupsBeforeDelete(bool finalCleanup)
 
 void GameObject::RemoveFromOwner()
 {
-    uint64 ownerGUID = GetOwnerGUID();
-    if (!ownerGUID)
+    ObjectGuid ownerGUID = GetOwnerGUID();
+    if (ownerGUID.IsEmpty())
         return;
 
     if (Unit* owner = ObjectAccessor::GetUnit(*this, ownerGUID))
@@ -131,14 +132,14 @@ void GameObject::RemoveFromOwner()
     }
 
     const char * ownerType = "creature";
-    if (IS_PLAYER_GUID(ownerGUID))
+    if (ownerGUID.IsPlayer())
         ownerType = "player";
-    else if (IS_PET_GUID(ownerGUID))
+    else if (ownerGUID.IsPet())
         ownerType = "pet";
 
     TC_LOG_FATAL("misc", "Removed GameObject (GUID: %u Entry: %u SpellId: %u LinkedGO: %u) that just lost any reference to the owner (GUID: %u Type: '%s') GO list",
-        GetGUIDLow(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), GUID_LOPART(ownerGUID), ownerType);
-    SetOwnerGUID(0);
+        GetGUID().GetCounter(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), ownerGUID.GetCounter(), ownerType);
+    SetOwnerGUID(ObjectGuid::Empty);
 }
 
 void GameObject::AddToWorld()
@@ -149,7 +150,10 @@ void GameObject::AddToWorld()
         if (m_zoneScript)
             m_zoneScript->OnGameObjectCreate(this);
 
-        sObjectAccessor->AddObject(this);
+        GetMap()->GetObjectsStore().Insert<GameObject>(GetGUID(), this);
+        if (m_DBTableGuid) // m_spawnId
+            GetMap()->GetGameObjectBySpawnIdStore().insert(std::make_pair(m_DBTableGuid, this));
+
         if (m_model)
         {
             if (Transport* trans = ToTransport())
@@ -175,12 +179,17 @@ void GameObject::RemoveFromWorld()
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
+
         WorldObject::RemoveFromWorld();
-        sObjectAccessor->RemoveObject(this);
+
+        if (m_DBTableGuid) // m_spawnId
+            Trinity::Containers::MultimapErasePair(GetMap()->GetGameObjectBySpawnIdStore(), m_DBTableGuid, this);
+
+        GetMap()->GetObjectsStore().Remove<GameObject>(GetGUID());
     }
 }
 
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
+bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
 {
     ASSERT(map);
     SetMap(map);
@@ -223,7 +232,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
         return false;
     }
 
-    Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT);
+    Object::_Create(guidlow, goinfo->entry, HighGuid::GameObject);
 
     m_goInfo = goinfo;
     m_goTemplateAddon = sObjectMgr->GetGameObjectTemplateAddon(name_id);
@@ -446,7 +455,7 @@ void GameObject::Update(uint32 diff)
                 time_t now = time(NULL);
                 if (m_respawnTime <= now)            // timer expired
                 {
-                    uint64 dbtableHighGuid = MAKE_NEW_GUID(m_DBTableGuid, GetEntry(), HIGHGUID_GAMEOBJECT);
+                    ObjectGuid dbtableHighGuid(HighGuid::GameObject, GetEntry(), m_DBTableGuid);
                     time_t linkedRespawntime = GetMap()->GetLinkedRespawnTime(dbtableHighGuid);
                     if (linkedRespawntime)             // Can't respawn, the master is dead
                     {
@@ -502,7 +511,7 @@ void GameObject::Update(uint32 diff)
                                                     // respawn timer
                     uint32 poolid = GetDBTableGUIDLow() ? sPoolMgr->IsPartOfAPool<GameObject>(GetDBTableGUIDLow()) : 0;
                     if (poolid)
-                        sPoolMgr->UpdatePool<GameObject>(poolid, GetDBTableGUIDLow());
+                        sPoolMgr->UpdatePool<GameObject>(GetMap()->GetPoolData(), poolid, GetDBTableGUIDLow());
                     else
                         GetMap()->AddToMap(this);
                 }
@@ -643,16 +652,17 @@ void GameObject::Update(uint32 diff)
                         if (m_groupLootTimer <= diff)
                         {
                             uint32 gguid = lootingGroupLowGUID;
-                            uint64 goguid = GetGUID();
+                            ObjectGuid goguid = GetGUID();
                             // TaskMgr::Default()->ScheduleInvocation([=]
                             // {
                             //     if (GameObject* go = ObjectAccessor::FindGameObject(goguid))
                             //         if (Group* group = sGroupMgr->GetGroupByGUID(gguid))
                             //             group->EndRoll(&go->loot);
                             // });
-                            if (GameObject* go = ObjectAccessor::FindGameObject(goguid))
-                                if (Group* group = sGroupMgr->GetGroupByGUID(gguid))
-                                    group->EndRoll(&go->loot);                            
+                            if (Map* map = FindMap())
+                                if (GameObject* go = map->GetGameObject(goguid))
+                                    if (Group* group = sGroupMgr->GetGroupByGUID(gguid))
+                                        group->EndRoll(&go->loot);
                             m_groupLootTimer = 0;
                             lootingGroupLowGUID = 0;
                         }
@@ -672,7 +682,7 @@ void GameObject::Update(uint32 diff)
 
                 if (spellId)
                 {
-                    for (std::set<uint64>::const_iterator it = m_unique_users.begin(); it != m_unique_users.end(); ++it)
+                    for (std::set<ObjectGuid>::const_iterator it = m_unique_users.begin(); it != m_unique_users.end(); ++it)
                         // m_unique_users can contain only player GUIDs
                         if (Player* owner = ObjectAccessor::GetPlayer(*this, *it))
                             owner->CastSpell(owner, spellId, false);
@@ -772,7 +782,7 @@ void GameObject::Delete()
 
     uint32 poolid = GetDBTableGUIDLow() ? sPoolMgr->IsPartOfAPool<GameObject>(GetDBTableGUIDLow()) : 0;
     if (poolid)
-        sPoolMgr->UpdatePool<GameObject>(poolid, GetDBTableGUIDLow());
+        sPoolMgr->UpdatePool<GameObject>(GetMap()->GetPoolData(), poolid, GetDBTableGUIDLow());
     else
         AddObjectToRemoveList();
 }
@@ -812,7 +822,8 @@ void GameObject::SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask)
         return;
 
     if (!m_DBTableGuid)
-        m_DBTableGuid = GetGUIDLow();
+        m_DBTableGuid = GetGUID().GetCounter();
+
     // update in loaded data (changing data only in this place)
     GameObjectData& data = sObjectMgr->NewGOData(m_DBTableGuid);
 
@@ -889,7 +900,8 @@ bool GameObject::LoadGameObjectFromDB(uint32 guid, Map* map, bool addToMap)
     uint32 artKit = data->artKit;
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    if (map->GetInstanceId() != 0)
+        guid = map->GenerateLowGuid<HighGuid::GameObject>();
 
     if (!Create(guid, entry, map, phaseMask, x, y, z, ang, data->rotation, animprogress, go_state, artKit))
         return false;
@@ -943,23 +955,41 @@ bool GameObject::LoadGameObjectFromDB(uint32 guid, Map* map, bool addToMap)
 
 void GameObject::DeleteFromDB()
 {
-    GetMap()->RemoveGORespawnTime(m_DBTableGuid);
+    GameObjectData const* data = sObjectMgr->GetGOData(m_DBTableGuid);
+    if (!data)
+        return;
+
+    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+
+    sMapMgr->DoForAllMapsWithMapId(data->mapid,
+        [this, trans](Map* map) -> void
+        {
+            // despawn all active objects, and remove their respawns
+            std::vector<GameObject*> toUnload;
+            for (auto const& pair : Trinity::Containers::MapEqualRange(map->GetGameObjectBySpawnIdStore(), m_DBTableGuid))
+                toUnload.push_back(pair.second);
+            for (GameObject* obj : toUnload)
+                map->AddObjectToRemoveList(obj);
+            map->RemoveGORespawnTime(m_DBTableGuid);
+        }
+    );
+
+    WorldDatabaseTransaction trans2 = WorldDatabase.BeginTransaction();
+
     sObjectMgr->DeleteGOData(m_DBTableGuid);
 
     WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_GAMEOBJECT);
-
     stmt->setUInt32(0, m_DBTableGuid);
-
-    WorldDatabase.Execute(stmt);
+    trans2->Append(stmt);
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_EVENT_GAMEOBJECT);
-
     stmt->setUInt32(0, m_DBTableGuid);
+    trans2->Append(stmt);
 
-    WorldDatabase.Execute(stmt);
+    WorldDatabase.CommitTransaction(trans2);
 }
 
-GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
+GameObject* GameObject::GetGameObject(WorldObject& object, ObjectGuid guid)
 {
     return object.GetMap()->GetGameObject(guid);
 }
@@ -969,24 +999,12 @@ GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
 /*********************************************************/
 bool GameObject::hasQuest(uint32 quest_id) const
 {
-    QuestRelationBounds qr = sObjectMgr->GetGOQuestRelationBounds(GetEntry());
-    for (QuestRelations::const_iterator itr = qr.first; itr != qr.second; ++itr)
-    {
-        if (itr->second == quest_id)
-            return true;
-    }
-    return false;
+    return sObjectMgr->GetGOQuestRelations(GetEntry()).HasQuest(quest_id);
 }
 
 bool GameObject::hasInvolvedQuest(uint32 quest_id) const
 {
-    QuestRelationBounds qir = sObjectMgr->GetGOQuestInvolvedRelationBounds(GetEntry());
-    for (QuestRelations::const_iterator itr = qir.first; itr != qir.second; ++itr)
-    {
-        if (itr->second == quest_id)
-            return true;
-    }
-    return false;
+    return sObjectMgr->GetGOQuestInvolvedRelations(GetEntry()).HasQuest(quest_id);
 }
 
 bool GameObject::IsTransport() const
@@ -1329,9 +1347,9 @@ void GameObject::Use(Unit* user)
             {
                 if (info->chair.slots > 0)     // sometimes chairs in DB have error in fields and we dont know number of slots
                     for (uint32 i = 0; i < info->chair.slots; ++i)
-                        ChairListSlots[i] = 0; // Last user of current slot set to 0 (none sit here yet)
+                        ChairListSlots[i].Clear(); // Last user of current slot set to 0 (none sit here yet)
                 else
-                    ChairListSlots[0] = 0;     // error in DB, make one default slot
+                    ChairListSlots[0].Clear();     // error in DB, make one default slot
             }
 
             Player* player = user->ToPlayer();
@@ -1364,10 +1382,10 @@ void GameObject::Use(Unit* user)
                         if (ChairUser->IsSitState() && ChairUser->getStandState() != UNIT_STAND_STATE_SIT && ChairUser->GetExactDist2d(x_i, y_i) < 0.1f)
                             continue;        // This seat is already occupied by ChairUser. NOTE: Not sure if the ChairUser->getStandState() != UNIT_STAND_STATE_SIT check is required.
                         else
-                            itr->second = 0; // This seat is unoccupied.
+                            itr->second.Clear(); // This seat is unoccupied.
                     }
                     else
-                        itr->second = 0;     // The seat may of had an occupant, but they're offline.
+                        itr->second.Clear();     // The seat may have had an occupant, but they're offline.
                 }
 
                 found_free_slot = true;
@@ -1411,8 +1429,22 @@ void GameObject::Use(Unit* user)
                     {
                         ObjectGuid guid = GetGUID();
                         WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
-                        data.WriteGuidMask(guid, 0, 3, 2, 6, 5, 1, 7, 4);
-                        data.WriteGuidBytes(guid, 6, 2, 7, 0, 5, 3, 1, 4);
+                        data.WriteBit(guid[0]);
+                        data.WriteBit(guid[3]);
+                        data.WriteBit(guid[2]);
+                        data.WriteBit(guid[6]);
+                        data.WriteBit(guid[5]);
+                        data.WriteBit(guid[1]);
+                        data.WriteBit(guid[7]);
+                        data.WriteBit(guid[4]);
+                        data.WriteByteSeq(guid[6]);
+                        data.WriteByteSeq(guid[2]);
+                        data.WriteByteSeq(guid[7]);
+                        data.WriteByteSeq(guid[0]);
+                        data.WriteByteSeq(guid[5]);
+                        data.WriteByteSeq(guid[3]);
+                        data.WriteByteSeq(guid[1]);
+                        data.WriteByteSeq(guid[4]);
                         player->SendDirectMessage(&data);
                     }
                     else if (info->goober.gossipID)
@@ -1838,7 +1870,7 @@ void GameObject::Use(Unit* user)
         default:
             if (GetGoType() >= MAX_GAMEOBJECT_TYPE)
                 TC_LOG_ERROR("misc", "GameObject::Use(): unit (type: %u, guid: %u, name: %s) tries to use object (guid: %u, entry: %u, name: %s) of unknown type (%u)",
-                    user->GetTypeId(), user->GetGUIDLow(), user->GetName().c_str(), GetGUIDLow(), GetEntry(), GetGOInfo()->name.c_str(), GetGoType());
+                    user->GetTypeId(), user->GetGUID().GetCounter(), user->GetName().c_str(), GetGUID().GetCounter(), GetEntry(), GetGOInfo()->name.c_str(), GetGoType());
             break;
     }
 
@@ -1910,7 +1942,7 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
         trigger->SetFaction(14);
         // Set owner guid for target if no owner available - needed by trigger auras
         // - trigger gets despawned and there's no caster avalible (see AuraEffect::TriggerSpell())
-        trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, target ? target->GetGUID() : 0);
+        trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, target ? target->GetGUID() : ObjectGuid::Empty);
     }
 }
 
@@ -1960,15 +1992,27 @@ void GameObject::SetAnimKitId(uint16 animKitId, bool oneshot)
 
     WorldPacket data(SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT);
 
-    data.WriteGuidMask(guid, 3, 6, 0, 1, 4, 2, 7);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[7]);
     data.WriteBit(!oneshot);
     data.WriteBit(guid[5]);
 
     data.FlushBits();
 
-    data.WriteGuidBytes(guid, 1, 7, 6, 5, 0, 3);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[3]);
     data << uint32(_animKitId);
-    data.WriteGuidBytes(guid, 2, 4);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
 
     SendMessageToSet(&data, true);
 }
@@ -2531,7 +2575,7 @@ void GameObject::SetLootRecipient(Unit* unit)
 
     if (!unit)
     {
-        m_lootRecipient = 0;
+        m_lootRecipient.Clear();
         m_lootRecipientGroup = 0;
         m_lootRecipientGroupMembers.clear();
         return;

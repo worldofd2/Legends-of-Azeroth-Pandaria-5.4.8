@@ -49,7 +49,7 @@ public:
     void StartingEventCloseDoors() override;
     void StartingEventOpenDoors() override;
 
-    void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
+    void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
     void HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered) override;
     bool SetupBattleground() override;
     void FillInitialWorldStates(WorldStateBuilder& builder) override;

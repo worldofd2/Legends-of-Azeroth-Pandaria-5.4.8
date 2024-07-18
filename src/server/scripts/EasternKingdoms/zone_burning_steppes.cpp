@@ -188,20 +188,20 @@ class npc_burning_steppes_chiseled_golem : public CreatureScript
             npc_burning_steppes_chiseled_golemAI(Creature* creature) : customCreatureAI(creature) { }
 
             TaskScheduler scheduler;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             bool hasDefeat;
 
             void Reset() override
             {
                 events.Reset();
                 scheduler.CancelAll();
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 hasDefeat = false;
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->SetFaction(1474); // default
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 targetGUID = guid;
             }

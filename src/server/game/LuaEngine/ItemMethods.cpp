@@ -77,13 +77,13 @@ namespace LuaItem
 
     int GetGUID(lua_State* L, Item* item)
     {
-        sEluna->Push(L, item->GetGUIDLow());
+        sEluna->Push(L, item->GetGUID().GetRawValue());
         return 1;
     }
 
     int GetOwnerGUID(lua_State* L, Item* item)
     {
-        sEluna->Push(L, item->GetOwnerGUID());
+        sEluna->Push(L, item->GetOwnerGUID().GetRawValue());
         return 1;
     }
 
@@ -325,7 +325,7 @@ namespace LuaItem
 
     int GetGUIDLow(lua_State* L, Item* item)
     {
-        sEluna->Push(L, item->GetGUIDLow());
+        sEluna->Push(L, item->GetGUID().GetCounter());
         return 1;
     }
 

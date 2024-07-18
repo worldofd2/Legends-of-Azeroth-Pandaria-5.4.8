@@ -139,7 +139,7 @@ class npc_coren_direbrew : public CreatureScript
                             creature->SetFaction(FACTION_HOSTILE_COREN);
                             creature->SetInCombatWithZone();
                         }
-                        _add[i] = 0;
+                        _add[i] = ObjectGuid::Empty;
                     }
                 }
 
@@ -227,7 +227,7 @@ class npc_coren_direbrew : public CreatureScript
             }
 
             private:
-                uint64 _add[3];
+                ObjectGuid _add[3];
                 uint32 _addTimer;
                 uint32 _disarmTimer;
                 bool _spawnedIlsa;

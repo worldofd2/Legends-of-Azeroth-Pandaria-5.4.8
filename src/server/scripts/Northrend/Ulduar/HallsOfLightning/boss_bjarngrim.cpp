@@ -118,7 +118,7 @@ class boss_bjarngrim : public CreatureScript
             uint32 m_uiMortalStrike_Timer;
             uint32 m_uiSlam_Timer;
 
-            uint64 m_auiStormforgedLieutenantGUID[2];
+            ObjectGuid m_auiStormforgedLieutenantGUID[2];
 
             void Reset() override
             {
@@ -400,7 +400,7 @@ class npc_stormforged_lieutenant : public CreatureScript
                 if (m_uiRenewSteel_Timer <= diff)
                 {
                     if (instance)
-                        if (Creature* pBjarngrim = instance->instance->GetCreature(instance->GetData64(DATA_BJARNGRIM)))
+                        if (Creature* pBjarngrim = instance->instance->GetCreature(instance->GetGuidData(DATA_BJARNGRIM)))
                             if (pBjarngrim->IsAlive())
                                 DoCast(pBjarngrim, DUNGEON_MODE(SPELL_RENEW_STEEL_N, SPELL_RENEW_STEEL_H));
 

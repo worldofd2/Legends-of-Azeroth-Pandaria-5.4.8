@@ -345,26 +345,40 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
 
     WorldPacket data(SMSG_SPELLINSTAKILLLOG, 8 + 8 + 4);
 
-    data.WriteGuidMask(casterguid, 6);
-    data.WriteGuidMask(targetguid, 0);
-    data.WriteGuidMask(casterguid, 7);
-    data.WriteGuidMask(targetguid, 2);
-    data.WriteGuidMask(casterguid, 3, 1, 2, 0, 4);
-    data.WriteGuidMask(targetguid, 4, 7, 1, 6, 5);
-    data.WriteGuidMask(casterguid, 5);
-    data.WriteGuidMask(targetguid, 3);
+    data.WriteBit(casterguid[6]);
+    data.WriteBit(targetguid[0]);
+    data.WriteBit(casterguid[7]);
+    data.WriteBit(targetguid[2]);
+    data.WriteBit(casterguid[3]);
+data.WriteBit(casterguid[1]);
+data.WriteBit(casterguid[2]);
+data.WriteBit(casterguid[0]);
+data.WriteBit(casterguid[4]);
+    data.WriteBit(targetguid[4]);
+data.WriteBit(targetguid[7]);
+data.WriteBit(targetguid[1]);
+data.WriteBit(targetguid[6]);
+data.WriteBit(targetguid[5]);
+    data.WriteBit(casterguid[5]);
+    data.WriteBit(targetguid[3]);
 
-    data.WriteGuidBytes(casterguid, 0);
-    data.WriteGuidBytes(targetguid, 1);
-    data.WriteGuidBytes(casterguid, 3, 4, 5, 7);
-    data.WriteGuidBytes(targetguid, 0);
-    data.WriteGuidBytes(casterguid, 6);
-    data.WriteGuidBytes(targetguid, 2, 4);
-    data.WriteGuidBytes(casterguid, 1);
+    data.WriteByteSeq(casterguid[0]);
+    data.WriteByteSeq(targetguid[1]);
+    data.WriteByteSeq(casterguid[3]);
+data.WriteByteSeq(casterguid[4]);
+data.WriteByteSeq(casterguid[5]);
+data.WriteByteSeq(casterguid[7]);
+    data.WriteByteSeq(targetguid[0]);
+    data.WriteByteSeq(casterguid[6]);
+    data.WriteByteSeq(targetguid[2]);
+data.WriteByteSeq(targetguid[4]);
+    data.WriteByteSeq(casterguid[1]);
     data << int32(m_spellInfo->Id);
-    data.WriteGuidBytes(targetguid, 3);
-    data.WriteGuidBytes(casterguid, 2);
-    data.WriteGuidBytes(targetguid, 7, 6, 5);
+    data.WriteByteSeq(targetguid[3]);
+    data.WriteByteSeq(casterguid[2]);
+    data.WriteByteSeq(targetguid[7]);
+data.WriteByteSeq(targetguid[6]);
+data.WriteByteSeq(targetguid[5]);
 
     m_caster->SendMessageToSet(&data, true);
 
@@ -1344,7 +1358,7 @@ void Spell::EffectUnlearnSpecialization(SpellEffIndex effIndex)
 
     player->RemoveSpell(spellToUnlearn);
 
-    TC_LOG_DEBUG("spells", "Spell: Player %u has unlearned spell %u from NpcGUID: %u", player->GetGUIDLow(), spellToUnlearn, m_caster->GetGUIDLow());
+    TC_LOG_DEBUG("spells", "Spell: Player %u has unlearned spell %u from NpcGUID: %u", player->GetGUID().GetCounter(), spellToUnlearn, m_caster->GetGUID().GetCounter());
 }
 
 void Spell::EffectPowerDrain(SpellEffIndex effIndex)
@@ -1740,7 +1754,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
 
         // set the "Crafted by ..." property of the item
         if (pItem->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE && pItem->GetTemplate()->Class != ITEM_CLASS_QUEST && newitemid != 6265 && newitemid != 6948)
-            pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
+            pItem->SetGuidValue(ITEM_FIELD_CREATOR, player->GetGUID());
 
         // send info to the client
         player->SendNewItem(pItem, num_to_add, true, bgType == 0);
@@ -1987,7 +2001,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
         if (!caster->IsInWorld())
             return;
         DynamicObject* dynObj = new DynamicObject(false);
-        if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo, *destTarget, radius, DYNAMIC_OBJECT_AREA_SPELL))
+        if (!dynObj->CreateDynamicObject(caster->GetMap()->GenerateLowGuid<HighGuid::DynamicObject>(), caster, m_spellInfo, *destTarget, radius, DYNAMIC_OBJECT_AREA_SPELL))
         {
             delete dynObj;
             return;
@@ -2157,7 +2171,7 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, gain, power);
 }
 
-void Spell::SendLoot(uint64 guid, LootType loottype)
+void Spell::SendLoot(ObjectGuid guid, LootType loottype)
 {
     Player* player = m_caster->ToPlayer();
     if (!player)
@@ -2169,7 +2183,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
         if (!gameObjTarget->isSpawned() && !player->IsGameMaster())
         {
             TC_LOG_ERROR("spells", "Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn time without being in GM mode!",
-                            player->GetName().c_str(), player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+                            player->GetName().c_str(), player->GetGUID().GetCounter(), gameObjTarget->GetEntry(), gameObjTarget->GetGUID().GetCounter());
             return;
         }
         // special case, already has GossipHello inside so return and avoid calling twice
@@ -2239,7 +2253,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
     Player* player = m_caster->ToPlayer();
 
     uint32 lockId = 0;
-    uint64 guid = 0;
+    ObjectGuid guid = ObjectGuid::Empty;
 
     // Get lockId
     if (gameObjTarget)
@@ -2332,10 +2346,10 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
             if (gameObjTarget)
             {
                 // Allow one skill-up until respawned
-                if (!gameObjTarget->IsInSkillupList(player->GetGUIDLow()))
+                if (!gameObjTarget->IsInSkillupList(player->GetGUID().GetCounter()))
                 {
                     player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue, 1, gameObjTarget);
-                    gameObjTarget->AddToSkillupList(player->GetGUIDLow());
+                    gameObjTarget->AddToSkillupList(player->GetGUID().GetCounter());
                 }
             }
             else if (itemTarget)
@@ -2499,10 +2513,10 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
     
-    uint64 privateObjectOwner;
+    ObjectGuid privateObjectOwner;
     if (!(properties->Flags & (SUMMON_PROP_FLAG_PERSONAL_SPAWN | SUMMON_PROP_FLAG_PERSONAL_GROUP_SPAWN)))
     {
-        privateObjectOwner = 0;
+        privateObjectOwner = ObjectGuid::Empty;
     }
     else if (m_originalCaster->IsPrivateObject())
     {
@@ -2719,7 +2733,7 @@ void Spell::EffectLearnSpell(SpellEffIndex effIndex)
     uint32 spellToLearn = (m_spellInfo->Id == 483 || m_spellInfo->Id == 55884) ? damage : m_spellInfo->Effects[effIndex].TriggerSpell;
     player->LearnSpell(spellToLearn, false);
 
-    TC_LOG_DEBUG("spells", "Spell: Player %u has learned spell %u from NpcGUID=%u", player->GetGUIDLow(), spellToLearn, m_caster->GetGUIDLow());
+    TC_LOG_DEBUG("spells", "Spell: Player %u has learned spell %u from NpcGUID=%u", player->GetGUID().GetCounter(), spellToLearn, m_caster->GetGUID().GetCounter());
 }
 
 typedef std::list< std::pair<uint32, uint64> > DispelList;
@@ -2824,15 +2838,22 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
         dataFail.FlushBits();
 
-        dataFail.WriteGuidBytes(caster, 2);
-        dataFail.WriteGuidBytes(target, 1);
-        dataFail.WriteGuidBytes(caster, 5);
-        dataFail.WriteGuidBytes(target, 2, 5, 3, 7);
-        dataFail.WriteGuidBytes(caster, 4);
-        dataFail.WriteGuidBytes(target, 4);
-        dataFail.WriteGuidBytes(caster, 3, 0, 1);
-        dataFail.WriteGuidBytes(target, 6, 0);
-        dataFail.WriteGuidBytes(caster, 7, 6);
+        dataFail.WriteByteSeq(caster[2]);
+        dataFail.WriteByteSeq(target[1]);
+        dataFail.WriteByteSeq(caster[5]);
+        dataFail.WriteByteSeq(target[2]);
+dataFail.WriteByteSeq(target[5]);
+dataFail.WriteByteSeq(target[3]);
+dataFail.WriteByteSeq(target[7]);
+        dataFail.WriteByteSeq(caster[4]);
+        dataFail.WriteByteSeq(target[4]);
+        dataFail.WriteByteSeq(caster[3]);
+dataFail.WriteByteSeq(caster[0]);
+dataFail.WriteByteSeq(caster[1]);
+        dataFail.WriteByteSeq(target[6]);
+dataFail.WriteByteSeq(target[0]);
+        dataFail.WriteByteSeq(caster[7]);
+dataFail.WriteByteSeq(caster[6]);
 
         for (auto itr : failedSpells)
             dataFail << int32(itr);
@@ -2853,15 +2874,19 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
     WorldPacket data(SMSG_SPELLDISPELLOG);
 
-    data.WriteGuidMask(target, 2);
-    data.WriteGuidMask(caster, 4);
-    data.WriteGuidMask(target, 6);
-    data.WriteGuidMask(caster, 5);
+    data.WriteBit(target[2]);
+    data.WriteBit(caster[4]);
+    data.WriteBit(target[6]);
+    data.WriteBit(caster[5]);
     data.WriteBit(false); // is break
     data.WriteBit(false); // is steal
-    data.WriteGuidMask(target, 5, 7, 4, 0, 1);
+    data.WriteBit(target[5]);
+data.WriteBit(target[7]);
+data.WriteBit(target[4]);
+data.WriteBit(target[0]);
+data.WriteBit(target[1]);
     data.WriteBits(successList.size(), 22);
-    data.WriteGuidMask(caster, 0);
+    data.WriteBit(caster[0]);
 
     for (DispelChargesList::iterator itr = successList.begin(); itr != successList.end(); ++itr)
     {
@@ -2870,9 +2895,12 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         data.WriteBit(false); // harmful
     }
 
-    data.WriteGuidMask(caster, 3, 2);
-    data.WriteGuidMask(target, 3);
-    data.WriteGuidMask(caster, 1, 7, 6);
+    data.WriteBit(caster[3]);
+data.WriteBit(caster[2]);
+    data.WriteBit(target[3]);
+    data.WriteBit(caster[1]);
+data.WriteBit(caster[7]);
+data.WriteBit(caster[6]);
 
     for (DispelChargesList::iterator itr = successList.begin(); itr != successList.end(); ++itr)
     {
@@ -2888,18 +2916,25 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         unitTarget->RemoveAurasDueToSpellByDispel(itr->first->GetId(), m_spellInfo->Id, itr->first->GetCasterGUID(), m_caster, itr->second);
     }
 
-    data.WriteGuidBytes(caster, 4);
-    data.WriteGuidBytes(target, 3);
-    data.WriteGuidBytes(caster, 6, 0);
-    data.WriteGuidBytes(target, 5, 1);
-    data.WriteGuidBytes(caster, 3, 2, 1, 5);
-    data.WriteGuidBytes(target, 0);
+    data.WriteByteSeq(caster[4]);
+    data.WriteByteSeq(target[3]);
+    data.WriteByteSeq(caster[6]);
+data.WriteByteSeq(caster[0]);
+    data.WriteByteSeq(target[5]);
+data.WriteByteSeq(target[1]);
+    data.WriteByteSeq(caster[3]);
+data.WriteByteSeq(caster[2]);
+data.WriteByteSeq(caster[1]);
+data.WriteByteSeq(caster[5]);
+    data.WriteByteSeq(target[0]);
 
     data << uint32(m_spellInfo->Id);                // dispel spell id
 
-    data.WriteGuidBytes(target, 7, 6, 2);
-    data.WriteGuidBytes(caster, 7);
-    data.WriteGuidBytes(target, 4);
+    data.WriteByteSeq(target[7]);
+data.WriteByteSeq(target[6]);
+data.WriteByteSeq(target[2]);
+    data.WriteByteSeq(caster[7]);
+    data.WriteByteSeq(target[4]);
 
     m_caster->SendMessageToSet(&data, true);
 
@@ -2984,7 +3019,7 @@ void Spell::EffectAddFarsight(SpellEffIndex effIndex)
         return;
 
     DynamicObject* dynObj = new DynamicObject(true);
-    if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo, *destTarget, radius, DYNAMIC_OBJECT_FARSIGHT_FOCUS))
+    if (!dynObj->CreateDynamicObject(m_caster->GetMap()->GenerateLowGuid<HighGuid::DynamicObject>(), m_caster, m_spellInfo, *destTarget, radius, DYNAMIC_OBJECT_FARSIGHT_FOCUS))
     {
         delete dynObj;
         return;
@@ -3002,7 +3037,7 @@ void Spell::EffectUntrainTalents(SpellEffIndex /*effIndex*/)
     if (!unitTarget || m_caster->GetTypeId() == TYPEID_PLAYER)
         return;
 
-    if (uint64 guid = m_caster->GetGUID()) // the trainer is the caster
+    if (ObjectGuid guid = m_caster->GetGUID()) // the trainer is the caster
         unitTarget->ToPlayer()->SendTalentWipeConfirm(guid, false);
 }
 
@@ -3371,12 +3406,12 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SavePetToDB(trans);
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
     stmt->setUInt8(0, newPetSlot);
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, pet->GetCharmInfo()->GetPetNumber());
     trans->Append(stmt);
     CharacterDatabase.CommitTransaction(trans);
     player->PetSpellInitialize();
-    player->GetSession()->SendPetList(0, PET_SLOT_ACTIVE_FIRST, PET_SLOT_ACTIVE_LAST);
+    player->GetSession()->SendPetList(ObjectGuid::Empty, PET_SLOT_ACTIVE_FIRST, PET_SLOT_ACTIVE_LAST);
 }
 
 void Spell::EffectSummonPet(SpellEffIndex effIndex)
@@ -3559,7 +3594,7 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
         if (HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
             unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
 
-    if ((unitTarget->ToCreature()->IsAIEnabled && !unitTarget->ToCreature()->HasReactState(REACT_PASSIVE)) || (unitTarget->IsPetGuardianStuff() && IS_PLAYER_GUID(unitTarget->GetCharmerOrOwnerGUID())))
+    if ((unitTarget->ToCreature()->IsAIEnabled && !unitTarget->ToCreature()->HasReactState(REACT_PASSIVE)) || (unitTarget->IsPetGuardianStuff() && unitTarget->GetCharmerOrOwnerGUID().IsPlayer()))
         unitTarget->ToCreature()->AI()->AttackStart(m_caster);
 }
 
@@ -3847,15 +3882,27 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                     data << uint32(m_spellInfo->DurationEntry->Duration[0] ? m_spellInfo->DurationEntry->Duration[0] : 0);
                     data << uint32(m_spellInfo->DurationEntry->Duration[2] ? m_spellInfo->DurationEntry->Duration[2] : 0);
 
-                    data.WriteGuidMask(caster, 5);
+                    data.WriteBit(caster[5]);
                     data.WriteBits(m_spellInfo->Mechanic, 8);
-                    data.WriteGuidMask(caster, 7, 2, 1, 6, 3, 4);
+                    data.WriteBit(caster[7]);
+data.WriteBit(caster[2]);
+data.WriteBit(caster[1]);
+data.WriteBit(caster[6]);
+data.WriteBit(caster[3]);
+data.WriteBit(caster[4]);
                     data.WriteBits(CONTROL_TYPE_INTERRUPT, 8);
-                    data.WriteGuidMask(caster, 0);
+                    data.WriteBit(caster[0]);
 
                     data.FlushBits();
 
-                    data.WriteGuidBytes(caster, 4, 2, 5, 6, 0, 7, 1, 3);
+                    data.WriteByteSeq(caster[4]);
+data.WriteByteSeq(caster[2]);
+data.WriteByteSeq(caster[5]);
+data.WriteByteSeq(caster[6]);
+data.WriteByteSeq(caster[0]);
+data.WriteByteSeq(caster[7]);
+data.WriteByteSeq(caster[1]);
+data.WriteByteSeq(caster[3]);
 
                     unitTarget->ToPlayer()->SendDirectMessage(&data);
                 }
@@ -3885,7 +3932,7 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
 
     Map* map = target->GetMap();
 
-    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id, map,
+    if (!pGameObj->Create(map->GenerateLowGuid<HighGuid::GameObject>(), gameobject_id, map,
         m_caster->GetPhaseMask(), x, y, z, target->GetOrientation(), { }, 100, GO_STATE_READY))
     {
         delete pGameObj;
@@ -3915,7 +3962,7 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
     if (uint32 linkedEntry = pGameObj->GetGOInfo()->GetLinkedGameObjectEntry())
     {
         GameObject* linkedGO = new GameObject;
-        if (linkedGO->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, map,
+        if (linkedGO->Create(map->GenerateLowGuid<HighGuid::GameObject>(), linkedEntry, map,
             m_caster->GetPhaseMask(), x, y, z, target->GetOrientation(), { }, 100, GO_STATE_READY))
         {
             linkedGO->AddToTransportIfNeeded(m_caster->GetTransport());
@@ -4602,7 +4649,7 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     Player* target = unitTarget->ToPlayer();
 
     // caster or target already have requested duel
-    if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()))
+    if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUID()))
         return;
 
     // Players can only fight a duel in zones with this flag
@@ -4626,7 +4673,7 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     uint32 gameobject_id = m_spellInfo->Effects[effIndex].MiscValue;
 
     Map* map = m_caster->GetMap();
-    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id,
+    if (!pGameObj->Create(map->GenerateLowGuid<HighGuid::GameObject>(), gameobject_id,
         map, m_caster->GetPhaseMask(),
         m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2,
         m_caster->GetPositionY()+(unitTarget->GetPositionY()-m_caster->GetPositionY())/2,
@@ -4713,8 +4760,8 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
     duel2->isMounted  = (GetSpellInfo()->Id == 62875); // Mounted Duel
     target->duel      = duel2;
 
-    caster->SetUInt64Value(PLAYER_FIELD_DUEL_ARBITER, pGameObj->GetGUID());
-    target->SetUInt64Value(PLAYER_FIELD_DUEL_ARBITER, pGameObj->GetGUID());
+    caster->SetGuidValue(PLAYER_FIELD_DUEL_ARBITER, pGameObj->GetGUID());
+    target->SetGuidValue(PLAYER_FIELD_DUEL_ARBITER, pGameObj->GetGUID());
 
     sScriptMgr->OnPlayerDuelRequest(target, caster);
 }
@@ -4732,7 +4779,7 @@ void Spell::EffectStuck(SpellEffIndex /*effIndex*/)
         return;
 
     TC_LOG_DEBUG("spells", "Spell Effect: Stuck");
-    TC_LOG_INFO("spells", "Player %s (guid %u) used auto-unstuck future at map %u (%f, %f, %f)", player->GetName().c_str(), player->GetGUIDLow(), player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+    TC_LOG_INFO("spells", "Player %s (guid %u) used auto-unstuck future at map %u (%f, %f, %f)", player->GetName().c_str(), player->GetGUID().GetCounter(), player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
 
     if (player->IsInFlight())
         return;
@@ -4962,7 +5009,7 @@ void Spell::EffectDisEnchant(SpellEffIndex /*effIndex*/)
 
     if (Player* caster = m_caster->ToPlayer())
     {
-        sServiceMgr->DeletedItemNotify(caster->GetGUIDLow(), itemTarget, DELETING_TYPE_DISENCHANT);
+        sServiceMgr->DeletedItemNotify(caster->GetGUID(), itemTarget, DELETING_TYPE_DISENCHANT);
 
         caster->UpdateCraftSkill(m_spellInfo->Id);
         caster->SendLoot(itemTarget->GetGUID(), LOOT_DISENCHANTING);
@@ -5050,7 +5097,7 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     uint32 go_id = m_spellInfo->Effects[effIndex].MiscValue;
     uint8 slot = m_spellInfo->Effects[effIndex].Effect - SPELL_EFFECT_SUMMON_OBJECT_SLOT1;
 
-    if (uint64 guid = m_caster->m_ObjectSlot[slot])
+    if (ObjectGuid guid = m_caster->m_ObjectSlot[slot])
     {
         if (GameObject* obj = m_caster->GetMap()->GetGameObject(guid))
         {
@@ -5071,7 +5118,7 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
                 m_caster->RemoveGameObject(obj, true);
             }
         }
-        m_caster->m_ObjectSlot[slot] = 0;
+        m_caster->m_ObjectSlot[slot].Clear();
     }
 
     GameObject* go = new GameObject();
@@ -5085,7 +5132,7 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
         m_caster->GetClosePoint(x, y, z, DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     Map* map = m_caster->GetMap();
-    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map,
+    if (!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), go_id, map,
         m_caster->GetPhaseMask(), x, y, z, m_caster->GetOrientation(), { }, 0, GO_STATE_READY))
     {
         delete go;
@@ -5131,7 +5178,7 @@ void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
     {
         if ((*itr).spellId == m_spellInfo->Id)
         {
-            if (DynamicObject* obj = sObjectAccessor->FindDynamicObject((*itr).guid))
+            if (DynamicObject* obj = player->GetMap()->GetDynamicObject((*itr).guid))
                 obj->Remove();
 
             itr = markers.erase(itr);
@@ -5146,7 +5193,7 @@ void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
 
     DynamicObject* dynObj = new DynamicObject(false);
-    if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo, *destTarget, radius, DYNAMIC_OBJECT_RAID_MARKER))
+    if (!dynObj->CreateDynamicObject(player->GetMap()->GenerateLowGuid<HighGuid::DynamicObject>(), m_caster, m_spellInfo, *destTarget, radius, DYNAMIC_OBJECT_RAID_MARKER))
     {
         delete dynObj;
         return;
@@ -5852,7 +5899,7 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
 
     GameObject* pGameObj = new GameObject;
 
-    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), name_id, cMap,
+    if (!pGameObj->Create(cMap->GenerateLowGuid<HighGuid::GameObject>(), name_id, cMap,
         m_caster->GetPhaseMask(), fx, fy, fz, m_caster->GetOrientation(), { }, 100, GO_STATE_READY))
     {
         delete pGameObj;
@@ -5923,7 +5970,7 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
     if (uint32 linkedEntry = pGameObj->GetGOInfo()->GetLinkedGameObjectEntry())
     {
         GameObject* linkedGO = new GameObject;
-        if (linkedGO->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, cMap,
+        if (linkedGO->Create(cMap->GenerateLowGuid<HighGuid::GameObject>(), linkedEntry, cMap,
             m_caster->GetPhaseMask(), fx, fy, fz, m_caster->GetOrientation(), { }, 100, GO_STATE_READY))
         {
             linkedGO->AddToTransportIfNeeded(m_caster->GetTransport());
@@ -6147,15 +6194,22 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
 
         dataFail.FlushBits();
 
-        dataFail.WriteGuidBytes(caster, 2);
-        dataFail.WriteGuidBytes(target, 1);
-        dataFail.WriteGuidBytes(caster, 5);
-        dataFail.WriteGuidBytes(target, 2, 5, 3, 7);
-        dataFail.WriteGuidBytes(caster, 4);
-        dataFail.WriteGuidBytes(target, 4);
-        dataFail.WriteGuidBytes(caster, 3, 0, 1);
-        dataFail.WriteGuidBytes(target, 6, 0);
-        dataFail.WriteGuidBytes(caster, 7, 6);
+        dataFail.WriteByteSeq(caster[2]);
+        dataFail.WriteByteSeq(target[1]);
+        dataFail.WriteByteSeq(caster[5]);
+        dataFail.WriteByteSeq(target[2]);
+dataFail.WriteByteSeq(target[5]);
+dataFail.WriteByteSeq(target[3]);
+dataFail.WriteByteSeq(target[7]);
+        dataFail.WriteByteSeq(caster[4]);
+        dataFail.WriteByteSeq(target[4]);
+        dataFail.WriteByteSeq(caster[3]);
+dataFail.WriteByteSeq(caster[0]);
+dataFail.WriteByteSeq(caster[1]);
+        dataFail.WriteByteSeq(target[6]);
+dataFail.WriteByteSeq(target[0]);
+        dataFail.WriteByteSeq(caster[7]);
+dataFail.WriteByteSeq(caster[6]);
 
         for (auto itr : FailedSpells)
             dataFail << int32(itr);
@@ -6176,15 +6230,19 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
 
     WorldPacket data(SMSG_SPELLDISPELLOG);
 
-    data.WriteGuidMask(target, 2);
-    data.WriteGuidMask(caster, 4);
-    data.WriteGuidMask(target, 6);
-    data.WriteGuidMask(caster, 5);
+    data.WriteBit(target[2]);
+    data.WriteBit(caster[4]);
+    data.WriteBit(target[6]);
+    data.WriteBit(caster[5]);
     data.WriteBit(false); // is break
     data.WriteBit(true); // is steal
-    data.WriteGuidMask(target, 5, 7, 4, 0, 1);
+    data.WriteBit(target[5]);
+data.WriteBit(target[7]);
+data.WriteBit(target[4]);
+data.WriteBit(target[0]);
+data.WriteBit(target[1]);
     data.WriteBits(success_list.size(), 22);
-    data.WriteGuidMask(caster, 0);
+    data.WriteBit(caster[0]);
 
     for (DispelList::iterator itr = success_list.begin(); itr != success_list.end(); ++itr)
     {
@@ -6193,9 +6251,12 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
         data.WriteBit(false); // harmful
     }
 
-    data.WriteGuidMask(caster, 3, 2);
-    data.WriteGuidMask(target, 3);
-    data.WriteGuidMask(caster, 1, 7, 6);
+    data.WriteBit(caster[3]);
+data.WriteBit(caster[2]);
+    data.WriteBit(target[3]);
+    data.WriteBit(caster[1]);
+data.WriteBit(caster[7]);
+data.WriteBit(caster[6]);
 
     for (DispelList::iterator itr = success_list.begin(); itr != success_list.end(); ++itr)
     {
@@ -6211,18 +6272,25 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
         unitTarget->RemoveAurasDueToSpellBySteal(itr->first, itr->second, m_caster);
     }
 
-    data.WriteGuidBytes(caster, 4);
-    data.WriteGuidBytes(target, 3);
-    data.WriteGuidBytes(caster, 6, 0);
-    data.WriteGuidBytes(target, 5, 1);
-    data.WriteGuidBytes(caster, 3, 2, 1, 5);
-    data.WriteGuidBytes(target, 0);
+    data.WriteByteSeq(caster[4]);
+    data.WriteByteSeq(target[3]);
+    data.WriteByteSeq(caster[6]);
+data.WriteByteSeq(caster[0]);
+    data.WriteByteSeq(target[5]);
+data.WriteByteSeq(target[1]);
+    data.WriteByteSeq(caster[3]);
+data.WriteByteSeq(caster[2]);
+data.WriteByteSeq(caster[1]);
+data.WriteByteSeq(caster[5]);
+    data.WriteByteSeq(target[0]);
 
     data << uint32(m_spellInfo->Id);                // dispel spell id
 
-    data.WriteGuidBytes(target, 7, 6, 2);
-    data.WriteGuidBytes(caster, 7);
-    data.WriteGuidBytes(target, 4);
+    data.WriteByteSeq(target[7]);
+data.WriteByteSeq(target[6]);
+data.WriteByteSeq(target[2]);
+    data.WriteByteSeq(caster[7]);
+    data.WriteByteSeq(target[4]);
 
     m_caster->SendMessageToSet(&data, true);
 }
@@ -6235,7 +6303,7 @@ void Spell::EffectKillCreditPersonal(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    unitTarget->ToPlayer()->KilledMonsterCredit(m_spellInfo->Effects[effIndex].MiscValue, 0);
+    unitTarget->ToPlayer()->KilledMonsterCredit(m_spellInfo->Effects[effIndex].MiscValue, ObjectGuid::Empty);
 }
 
 void Spell::EffectKillCredit(SpellEffIndex effIndex)
@@ -6364,13 +6432,13 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
     pet->SavePetToDB(trans);
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
     stmt->setUInt8(0, newPetSlot);
-    stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUID().GetCounter());
     stmt->setUInt32(2, pet->GetCharmInfo()->GetPetNumber());
     trans->Append(stmt);
     CharacterDatabase.CommitTransaction(trans);
     player->PetSpellInitialize();
 
-    player->GetSession()->SendPetList(0, PET_SLOT_ACTIVE_FIRST, PET_SLOT_ACTIVE_LAST);
+    player->GetSession()->SendPetList(ObjectGuid::Empty, PET_SLOT_ACTIVE_FIRST, PET_SLOT_ACTIVE_LAST);
 }
 
 void Spell::EffectDiscoverTaxi(SpellEffIndex effIndex)
@@ -6482,7 +6550,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             // randomize position for multiple summons
             pos = m_caster->GetRandomPoint(*destTarget, radius);
 
-        TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, caster, m_spellInfo->Id, 0, visibleBySummonerOnly);
+        TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, caster, m_spellInfo->Id, 0, ObjectGuid(uint64(visibleBySummonerOnly)));
         if (!summon)
             return;
         if (summon->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
@@ -6543,7 +6611,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
 TempSummon* Spell::SummonTotem(uint32 entry, SummonPropertiesEntry const* properties, uint32 duration, bool visibleBySummonerOnly /*= false*/)
 {
-    auto summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id, 0, visibleBySummonerOnly);
+    auto summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id, 0, ObjectGuid(uint64(visibleBySummonerOnly)));
     if (!summon || !summon->IsTotem())
         return nullptr;
 
@@ -6899,13 +6967,13 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 
     Player* target = unitTarget ? unitTarget->ToPlayer() : nullptr;
     if (!unitTarget && corpseTarget)
-        target = ObjectAccessor::FindPlayerInOrOutOfWorld(corpseTarget->GetOwnerGUID());
+        target = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID());
 
     if (!target)
         return;
 
-    uint64 playerGuid = target->GetGUID();
-    uint64 casterGuid = m_caster->GetGUID();
+    ObjectGuid playerGuid = target->GetGUID();
+    ObjectGuid casterGuid = m_caster->GetGUID();
     uint32 effectValue = damage;
     SpellInfo const* spellInfo = m_spellInfo;
 
@@ -6936,8 +7004,8 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 // #pragma warning(pop)
 //     });
 
-        Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid);
-        Player* caster = ObjectAccessor::FindPlayerInOrOutOfWorld(casterGuid);
+        Player* player = ObjectAccessor::FindPlayer(playerGuid);
+        Player* caster = ObjectAccessor::FindPlayer(casterGuid);
         if (!player || !caster)
             return;
 
@@ -6978,7 +7046,7 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
     uint32 triggerEntry = GetSpellInfo()->Effects[effIndex].MiscValue;
 
     AreaTrigger * areaTrigger = new AreaTrigger;
-    if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos))
+    if (!areaTrigger->CreateAreaTrigger(GetCaster()->GetMap()->GenerateLowGuid<HighGuid::AreaTrigger>(), triggerEntry, GetCaster(), GetSpellInfo(), pos))
         delete areaTrigger;
 }
 
@@ -7166,7 +7234,7 @@ void Spell::EffectBonusRoll(SpellEffIndex effIndex)
         if (loot)
             loot.Reward(player);
         else
-            TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !loot, %u, " UI64FMTD, GetSpellInfo()->Id, m_caster->GetGUID());
+            TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !loot, %u, " UI64FMTD, GetSpellInfo()->Id, m_caster->GetGUID().GetRawValue());
     }
     else
     {
@@ -7192,13 +7260,13 @@ void Spell::EffectBonusRoll(SpellEffIndex effIndex)
                     difficulty = Difficulty(triggeredByAura->GetAmount());
                 }
                 else
-                    TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !player->HasCurrency(bonusLoot->Currency, 1) %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID());
+                    TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !player->HasCurrency(bonusLoot->Currency, 1) %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID().GetRawValue());
             }
             else
-                TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - bonusLoot->Spell != triggeredByAura->GetId() %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID());
+                TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - bonusLoot->Spell != triggeredByAura->GetId() %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID().GetRawValue());
         }
         else
-            TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !bonusLoot %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID());
+            TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !bonusLoot %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID().GetRawValue());
 
         if (currency)
         {
@@ -7210,7 +7278,7 @@ void Spell::EffectBonusRoll(SpellEffIndex effIndex)
                 player->AddLootLockout(LootLockoutType::BonusLoot, bonusLoot->Entry, difficulty);
             }
             else
-                TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !loot %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID());
+                TC_LOG_ERROR("shitlog", "Spell::EffectBonusRoll - !loot %u, " UI64FMTD, GetSpellInfo()->Id, triggeredByAura->GetCasterGUID().GetRawValue());
         }
 
         player->RemoveAura(triggeredByAura->GetBase());

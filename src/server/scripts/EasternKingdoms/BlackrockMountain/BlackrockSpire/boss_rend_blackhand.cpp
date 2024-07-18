@@ -169,7 +169,7 @@ public:
         {
             _Reset();
             gythEvent = false;
-            victorGUID = 0;
+            victorGUID.Clear();
         }
 
         void JustEngagedWith(Unit* /*who*/) override
@@ -430,8 +430,8 @@ public:
 
         private:
             bool   gythEvent;
-            uint64 victorGUID;
-            uint64 portcullisGUID;
+            ObjectGuid victorGUID;
+            ObjectGuid portcullisGUID;
     };
 
     CreatureAI* GetAI(Creature* creature) const override

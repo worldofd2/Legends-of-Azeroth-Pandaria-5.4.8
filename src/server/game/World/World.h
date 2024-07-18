@@ -27,6 +27,7 @@
 #include "SharedDefines.h"
 #include "ByteBuffer.h"
 #include "LockedQueue.h"
+#include "ObjectGuid.h"
 #include "AsyncCallbackProcessor.h"
 #include "DatabaseEnvFwd.h"
 #include "Realm.h"
@@ -610,7 +611,9 @@ enum WorldIntConfigs
     CONFIG_PLAYED_TIME_REWARD,
     CONFIG_AUTO_SERVER_RESTART_HOUR,
     CONFIG_SOCKET_TIMEOUTTIME_ACTIVE,
-    INT_CONFIG_VALUE_COUNT
+    INT_CONFIG_VALUE_COUNT,
+    CONFIG_RESPAWN_GUIDWARNLEVEL,
+    CONFIG_RESPAWN_GUIDALERTLEVEL,
 };
 
 /// Server rates
@@ -777,7 +780,7 @@ struct CharacterNameData
     uint8 m_race;
     uint8 m_gender;
     uint8 m_level;
-    uint32 m_accountID;
+    ObjectGuid m_accountID;
     DeclinedName const* m_declinedName = nullptr;
 };
 
@@ -1124,16 +1127,16 @@ class TC_GAME_API World
 
         bool isEventKillStart;
 
-        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
-        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
-        void UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE, DeclinedName const* declinedName = nullptr);
-        void UpdateCharacterNameDataLevel(uint32 guid, uint8 level);
-        void UpdateCharacterNameDataClass(uint32 guid, uint8 classID);
-        void UpdateCharacterNameDataAccount(uint32 guid, uint32 account);
-        void DeleteCharacterNameData(uint32 guid) { _characterNameDataMap.erase(guid); }
-        bool HasCharacterNameData(uint32 guid) { return _characterNameDataMap.find(guid) != _characterNameDataMap.end(); }
+        CharacterNameData const* GetCharacterNameData(ObjectGuid guid) const;
+        void AddCharacterNameData(ObjectGuid guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
+        void UpdateCharacterNameData(ObjectGuid guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE, DeclinedName const* declinedName = nullptr);
+        void UpdateCharacterNameDataLevel(ObjectGuid guid, uint8 level);
+        void UpdateCharacterNameDataClass(ObjectGuid guid, uint8 classID);
+        void UpdateCharacterNameDataAccount(ObjectGuid guid, ObjectGuid account);
+        void DeleteCharacterNameData(ObjectGuid guid) { _characterNameDataMap.erase(guid); }
+        bool HasCharacterNameData(ObjectGuid guid) { return _characterNameDataMap.find(guid) != _characterNameDataMap.end(); }
 
-        AccountCacheData& GetAccountCacheData(uint32 accountId);
+        AccountCacheData& GetAccountCacheData(ObjectGuid accountId);
 
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
@@ -1154,6 +1157,13 @@ class TC_GAME_API World
 
         union DebugValue { uint32 UInt32; float Float; };
         DebugValue & GetDebugValue(uint32 id) { return m_debugValues[id]; }
+
+        void TriggerGuidWarning();
+        void TriggerGuidAlert();
+        bool IsGuidWarning() { return _guidWarn; }
+        bool IsGuidAlert() { return _guidAlert; }
+
+        void RemoveOldCorpses();
 
     protected:
         void _UpdateGameTime();
@@ -1266,11 +1276,11 @@ class TC_GAME_API World
         typedef std::map<uint8, uint8> AutobroadcastsWeightMap;
         AutobroadcastsWeightMap m_autobroadcastsWeights;
 
-        std::map<uint32, CharacterNameData> _characterNameDataMap;
+        std::map<ObjectGuid, CharacterNameData> _characterNameDataMap;
         void LoadCharacterNameData();
         void LoadAccountCacheData();
 
-        std::map<uint32, AccountCacheData> _accountCacheData;
+        std::map<ObjectGuid, AccountCacheData> _accountCacheData;
 
         void ProcessQueryCallbacks();
         QueryCallbackProcessor _queryProcessor;
@@ -1283,6 +1293,9 @@ class TC_GAME_API World
         std::map<uint32, std::pair<DevToolType, DevToolSettings*>> m_devToolSettings;
 
         std::map<uint32, DebugValue> m_debugValues;
+
+        bool _guidWarn;
+        bool _guidAlert;
 };
 
 typedef std::map<uint32, std::string> RealmNameMap;

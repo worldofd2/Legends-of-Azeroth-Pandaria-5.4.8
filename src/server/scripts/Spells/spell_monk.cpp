@@ -672,7 +672,7 @@ class spell_monk_touch_of_karma : public AuraScript
 {
     PrepareAuraScript(spell_monk_touch_of_karma);
 
-    uint64 targetGuid = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
 
     void CalculateAmount(AuraEffect const*, float& amount, bool&)
     {
@@ -701,7 +701,7 @@ class spell_monk_touch_of_karma : public AuraScript
     }
 
 public:
-    void SetRedirectTarget(uint64 guid)
+    void SetRedirectTarget(ObjectGuid guid)
     {
         targetGuid = guid;
     }
@@ -720,7 +720,7 @@ class spell_monk_touch_of_karma_target : public SpellScript
 {
     PrepareSpellScript(spell_monk_touch_of_karma_target);
 
-    uint64 targetGuid = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
 
     void HandleAfterHit()
     {
@@ -1662,7 +1662,7 @@ struct npc_monk_s_e_f_spirit : public ScriptedAI
     };
 
 
-    uint64 victimGuid = 0;
+    ObjectGuid victimGuid = ObjectGuid::Empty;
     TaskScheduler scheduler;
     State state = State::Jumping;
 
@@ -1693,7 +1693,7 @@ struct npc_monk_s_e_f_spirit : public ScriptedAI
     }
 
 
-    void SetGUID(uint64 guid, int32) override
+    void SetGUID(ObjectGuid guid, int32) override
     {
         victimGuid = guid;
         if (Unit* target = ObjectAccessor::GetUnit(*me, guid))
@@ -1703,7 +1703,7 @@ struct npc_monk_s_e_f_spirit : public ScriptedAI
         }
     }
 
-    uint64 GetGUID(int32) const override
+    ObjectGuid GetGUID(int32) const override
     {
         return victimGuid;
     }

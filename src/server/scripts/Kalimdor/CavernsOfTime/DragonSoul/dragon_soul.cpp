@@ -1555,7 +1555,7 @@ class npc_dragon_soul_thrall : public CreatureScript
                             break;
                         case EVENT_SPAWN_DRAGONS:
                             instance->SetData(DATA_ULTRAXION_TRASH, IN_PROGRESS);
-                            if (Creature* Deathwing = instance->instance->GetCreature(instance->GetData64(DATA_DRAGON_SOUL_EVENT)))
+                            if (Creature* Deathwing = instance->instance->GetCreature(instance->GetGuidData(DATA_DRAGON_SOUL_EVENT)))
                                 Deathwing->AI()->DoAction(ACTION_DEATHWING_INTRO);
                             break;
                         case EVENT_DRAGONS_INTRO_1:
@@ -1625,17 +1625,17 @@ class npc_dragon_soul_thrall : public CreatureScript
                             break;
                         case EVENT_SPAWN_SHIP:
                             instance->DoRemoveAurasDueToSpellOnPlayers(106368); // Twilight Shift
-                            if (GameObject* pShip = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_HORDE_SHIP)))
+                            if (GameObject* pShip = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_HORDE_SHIP)))
                             {
                                 pShip->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_DESTROYED);
                                 pShip->UpdateObjectVisibility();
                             }
-                            if (GameObject* pShip = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_ALLIANCE_SHIP_FIRST)))
+                            if (GameObject* pShip = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_ALLIANCE_SHIP_FIRST)))
                             {
                                 pShip->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_DESTROYED);
                                 pShip->UpdateObjectVisibility();
                             }
-                            if (GameObject* pShip = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_ALLIANCE_SHIP)))
+                            if (GameObject* pShip = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_ALLIANCE_SHIP)))
                             {
                                 pShip->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_DESTROYED);
                                 pShip->UpdateObjectVisibility();
@@ -1646,7 +1646,7 @@ class npc_dragon_soul_thrall : public CreatureScript
                             instance->DoRemoveAurasDueToSpellOnPlayers(106368); // Twilight Shift
                             me->SummonCreature(NPC_SKY_CAPTAIN_SWAYZE, customPos[1], TEMPSUMMON_MANUAL_DESPAWN, 0);
                             me->SummonCreature(NPC_KAANU_REEVS, customPos[2], TEMPSUMMON_MANUAL_DESPAWN, 0);
-                            if (Creature* pSwayze = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SWAYZE)))
+                            if (Creature* pSwayze = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SWAYZE)))
                                 pSwayze->AI()->Talk(9);
                             events.ScheduleEvent(EVENT_TALK_ULTRAXION_WIN_1, 10000);
                             break;
@@ -1996,7 +1996,7 @@ class npc_dragon_soul_twilight_assaulter : public CreatureScript
                 }
             }
 
-            uint64 GetGUID(int32 /*type*/) const override
+            ObjectGuid GetGUID(int32 /*type*/) const override
             {
                 return stalkerGUID;
             }
@@ -2040,7 +2040,7 @@ class npc_dragon_soul_twilight_assaulter : public CreatureScript
             bool horizontal;
             uint8 lane;
             Position assaultPos;
-            uint64 stalkerGUID;
+            ObjectGuid stalkerGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

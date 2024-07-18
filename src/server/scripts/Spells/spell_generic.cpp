@@ -235,7 +235,7 @@ class spell_gen_animal_blood : public AuraScript
     void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         // Remove all auras with spell id 46221, except the one currently being applied
-        while (Aura* aur = GetUnitOwner()->GetOwnedAura(SPELL_ANIMAL_BLOOD, 0, 0, 0, GetAura()))
+        while (Aura* aur = GetUnitOwner()->GetOwnedAura(SPELL_ANIMAL_BLOOD, ObjectGuid::Empty, ObjectGuid::Empty, 0, GetAura()))
             GetUnitOwner()->RemoveOwnedAura(aur);
     }
 
@@ -3253,7 +3253,7 @@ class spell_gen_survey : public SpellScriptLoader
                         go->SetSpellId(0);
 
                     player->RemoveGameObject(go, true);
-                    player->m_ObjectSlot[1] = 0;
+                    player->m_ObjectSlot[1] = ObjectGuid::Empty;
                 }
 
                 ResearchDigsite* digsite = player->GetCurrentResearchDigsite();
@@ -3331,8 +3331,8 @@ class spell_gen_searching_for_artifacts : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                     if (GameObject* go = GetHitGObj())
-                        if (!go->IsInSkillupList(player->GetGUIDLow()) && player->UpdateCraftSkill(GetSpellInfo()->Id))
-                            go->AddToSkillupList(player->GetGUIDLow());
+                        if (!go->IsInSkillupList(player->GetGUID().GetCounter()) && player->UpdateCraftSkill(GetSpellInfo()->Id))
+                            go->AddToSkillupList(player->GetGUID().GetCounter());
             }
 
             void Register() override
@@ -3934,7 +3934,7 @@ class spell_gen_noodle_cart_wave : public SpellScript
         size_t operator()(WorldPacket* data, LocaleConstant locale) const
         {
             std::string text = sObjectMgr->GetTrinityString(m_textId, locale);
-            return ChatHandler::BuildChatPacket(*data, CHAT_MSG_MONSTER_SAY, LANG_UNIVERSAL, m_source->GetGUID(), m_target ? m_target->GetGUID() : 0, text, 0,
+            return ChatHandler::BuildChatPacket(*data, CHAT_MSG_MONSTER_SAY, LANG_UNIVERSAL, m_source->GetGUID(), m_target ? m_target->GetGUID() : ObjectGuid::Empty, text, 0,
                 m_source->GetNameForLocaleIdx(locale), m_target ? m_target->GetNameForLocaleIdx(locale) : "");
         }
 
@@ -4421,7 +4421,7 @@ class spell_gen_portal_to_isle_of_thunder : public SpellScript
             }
             else
             {
-                TC_LOG_ERROR("shit", "spell_gen_portal_to_isle_of_thunder: Player %u, team %u, spell %u.", player->GetGUIDLow(), player->GetTeam(), GetSpellInfo()->Id);
+                TC_LOG_ERROR("shit", "spell_gen_portal_to_isle_of_thunder: Player %u, team %u, spell %u.", player->GetGUID().GetCounter(), player->GetTeam(), GetSpellInfo()->Id);
                 return;
             }
             dest._position.m_mapId = 1064;

@@ -64,14 +64,14 @@ public:
     static bool HandleResetAchievementsCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
 
         if (target)
             target->ResetAchievements();
         else
-            PlayerAchievementMgr::DeleteFromDB(GUID_LOPART(targetGuid));
+            PlayerAchievementMgr::DeleteFromDB(targetGuid.GetCounter());
 
         return true;
     }
@@ -164,7 +164,7 @@ public:
     static bool HandleResetSpellsCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
@@ -181,7 +181,7 @@ public:
         {
             CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
             stmt->setUInt16(0, uint16(AT_LOGIN_RESET_SPELLS));
-            stmt->setUInt32(1, GUID_LOPART(targetGuid));
+            stmt->setUInt32(1, targetGuid.GetCounter());
             CharacterDatabase.Execute(stmt);
 
             handler->PSendSysMessage(LANG_RESET_SPELLS_OFFLINE, targetName.c_str());
@@ -211,7 +211,7 @@ public:
     static bool HandleResetTalentsCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
         {
@@ -248,7 +248,7 @@ public:
         {
             CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
             stmt->setUInt16(0, uint16(AT_LOGIN_NONE | AT_LOGIN_RESET_PET_TALENTS));
-            stmt->setUInt32(1, GUID_LOPART(targetGuid));
+            stmt->setUInt32(1, targetGuid.GetCounter());
             CharacterDatabase.Execute(stmt);
 
             std::string nameLink = handler->playerLink(targetName);
@@ -297,7 +297,7 @@ public:
         CharacterDatabase.Execute(stmt);
 
         std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
-        HashMapHolder<Player>::MapType const& plist = sObjectAccessor->GetPlayers();
+        HashMapHolder<Player>::MapType const& plist = ObjectAccessor::GetPlayers();
         for (HashMapHolder<Player>::MapType::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
             itr->second->SetAtLoginFlag(atLogin);
 
@@ -311,7 +311,7 @@ public:
         if (toks.size() < 2)
             return false;
 
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)toks[0], nullptr, &guid, &name))
             return false;
@@ -333,14 +333,14 @@ public:
         return true;
     }
 
-    static void ResetPvpStat(ChatHandler* handler, uint64 guid, RatedPvpSlot slot)
+    static void ResetPvpStat(ChatHandler* handler, ObjectGuid guid, RatedPvpSlot slot)
     {
         auto info = sRatedPvpMgr->GetInfo(slot, guid);
         if (info)
         {
             if (handler->GetSession())
                 sLog->outCommand(handler->GetSession()->GetAccountId(), "Pvp stat (slot: %u) for %u: Rating %u, MatchmakerRating %u, SeasonGames %u, SeasonWins %u, SeasonBest %u, WeekGames %u, WeekWins %u, WeekBest %u",
-                    uint32(slot), GUID_LOPART(guid), info->Rating, info->MatchmakerRating, info->SeasonGames, info->SeasonWins, info->SeasonBest, info->WeekGames, info->WeekWins, info->WeekBest);
+                    uint32(slot), guid.GetCounter(), info->Rating, info->MatchmakerRating, info->SeasonGames, info->SeasonWins, info->SeasonBest, info->WeekGames, info->WeekWins, info->WeekBest);
 
             info->Rating = 0;
             info->MatchmakerRating = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
@@ -359,8 +359,7 @@ public:
     {
         uint64 teamId = std::strtoull(args, nullptr, 10);
         uint64 slot = teamId / 100000000000 - 1;
-        uint64 guid = teamId - 100000000000 * (slot + 1);
-        guid = MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
+        ObjectGuid guid(HighGuid::Player, uint32(teamId - 100000000000 * (slot + 1)));
 
         std::string name;
         std::string msg;

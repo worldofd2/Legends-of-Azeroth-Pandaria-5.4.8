@@ -107,7 +107,7 @@ public:
             return true;
         }
 
-        uint64 targetGuid = sObjectMgr->GetPlayerGUIDByName(target);
+        ObjectGuid targetGuid = sObjectMgr->GetPlayerGUIDByName(target);
         uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(targetGuid);
         // Target must exist and have administrative rights
         //if (!AccountMgr::HasPermission(accountId, rbac::RBAC_PERM_COMMANDS_BE_ASSIGNED_TICKET, realm.Id.Realm))
@@ -165,7 +165,7 @@ public:
             return true;
         }
 
-        sTicketMgr->CloseTicket<GmTicket>(ticket->GetTicketId(), player ? player->GetGUID() : -1);
+        sTicketMgr->CloseTicket<GmTicket>(ticket->GetTicketId(), player ? player->GetGUID() : ObjectGuid::Empty);
         sTicketMgr->UpdateLastChange();
 
         std::string msg = ticket->FormatMessageString(*handler, player ? player->GetName().c_str() : "Console", NULL, NULL, NULL);
@@ -311,7 +311,7 @@ public:
             security = assignedPlayer->GetSession()->GetSecurity();
         else
         {
-            uint64 guid = ticket->GetAssignedToGUID();
+            ObjectGuid guid = ticket->GetAssignedToGUID();
             uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
             security = AccountMgr::GetSecurity(accountId, realm.Id.Realm);
         }
@@ -443,7 +443,7 @@ public:
             return true;
         }
 
-        sTicketMgr->CloseTicket<T>(ticket->GetTicketId(), player ? player->GetGUID() : -1);
+        sTicketMgr->CloseTicket<T>(ticket->GetTicketId(), player ? player->GetGUID() : ObjectGuid::Empty);
 
         std::string msg = ticket->FormatMessageString(*handler, player ? player->GetName().c_str() : "Console", NULL, NULL, NULL);
         handler->SendGlobalGMSysMessage(msg.c_str());
@@ -574,7 +574,7 @@ public:
             security = assignedPlayer->GetSession()->GetSecurity();
         else
         {
-            uint64 guid = ticket->GetAssignedToGUID();
+            ObjectGuid guid = ticket->GetAssignedToGUID();
             uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
             security = AccountMgr::GetSecurity(accountId, realm.Id.Realm);
         }
@@ -712,8 +712,8 @@ public:
             return false;
 
         // Detect target's GUID
-        uint64 guid = 0;
-        if (Player* player = sObjectAccessor->FindPlayerByName(name))
+        ObjectGuid guid = ObjectGuid::Empty;
+        if (Player* player = ObjectAccessor::FindPlayerByName(name))
             guid = player->GetGUID();
         else
             guid = sObjectMgr->GetPlayerGUIDByName(name);

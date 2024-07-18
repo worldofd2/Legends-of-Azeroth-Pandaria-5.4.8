@@ -1483,7 +1483,6 @@ typedef std::unordered_map<uint32, WayPoint*> WPPath;
 
 typedef std::list<WorldObject*> ObjectList;
 typedef std::unordered_map<uint32, ObjectList*> ObjectListMap;
-typedef std::list<uint64> GuidList;
 typedef std::unordered_map<uint32, GuidList> GuidListMap;
 
 class SmartWaypointMgr

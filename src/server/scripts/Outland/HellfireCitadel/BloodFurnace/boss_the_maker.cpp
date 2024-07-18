@@ -75,7 +75,7 @@ class boss_the_maker : public CreatureScript
                     return;
 
                 instance->SetData(TYPE_THE_MAKER_EVENT, NOT_STARTED);
-                instance->HandleGameObject(instance->GetData64(DATA_DOOR2), true);
+                instance->HandleGameObject(instance->GetGuidData(DATA_DOOR2), true);
             }
 
             void JustEngagedWith(Unit* /*who*/) override
@@ -86,7 +86,7 @@ class boss_the_maker : public CreatureScript
                     return;
 
                 instance->SetData(TYPE_THE_MAKER_EVENT, IN_PROGRESS);
-                instance->HandleGameObject(instance->GetData64(DATA_DOOR2), false);
+                instance->HandleGameObject(instance->GetGuidData(DATA_DOOR2), false);
             }
 
             void KilledUnit(Unit* /*victim*/) override
@@ -102,8 +102,8 @@ class boss_the_maker : public CreatureScript
                     return;
 
                 instance->SetData(TYPE_THE_MAKER_EVENT, DONE);
-                instance->HandleGameObject(instance->GetData64(DATA_DOOR2), true);
-                instance->HandleGameObject(instance->GetData64(DATA_DOOR3), true);
+                instance->HandleGameObject(instance->GetGuidData(DATA_DOOR2), true);
+                instance->HandleGameObject(instance->GetGuidData(DATA_DOOR3), true);
 
              }
 

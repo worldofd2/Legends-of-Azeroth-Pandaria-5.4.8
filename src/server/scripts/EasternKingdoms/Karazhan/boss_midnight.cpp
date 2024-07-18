@@ -62,7 +62,7 @@ class boss_attumen : public CreatureScript
                 ChargeTimer = 20000;
             }
 
-            uint64 midnightGUID;
+            ObjectGuid midnightGUID;
             uint8 Phase;
             uint32 CleaveTimer;
             uint32 CurseTimer;
@@ -119,14 +119,14 @@ class boss_midnight : public CreatureScript
         {
             boss_midnightAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 attumenGUID;
+            ObjectGuid attumenGUID;
             uint8 Phase;
             uint32 Mount_Timer;
 
             void Reset() override
             {
                 Phase = 1;
-                attumenGUID = 0;
+                attumenGUID = ObjectGuid::Empty;
                 Mount_Timer = 0;
 
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -218,7 +218,7 @@ class boss_midnight : public CreatureScript
                 Mount_Timer = 1000;
             }
 
-            void SetMidnight(Creature* attumen, uint64 value)
+            void SetMidnight(Creature* attumen, ObjectGuid value)
             {
                 CAST_AI(boss_attumen::boss_attumenAI, attumen->AI())->midnightGUID = value;
             }
@@ -242,7 +242,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(uint32 diff)
                 midnight->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 midnight->SetVisible(true);
             }
-            midnightGUID = 0;
+            midnightGUID = ObjectGuid::Empty;
             me->SetVisible(false);
             me->Kill(me);
         }  else ResetTimer -= diff;

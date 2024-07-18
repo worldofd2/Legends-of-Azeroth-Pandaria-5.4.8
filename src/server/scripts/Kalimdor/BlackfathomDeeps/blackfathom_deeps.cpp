@@ -206,7 +206,7 @@ class npc_morridune : public CreatureScript
             {
                 Talk(SAY_MORRIDUNE_1);
                 me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                Start(false, false, 0);
+                Start(false, false, ObjectGuid::Empty);
             }
 
             void WaypointReached(uint32 waypointId) override

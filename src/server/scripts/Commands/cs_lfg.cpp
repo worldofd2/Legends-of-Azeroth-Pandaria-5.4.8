@@ -28,7 +28,7 @@ static void GetPlayerInfo(ChatHandler* handler, Player* player)
     if (!player)
         return;
 
-    uint64 guid = player->GetGUID();
+    ObjectGuid guid = player->GetGUID();
     if (auto queues = sLFGMgr->GetPlayerQueues(guid))
     {
         for (auto&& itr : *queues)
@@ -108,7 +108,7 @@ public:
             return true;
         }
 
-        uint64 guid = grp->GetGUID();
+        ObjectGuid guid = grp->GetGUID();
         std::string const& state = lfg::GetStateString(sLFGMgr->GetActiveState(guid));
         handler->PSendSysMessage(LANG_LFG_GROUP_INFO, grp->isLFGGroup(),
             state.c_str(), sLFGMgr->GetDungeon(guid));
@@ -189,7 +189,7 @@ public:
         time_t now = time(nullptr);
 
         static std::map<uint32, time_t> cooldowns;
-        time_t& cooldown = cooldowns[player->GetGUIDLow()];
+        time_t& cooldown = cooldowns[player->GetGUID().GetCounter()];
         if (now <= cooldown)
         {
             handler->PSendSysMessage("Вы уже использовали эту команду за последнюю минуту");

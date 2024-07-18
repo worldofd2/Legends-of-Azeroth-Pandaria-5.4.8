@@ -568,7 +568,7 @@ void BattlegroundSA::AddPlayer(Player* player)
     PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundSA::RemovePlayer(Player* player, uint64 guid, uint32 team)
+void BattlegroundSA::RemovePlayer(Player* player, ObjectGuid guid, uint32 team)
 {
     if (player)
     {
@@ -905,7 +905,7 @@ void BattlegroundSA::CaptureGraveyard(BG_SA_Graveyards i, Player* Source)
     if (GraveyardStatus[i] == Attackers)
         return;
 
-    uint64 spiritGuideGUID = BgCreatures[BG_SA_MAXNPC + i];
+    ObjectGuid spiritGuideGUID = BgCreatures[BG_SA_MAXNPC + i];
 
     DelCreature(BG_SA_MAXNPC + i);
     GraveyardStatus[i] = Source->GetBGTeamId();
@@ -1003,7 +1003,7 @@ void BattlegroundSA::CaptureGraveyard(BG_SA_Graveyards i, Player* Source)
 
     // Those who are waiting to resurrect at this node are taken to the closest own node's graveyard
     WorldSafeLocsEntry const* grave = nullptr;
-    std::vector<uint64> guids = m_ReviveQueue[spiritGuideGUID];
+    std::vector<ObjectGuid> guids = m_ReviveQueue[spiritGuideGUID];
     for (auto&& guid : guids)
     {
         Player* player = ObjectAccessor::FindPlayer(guid);

@@ -156,7 +156,7 @@ class boss_brutallus : public CreatureScript
 
                     fightingPlayers = false;
                     instance->SetData(DATA_BRUTALLUS_EVENT, DONE);
-                    if (Creature* madrigosa = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MADRIGOSA)))
+                    if (Creature* madrigosa = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MADRIGOSA)))
                     {
                         uint32 delay = 0;
                         madrigosa->m_Events.Schedule(delay += 65000, [madrigosa]() { madrigosa->CastSpell(madrigosa, SPELL_SUMMON_FELBLAZE, true); });
@@ -177,7 +177,7 @@ class boss_brutallus : public CreatureScript
                     return;
 
                 TC_LOG_DEBUG("scripts", "Start intro");
-                Creature* madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
+                Creature* madrigosa = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_MADRIGOSA) : ObjectGuid::Empty);
                 if (madrigosa)
                 {
                     madrigosa->Respawn();
@@ -214,7 +214,7 @@ class boss_brutallus : public CreatureScript
 
             void DoIntro()
             {
-                Creature* madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
+                Creature* madrigosa = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_MADRIGOSA) : ObjectGuid::Empty);
                 if (!madrigosa)
                     return;
 
@@ -325,7 +325,7 @@ class boss_brutallus : public CreatureScript
                     {
                         if (IntroFrostBoltTimer <= diff)
                         {
-                            if (Creature* madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0))
+                            if (Creature* madrigosa = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_MADRIGOSA) : ObjectGuid::Empty))
                             {
                                 madrigosa->CastSpell(me, SPELL_INTRO_FROSTBOLT, true);
                                 IntroFrostBoltTimer = 2000;

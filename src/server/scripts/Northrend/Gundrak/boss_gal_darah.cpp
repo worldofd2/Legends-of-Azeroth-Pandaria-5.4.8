@@ -261,7 +261,7 @@ class boss_gal_darah : public CreatureScript
             InstanceScript* instance;
             EventMap events;
             std::set<uint64> impaled;
-            uint64 stampedeTarget;
+            ObjectGuid stampedeTarget;
             uint32 oocTimer;
         };
 

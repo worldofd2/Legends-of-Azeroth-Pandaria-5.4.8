@@ -268,12 +268,12 @@ class npc_tito : public CreatureScript
         {
             npc_titoAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 DorotheeGUID;
+            ObjectGuid DorotheeGUID;
             uint32 YipTimer;
 
             void Reset() override
             {
-                DorotheeGUID = 0;
+                DorotheeGUID = ObjectGuid::Empty;
                 YipTimer = 10000;
             }
 
@@ -718,10 +718,10 @@ class boss_crone : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(TYPE_OPERA, DONE);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORLEFT), true);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORRIGHT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORLEFT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORRIGHT), true);
 
-                    if (GameObject* sideEntrance = sObjectAccessor->GetGameObject(*me, instance->GetData64(DATA_GO_SIDE_ENTRANCE_DOOR)))
+                    if (GameObject* sideEntrance = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_GO_SIDE_ENTRANCE_DOOR)))
                         sideEntrance->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_LOCKED);
                 }
             }
@@ -863,7 +863,7 @@ class boss_bigbadwolf : public CreatureScript
             uint32 FearTimer;
             uint32 SwipeTimer;
 
-            uint64 HoodGUID;
+            ObjectGuid HoodGUID;
             float TempThreat;
 
             bool IsChasing;
@@ -874,7 +874,7 @@ class boss_bigbadwolf : public CreatureScript
                 FearTimer  = 25000 + rand() % 10000;
                 SwipeTimer = 5000;
 
-                HoodGUID   = 0;
+                HoodGUID = ObjectGuid::Empty;
                 TempThreat = 0;
 
                 IsChasing  = false;
@@ -901,10 +901,10 @@ class boss_bigbadwolf : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(TYPE_OPERA, DONE);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORLEFT), true);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORRIGHT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORLEFT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORRIGHT), true);
 
-                    if (GameObject* sideEntrance = sObjectAccessor->GetGameObject(*me, instance->GetData64(DATA_GO_SIDE_ENTRANCE_DOOR)))
+                    if (GameObject* sideEntrance = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_GO_SIDE_ENTRANCE_DOOR)))
                         sideEntrance->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_LOCKED);
                 }
             }
@@ -939,7 +939,7 @@ class boss_bigbadwolf : public CreatureScript
 
                         if (Unit* target = Unit::GetUnit(*me, HoodGUID))
                         {
-                            HoodGUID = 0;
+                            HoodGUID = ObjectGuid::Empty;
                             if (DoGetThreat(target))
                                 DoModifyThreatPercent(target, -100);
                             me->AddThreat(target, TempThreat);
@@ -1064,7 +1064,7 @@ class boss_julianne : public CreatureScript
 
             uint32 AggroYellTimer;
 
-            uint64 RomuloGUID;
+            ObjectGuid RomuloGUID;
 
             uint32 Phase;
 
@@ -1083,7 +1083,7 @@ class boss_julianne : public CreatureScript
 
             void Reset() override
             {
-                RomuloGUID = 0;
+                RomuloGUID = ObjectGuid::Empty;
                 Phase = PHASE_JULIANNE;
 
                 BlindingPassionTimer = 30000;
@@ -1152,9 +1152,9 @@ class boss_julianne : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(TYPE_OPERA, DONE);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORLEFT), true);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORRIGHT), true);
-                    if (GameObject* sideEntrance = sObjectAccessor->GetGameObject(*me, instance->GetData64(DATA_GO_SIDE_ENTRANCE_DOOR)))
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORLEFT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORRIGHT), true);
+                    if (GameObject* sideEntrance = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_GO_SIDE_ENTRANCE_DOOR)))
                         sideEntrance->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_LOCKED);
                 }
             }
@@ -1188,7 +1188,7 @@ class boss_romulo : public CreatureScript
 
             InstanceScript* instance;
 
-            uint64 JulianneGUID;
+            ObjectGuid JulianneGUID;
             uint32 Phase;
 
             uint32 AggroYellTimer;
@@ -1203,7 +1203,7 @@ class boss_romulo : public CreatureScript
 
             void Reset() override
             {
-                JulianneGUID = 0;
+                JulianneGUID = ObjectGuid::Empty;
                 Phase = PHASE_ROMULO;
 
                 BackwardLungeTimer = 15000;
@@ -1306,10 +1306,10 @@ class boss_romulo : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(TYPE_OPERA, DONE);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORLEFT), true);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_STAGEDOORRIGHT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORLEFT), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_STAGEDOORRIGHT), true);
 
-                    if (GameObject* sideEntrance = sObjectAccessor->GetGameObject(*me, instance->GetData64(DATA_GO_SIDE_ENTRANCE_DOOR)))
+                    if (GameObject* sideEntrance = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_GO_SIDE_ENTRANCE_DOOR)))
                         sideEntrance->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_LOCKED);
                 }
             }

@@ -99,14 +99,14 @@ class AliveCheck
     public:
         AliveCheck(Creature* creature) : _creature(creature) { }
 
-        bool operator()(uint64 guid)
+        bool operator()(ObjectGuid guid)
         {
             return (GetAffectedCreature(guid) && !GetAffectedCreature(guid)->IsAlive());
         }
 
     private:
         Creature* _creature;
-        Creature* GetAffectedCreature(uint64 guid)
+        Creature* GetAffectedCreature(ObjectGuid guid)
         {
             Creature* creature = ObjectAccessor::GetCreature(*_creature, guid);
             return creature ? creature : nullptr;
@@ -191,7 +191,7 @@ class npc_uncle_gao : public CreatureScript
             uint32 encounterStage;
             uint32 waypoint;
             uint32 addStore[3];
-            std::list<uint64> currentStageGuidList;
+            std::list<ObjectGuid> currentStageGuidList;
             EventMap events;
             InstanceScript* instance;
 
@@ -285,7 +285,7 @@ class npc_uncle_gao : public CreatureScript
             void GetChenAndDoAction(int32 action)
             {
                 if (instance)
-                    if (Creature* chen = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_CHEN_YANZHU)))
+                    if (Creature* chen = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_CHEN_YANZHU)))
                         chen->AI()->DoAction(action);
             }
 
@@ -328,7 +328,7 @@ class npc_uncle_gao : public CreatureScript
 
                         if (instance)
                         {
-                            if (Creature* yanZhu = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_YAN_ZHU)))
+                            if (Creature* yanZhu = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_YAN_ZHU)))
                             {
                                 float x, y;
                                 GetPositionWithDistInOrientation(me, (me->GetDistance(yanZhu) - 1.5f), me->GetAngle(yanZhu), x, y);
@@ -459,7 +459,7 @@ class npc_uncle_gao : public CreatureScript
                             me->SetStandState(UNIT_STAND_STATE_STAND);
 
                             // Start Chen's part of the script
-                            if (Creature* chen = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_CHEN_YANZHU)))
+                            if (Creature* chen = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_CHEN_YANZHU)))
                             {
                                 chen->SetVisible(true);
                                 chen->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
@@ -651,7 +651,7 @@ class npc_chen_yanzhu : public CreatureScript
             void GetGaoAndDoAction(int32 action)
             {
                 if (instance)
-                    if (Creature* gao = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_UNCLE_GAO)))
+                    if (Creature* gao = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_UNCLE_GAO)))
                         gao->AI()->DoAction(action);
             }
 
@@ -692,7 +692,7 @@ class npc_chen_yanzhu : public CreatureScript
                         case EVENT_MOVEBOSS:
                             if (instance)
                             {
-                                if (Creature* yanzhu = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_YAN_ZHU)))
+                                if (Creature* yanzhu = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_YAN_ZHU)))
                                 {
                                     float x, y;
                                     GetPositionWithDistInOrientation(me, (me->GetDistance(yanzhu) - 1.5f), me->GetAngle(yanzhu), x, y);
@@ -747,7 +747,7 @@ class boss_yanzhu : public CreatureScript
         {
             boss_yanzhuAI(Creature* creature) : BossAI(creature, DATA_YAN_ZHU) { }
 
-            std::vector<uint64> guidsVector;
+            std::vector<ObjectGuid> guidsVector;
             float bubleFacing;
             uint32 largeEventType, lowEventType;
 
@@ -827,7 +827,7 @@ class boss_yanzhu : public CreatureScript
                 }
             }
 
-            bool SudsyInCenterQuadr(uint64 playerGUID)
+            bool SudsyInCenterQuadr(ObjectGuid playerGUID)
             {
                 Player* itr = ObjectAccessor::FindPlayer(playerGUID);
                 if (!itr)
@@ -870,7 +870,7 @@ class boss_yanzhu : public CreatureScript
 
                 if (instance)
                 {
-                    if (Creature* gao = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_UNCLE_GAO)))
+                    if (Creature* gao = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_UNCLE_GAO)))
                         gao->AI()->DoAction(0);
 
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SUDSY);
@@ -1124,7 +1124,7 @@ class npc_yeasty_alemental : public CreatureScript
                         case EVENT_FERMENT:
                             if (instance)
                             {
-                                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_YAN_ZHU)))
+                                if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_YAN_ZHU)))
                                     DoCast(boss, SPELL_FERMENT);
 
                                 events.ScheduleEvent(EVENT_FERMENT, 15000);
@@ -1520,7 +1520,7 @@ class npc_bubbling_alemental : public CreatureScript
         {
             npc_bubbling_alementalAI(Creature* creature) : ScriptedAI(creature) { }
 
-            std::vector<uint64> guidsVector;
+            std::vector<ObjectGuid> guidsVector;
             EventMap events, cosmeticEvents;
             uint32 wp;
 
@@ -1804,7 +1804,7 @@ class npc_bubble_shield : public CreatureScript
                 SetCombatMovement(false);
             }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             InstanceScript* instance;
 
             void IsSummonedBy(Unit* summoner) override

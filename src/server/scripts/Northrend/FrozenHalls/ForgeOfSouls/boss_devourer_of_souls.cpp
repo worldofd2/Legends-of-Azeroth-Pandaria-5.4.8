@@ -159,7 +159,7 @@ class boss_devourer_of_souls : public CreatureScript
             float beamAngleDiff;
             int8 wailingSoulTick;
 
-            uint64 uiMirroredSoulTarget;
+            ObjectGuid uiMirroredSoulTarget;
 
             void Reset() override
             {
@@ -170,7 +170,7 @@ class boss_devourer_of_souls : public CreatureScript
                 events.Reset();
                 summons.DespawnAll();
 
-                uiMirroredSoulTarget = 0;
+                uiMirroredSoulTarget = ObjectGuid::Empty;
                 wasCasting = false;
 
                 if (instance)
@@ -209,7 +209,7 @@ class boss_devourer_of_souls : public CreatureScript
                             //me->DealDamage(player, (damage * 45)/100, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_SHADOW);
                         }
                         else
-                            uiMirroredSoulTarget = 0;
+                            uiMirroredSoulTarget = ObjectGuid::Empty;
                     }
                 }
             }
@@ -350,7 +350,7 @@ class boss_devourer_of_souls : public CreatureScript
                             me->SetReactState(REACT_PASSIVE);
 
                             // Remove any target
-                            me->SetTarget(0);
+                            me->SetTarget(ObjectGuid::Empty);
 
                             me->GetMotionMaster()->Clear();
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -414,7 +414,7 @@ class npc_unleashed_soul : public CreatureScript
                 //uiShadowBoltTimer = 6 * IN_MILLISECONDS;
                 if (instance)
                 {
-                    if (Creature* Devourer = Unit::GetCreature(*me, instance->GetData64(DATA_DEVOURER_EVENT)))
+                    if (Creature* Devourer = Unit::GetCreature(*me, instance->GetGuidData(DATA_DEVOURER_EVENT)))
                         if (Devourer->IsAlive())
                             AttackStart(Devourer->GetVictim());
                 }

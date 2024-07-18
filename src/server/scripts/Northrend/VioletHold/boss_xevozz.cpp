@@ -136,7 +136,7 @@ class boss_xevozz : public CreatureScript
                 Talk(SAY_AGGRO);
                 if (instance)
                 {
-                    if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_XEVOZZ_CELL)))
+                    if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetGuidData(DATA_XEVOZZ_CELL)))
                         if (pDoor->GetGoState() == GO_STATE_READY)
                         {
                             EnterEvadeMode();
@@ -292,7 +292,7 @@ class npc_ethereal_sphere : public CreatureScript
                 {
                     if (instance)
                     {
-                        if (Creature* pXevozz = Unit::GetCreature(*me, instance->GetData64(DATA_XEVOZZ)))
+                        if (Creature* pXevozz = Unit::GetCreature(*me, instance->GetGuidData(DATA_XEVOZZ)))
                         {
                             float fDistance = me->GetDistance2d(pXevozz);
                             if (fDistance <= 3)

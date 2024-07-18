@@ -178,9 +178,6 @@ void WorldSession::HandleUnlearnSpecializationOpcode(WorldPacket& recvData)
 
         GetPlayer()->SaveToDB();
     }
-
-    // I dunno why client doesn't send query for the quest status.
-    HandleQuestgiverStatusMultipleQuery(recvData);  // Packet won't be read
 }
 
 void WorldSession::HandleArcheologyRequestHistory(WorldPacket& recvPacket)

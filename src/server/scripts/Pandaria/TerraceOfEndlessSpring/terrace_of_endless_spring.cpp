@@ -209,10 +209,10 @@ class npc_apparition_of_fear : public CreatureScript
 
                             if (instance)
                             {
-                                Creature* asani = instance->instance->GetCreature(instance->GetData64(NPC_ANCIENT_ASANI));
-                                Creature* regail = instance->instance->GetCreature(instance->GetData64(NPC_ANCIENT_REGAIL));
-                                Creature* kaolan = instance->instance->GetCreature(instance->GetData64(NPC_PROTECTOR_KAOLAN));
-                                std::vector<uint64> targets;
+                                Creature* asani = instance->instance->GetCreature(instance->GetGuidData(NPC_ANCIENT_ASANI));
+                                Creature* regail = instance->instance->GetCreature(instance->GetGuidData(NPC_ANCIENT_REGAIL));
+                                Creature* kaolan = instance->instance->GetCreature(instance->GetGuidData(NPC_PROTECTOR_KAOLAN));
+                                std::vector<ObjectGuid> targets;
 
                                 if (asani)
                                     targets.push_back(asani->GetGUID());
@@ -226,7 +226,7 @@ class npc_apparition_of_fear : public CreatureScript
                                 std::random_device rd;
                                 std::mt19937 g(rd());
                                 std::shuffle(targets.begin(), targets.end(), g);
-                                if (Unit* target = sObjectAccessor->FindUnit((*targets.begin())))
+                                if (Unit* target = ObjectAccessor::GetUnit(*me, (*targets.begin())))
                                     me->CastSpell(target, SPELL_CORRUPTION_BOLT, true);
                             }
                         }
@@ -366,10 +366,10 @@ class npc_apparition_of_terror : public CreatureScript
 
                             if (instance)
                             {
-                                Creature* asani = instance->instance->GetCreature(instance->GetData64(NPC_ANCIENT_ASANI));
-                                Creature* regail = instance->instance->GetCreature(instance->GetData64(NPC_ANCIENT_REGAIL));
-                                Creature* kaolan = instance->instance->GetCreature(instance->GetData64(NPC_PROTECTOR_KAOLAN));
-                                std::vector<uint64> targets;
+                                Creature* asani = instance->instance->GetCreature(instance->GetGuidData(NPC_ANCIENT_ASANI));
+                                Creature* regail = instance->instance->GetCreature(instance->GetGuidData(NPC_ANCIENT_REGAIL));
+                                Creature* kaolan = instance->instance->GetCreature(instance->GetGuidData(NPC_PROTECTOR_KAOLAN));
+                                std::vector<ObjectGuid> targets;
 
                                 if (asani)
                                     targets.push_back(asani->GetGUID());
@@ -383,7 +383,7 @@ class npc_apparition_of_terror : public CreatureScript
                                 std::random_device rd;
                                 std::mt19937 g(rd());
                                 std::shuffle(targets.begin(), targets.end(), g);
-                                if (Unit* target = sObjectAccessor->FindUnit((*targets.begin())))
+                                if (Unit* target = ObjectAccessor::GetUnit(*me, (*targets.begin())))
                                     me->CastSpell(target, SPELL_CORRUPTION_BOLT, true);
                             }
                         }

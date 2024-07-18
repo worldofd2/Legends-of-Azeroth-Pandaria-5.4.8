@@ -248,7 +248,7 @@ class boss_lord_marrowgar : public CreatureScript
                         }
                         case EVENT_COLDFLAME:
                             _coldflameLastPos.Relocate(me);
-                            _coldflameTarget = 0LL;
+                            _coldflameTarget = ObjectGuid::Empty;
 
                             DoCastAOE(SPELL_COLDFLAME_NORMAL, true);
 
@@ -256,7 +256,7 @@ class boss_lord_marrowgar : public CreatureScript
                             break;
                         case EVENT_COLDFLAME_BONE_STORM:
                             _coldflameLastPos.Relocate(me);
-                            _coldflameTarget = 0LL;
+                            _coldflameTarget = ObjectGuid::Empty;
 
                             DoCast(me, SPELL_COLDFLAME_BONE_STORM, true);
                             break;
@@ -374,7 +374,7 @@ class boss_lord_marrowgar : public CreatureScript
                 return &_coldflameLastPos;
             }
 
-            uint64 GetGUID(int32 type /* = 0 */) const override
+            ObjectGuid GetGUID(int32 type /* = 0 */) const override
             {
                 switch (type)
                 {
@@ -392,10 +392,10 @@ class boss_lord_marrowgar : public CreatureScript
                     }
                 }
 
-                return 0LL;
+                return ObjectGuid::Empty;
             }
 
-            void SetGUID(uint64 guid, int32 type /* = 0 */) override
+            void SetGUID(ObjectGuid guid, int32 type /* = 0 */) override
             {
                 switch (type)
                 {
@@ -450,8 +450,8 @@ class boss_lord_marrowgar : public CreatureScript
 
         private:
             Position _coldflameLastPos;
-            std::vector<uint64> _boneSpikeImmune;
-            uint64 _coldflameTarget;
+            std::vector<ObjectGuid> _boneSpikeImmune;
+            ObjectGuid _coldflameTarget;
             uint32 _coldflameSummonSpell;
             uint32 _boneStormDuration;
             float _baseSpeed;
@@ -922,7 +922,7 @@ class at_lord_marrowgar_entrance : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* lordMarrowgar = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_LORD_MARROWGAR)))
+                if (Creature* lordMarrowgar = ObjectAccessor::GetCreature(*player, instance->GetGuidData(DATA_LORD_MARROWGAR)))
                     lordMarrowgar->AI()->DoAction(ACTION_TALK_ENTER_ZONE);
 
             return true;

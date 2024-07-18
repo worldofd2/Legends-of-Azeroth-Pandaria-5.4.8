@@ -273,7 +273,7 @@ class spell_common_combo_point_delayed : public SpellScript
     {
         if (Player* caster = GetCaster()->ToPlayer())
         {
-            uint64 targetGuid = caster->GetTarget();
+            ObjectGuid targetGuid = caster->GetTarget();
             caster->m_Events.Schedule(1, [=]
             {
                 if (Unit* target = ObjectAccessor::GetUnit(*caster, targetGuid))

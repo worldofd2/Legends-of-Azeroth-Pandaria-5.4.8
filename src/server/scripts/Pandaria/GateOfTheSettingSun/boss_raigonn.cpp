@@ -140,7 +140,7 @@ class boss_raigonn : public CreatureScript
 
                         if (instance)
                         {
-                            if (Creature* weakPoint = instance->instance->GetCreature(instance->GetData64(NPC_WEAK_SPOT)))
+                            if (Creature* weakPoint = instance->instance->GetCreature(instance->GetGuidData(NPC_WEAK_SPOT)))
                             {
                                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, weakPoint);
                                 weakPoint->SetFaction(16);
@@ -166,7 +166,7 @@ class boss_raigonn : public CreatureScript
                     instance->SetBossState(DATA_RAIGONN, FAIL);
                     instance->SetData(DATA_RAIGONN, FAIL);
 
-                    if (Creature* weakPoint = instance->instance->GetCreature(instance->GetData64(NPC_WEAK_SPOT)))
+                    if (Creature* weakPoint = instance->instance->GetCreature(instance->GetGuidData(NPC_WEAK_SPOT)))
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, weakPoint);
                 }
 
@@ -210,7 +210,7 @@ class boss_raigonn : public CreatureScript
 
             void RemoveWeakSpotPassengers()
             {
-                if (Creature* weakPoint = instance->instance->GetCreature(instance->GetData64(NPC_WEAK_SPOT)))
+                if (Creature* weakPoint = instance->instance->GetCreature(instance->GetGuidData(NPC_WEAK_SPOT)))
                 {
                     if (Vehicle* weakVehicle = weakPoint->GetVehicleKit())
                     {
@@ -220,7 +220,7 @@ class boss_raigonn : public CreatureScript
                         scheduler
                             .Schedule(Milliseconds(500), [this](TaskContext context)
                         {
-                            if (Creature* wPoint = instance->instance->GetCreature(instance->GetData64(NPC_WEAK_SPOT)))
+                            if (Creature* wPoint = instance->instance->GetCreature(instance->GetGuidData(NPC_WEAK_SPOT)))
                                 me->CastSpell(wPoint->GetPositionX(), wPoint->GetPositionY(), wPoint->GetPositionZ(), SPELL_BATTERING_HEADBUTT, true);
                         });
                     }
@@ -403,7 +403,7 @@ class npc_raigonn_weak_spot : public CreatureScript
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 if (instance)
-                    if (Creature* raigonn = Unit::GetCreature(*me, instance->GetData64(DATA_RAIGONN)))
+                    if (Creature* raigonn = Unit::GetCreature(*me, instance->GetGuidData(DATA_RAIGONN)))
                         if (raigonn->IsAIEnabled)
                             raigonn->AI()->DoAction(ACTION_WEAK_SPOT_DEAD);
             }
@@ -578,10 +578,10 @@ class vehicle_artillery : public CreatureScript
             void InitializeAI() override
             {
                 instance = me->GetInstanceScript();
-                PassengerGUID = 0;
+                PassengerGUID = ObjectGuid::Empty;
             }
 
-            uint64 PassengerGUID;
+            ObjectGuid PassengerGUID;
 
             void OnSpellClick(Unit* clicker, bool&) override
             {
@@ -589,7 +589,7 @@ class vehicle_artillery : public CreatureScript
                 Unit* artilery = me;
                 me->m_Events.Schedule(1.5f * IN_MILLISECONDS, [=]()
                 {
-                    if (Creature* weakSpot = ObjectAccessor::GetCreature(*artilery, instance->GetData64(NPC_WEAK_SPOT)))
+                    if (Creature* weakSpot = ObjectAccessor::GetCreature(*artilery, instance->GetGuidData(NPC_WEAK_SPOT)))
                     {
                         if (weakSpot->GetVehicleKit() && artilery->GetVehicleKit())
                         {

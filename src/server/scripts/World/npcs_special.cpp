@@ -127,7 +127,7 @@ public:
         npc_air_force_botsAI(Creature* creature) : ScriptedAI(creature)
         {
             SpawnAssoc = NULL;
-            SpawnedGUID = 0;
+            SpawnedGUID = ObjectGuid::Empty;
 
             // find the correct spawnhandling
             static uint32 entryCount = sizeof(spawnAssociations) / sizeof(SpawnAssociation);
@@ -157,7 +157,7 @@ public:
         }
 
         SpawnAssociation* SpawnAssoc;
-        uint64 SpawnedGUID;
+        ObjectGuid SpawnedGUID;
 
         void Reset() override { }
 
@@ -204,7 +204,7 @@ public:
 
                 // prevent calling Unit::GetUnit at next MoveInLineOfSight call - speedup
                 if (!lastSpawnedGuard)
-                    SpawnedGUID = 0;
+                    SpawnedGUID = ObjectGuid::Empty;
 
                 switch (SpawnAssoc->spawnType)
                 {
@@ -574,7 +574,7 @@ public:
     {
         npc_doctorAI(Creature* creature) : ScriptedAI(creature) { }
 
-        uint64 PlayerGUID;
+        ObjectGuid PlayerGUID;
 
         uint32 SummonPatientTimer;
         uint32 SummonPatientCount;
@@ -583,12 +583,12 @@ public:
 
         bool Event;
 
-        std::list<uint64> Patients;
+        std::list<ObjectGuid> Patients;
         std::vector<Location*> Coordinates;
 
         void Reset() override
         {
-            PlayerGUID = 0;
+            PlayerGUID = ObjectGuid::Empty;
 
             SummonPatientTimer = 10000;
             SummonPatientCount = 0;
@@ -665,7 +665,7 @@ public:
                     {
                         if (!Patients.empty())
                         {
-                            std::list<uint64>::const_iterator itr;
+                            std::list<ObjectGuid>::const_iterator itr;
                             for (itr = Patients.begin(); itr != Patients.end(); ++itr)
                             {
                                 if (Creature* patient = Unit::GetCreature((*me), *itr))
@@ -719,12 +719,12 @@ public:
     {
         npc_injured_patientAI(Creature* creature) : ScriptedAI(creature) { }
 
-        uint64 DoctorGUID;
+        ObjectGuid DoctorGUID;
         Location* Coord;
 
         void Reset() override
         {
-            DoctorGUID = 0;
+            DoctorGUID = ObjectGuid::Empty;
             Coord = NULL;
 
             //no select
@@ -917,7 +917,7 @@ public:
             Reset();
         }
 
-        uint64 CasterGUID;
+        ObjectGuid CasterGUID;
 
         bool IsHealed;
         bool CanRun;
@@ -926,7 +926,7 @@ public:
 
         void Reset() override
         {
-            CasterGUID = 0;
+            CasterGUID = ObjectGuid::Empty;
 
             IsHealed = false;
             CanRun = false;
@@ -1082,7 +1082,7 @@ public:
                                 break;
                         }
 
-                        Start(false, true, true);
+                        Start(false, true, ObjectGuid(uint64(1)));
                     }
                     else
                         EnterEvadeMode();                       //something went wrong
@@ -1650,7 +1650,7 @@ public:
         uint32 entry;
         uint32 resetTimer;
         uint32 despawnTimer;
-        std::unordered_map<uint64, time_t> clearAttackerCombat;
+        std::unordered_map<ObjectGuid, time_t> clearAttackerCombat;
 
         void Reset() override
         {
@@ -1715,7 +1715,7 @@ public:
             time_t now = time(nullptr);
             for (auto itr = clearAttackerCombat.begin(); itr != clearAttackerCombat.end();)
             {
-                uint64 attackerGuid = itr->first;
+                ObjectGuid attackerGuid = itr->first;
                 time_t clearTime = itr->second;
                 if (now > clearTime)
                 {
@@ -2439,12 +2439,12 @@ public:
         uint32 jumpTimer;
         uint32 bunnyTimer;
         uint32 searchTimer;
-        uint64 rabbitGUID;
+        ObjectGuid rabbitGUID;
 
         void Reset() override
         {
             inLove = false;
-            rabbitGUID = 0;
+            rabbitGUID = ObjectGuid::Empty;
             jumpTimer = urand(5000, 10000);
             bunnyTimer = urand(10000, 20000);
             searchTimer = urand(5000, 10000);
@@ -2658,7 +2658,7 @@ struct npc_abominated_greench : public ScriptedAI
     void JustDied(Unit* who) override
     {
         for (auto&& guid : eligiblePlayers)
-            if (Player* player = sObjectAccessor->GetPlayer(*me, guid))
+            if (Player* player = ObjectAccessor::FindPlayer(guid))
                 player->KilledMonsterCredit(15664);
 
         if (Creature* metzen = me->FindNearestCreature(15664, 100.0f))
@@ -2705,7 +2705,7 @@ struct npc_abominated_greench : public ScriptedAI
     }
 
 private:
-    std::set<uint64> eligiblePlayers;
+    std::set<ObjectGuid> eligiblePlayers;
 };
 
 struct npc_anatomical_dummy : public ScriptedAI
@@ -2787,7 +2787,7 @@ struct npc_vision_of_the_naaru : public ScriptedAI
     npc_vision_of_the_naaru(Creature* creature) : ScriptedAI(creature) { }
 
     float angleFacing, x, y;
-    std::vector<uint64> tinyDraneiGUIDs;
+    std::vector<ObjectGuid> tinyDraneiGUIDs;
 
     void IsSummonedBy(Unit* summoner) override
     {
@@ -2795,7 +2795,7 @@ struct npc_vision_of_the_naaru : public ScriptedAI
         me->SetObjectScale(2.0f);
         x = 0.0f; y = 0.0f;
         angleFacing = Position::NormalizeOrientation(me->GetOrientation() + M_PI - M_PI / 6);
-        tinyDraneiGUIDs.resize(3, 0);
+        tinyDraneiGUIDs.resize(3, ObjectGuid::Empty);
 
         for (uint32 i = 0; i < 3; i++)
         {
@@ -2900,7 +2900,7 @@ struct npc_mini_mana_bomb : public ScriptedAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        uint64 summonerGuid = summoner->GetGUID();
+        ObjectGuid summonerGuid = summoner->GetGUID();
         me->AddAura(105729, me);
         me->m_Events.Schedule(1000, [this, summonerGuid]()
         {
@@ -3142,7 +3142,7 @@ struct npc_ethereal_soul_trader : public ScriptedAI
                 events.ScheduleEvent(EVENT_STEAL_ESSENCE, 1000);
                 while (queuedTargets.size())
                 {
-                    uint64 targetGuid = queuedTargets.front();
+                    ObjectGuid targetGuid = queuedTargets.front();
                     queuedTargets.pop();
                     if (Unit* target = ObjectAccessor::GetUnit(*me, targetGuid))
                         DoCast(target, SPELL_ETHEREAL_PET_ONKILL_STEAL_ESSENCE);
@@ -3178,7 +3178,7 @@ struct npc_ethereal_soul_trader : public ScriptedAI
 
 private:
     EventMap events;
-    std::queue<uint64> queuedTargets;
+    std::queue<ObjectGuid> queuedTargets;
 };
 
 struct npc_sa_demolisher : public VehicleAI
@@ -3212,7 +3212,7 @@ struct npc_rogue_rare_npc : public ScriptedAI
 
     EventMap events;
     uint32 delay = 0;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void Reset() override
     {
@@ -3227,7 +3227,7 @@ struct npc_rogue_rare_npc : public ScriptedAI
         });
 
         delay = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
         events.Reset();
         me->setRegeneratingHealth(true);
     }

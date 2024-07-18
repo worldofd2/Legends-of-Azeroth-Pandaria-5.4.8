@@ -341,7 +341,7 @@ class npc_aqua_dancer : public CreatureScript
         {
             npc_aqua_dancerAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 hozenGuid;
+            ObjectGuid hozenGuid;
 
             void Reset() override { }
 
@@ -424,7 +424,7 @@ class npc_fiery_trickster : public CreatureScript
                 events.ScheduleEvent(EVENT_FIRE_SPARK, urand(4000, 9000));
             }
 
-            uint64 hozenGuid;
+            ObjectGuid hozenGuid;
             EventMap events;
 
             void Initialize()

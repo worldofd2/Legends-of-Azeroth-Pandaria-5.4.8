@@ -65,7 +65,7 @@ class boss_rattlegore : public CreatureScript
             boss_rattlegoreAI(Creature* creature) : BossAI(creature, DATA_RATTLEGORE) { }
 
             std::list <Creature*> Stalker;
-            std::list<uint64> m_uSoul;
+            std::list<ObjectGuid> m_uSoul;
             EventMap nonCombatEvents;
 
             void Reset() override
@@ -125,7 +125,7 @@ class boss_rattlegore : public CreatureScript
             {
                 if (instance)
                     if (GameObject* Idoor = GetClosestGameObjectWithEntry(me, GO_JANDICE_TO_RATTLEGORE_DOOR, 150.0f))
-                        instance->HandleGameObject(0, reset, Idoor);
+                        instance->HandleGameObject(ObjectGuid::Empty, reset, Idoor);
             }
 
             void SetBonePile(bool activate = false)

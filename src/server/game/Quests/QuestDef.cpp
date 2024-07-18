@@ -16,6 +16,7 @@
 */
 
 #include "QuestDef.h"
+#include "QuestPools.h"
 #include "Player.h"
 #include "World.h"
 #include "ObjectMgr.h"
@@ -295,6 +296,14 @@ uint32 Quest::GetRewMoneyMaxLevel() const
         return 0;
 
     return _rewardBonusMoney;
+}
+
+/*static*/ bool Quest::IsTakingQuestEnabled(uint32 questId)
+{
+    if (!sQuestPoolMgr->IsQuestActive(questId))
+        return false;
+
+    return true;
 }
 
 bool Quest::IsAutoAccept() const

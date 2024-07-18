@@ -2632,7 +2632,7 @@ class spell_item_stardust_no_2 : public AuraScript
     {
         if (Player* player = GetCaster()->ToPlayer())
             if (player->GetQuestStatus(QUEST_THE_LATEST_FASHION_ALLIANCE) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_THE_LATEST_FASHION_HORDE) == QUEST_STATUS_INCOMPLETE)
-                player->KilledMonsterCredit(NPC_THE_LATEST_FASHION_CREDIT, 0);
+                player->KilledMonsterCredit(NPC_THE_LATEST_FASHION_CREDIT, ObjectGuid::Empty);
     }
 
     void Register()

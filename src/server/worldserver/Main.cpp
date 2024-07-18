@@ -34,14 +34,19 @@
 #include "AppenderDB.h"
 #include "AsyncAcceptor.h"
 #include "Banner.h"
+#include "BattlegroundMgr.h"
 #include "BigNumber.h"
 #include "CliRunnable.h"
 #include "DeadlineTimer.h"
 #include "GitRevision.h"
 #include "IoContext.h"
+#include "InstanceSaveMgr.h"
 #include "Log.h"
+#include "MapManager.h"
+#include "Memory.h"
 #include "MySQLThreading.h"
 #include "OpenSSLCrypto.h"
+#include "OutdoorPvPMgr.h"
 #include "ProcessPriority.h"
 #include "RASession.h"
 #include "RealmList.h"
@@ -126,10 +131,13 @@ extern int main(int argc, char** argv)
     ///- Command line parsing to get the configuration file name
     auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);
     std::string configService;
+
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
     // exit if help or version is enabled
     if (vm.count("help") || vm.count("version"))
         return 0;
+
+    uint32 dummy = 0;
 
     std::string configError;
     if (!sConfigMgr->LoadInitial(configFile.generic_string(),
@@ -163,7 +171,7 @@ extern int main(int argc, char** argv)
 
     OpenSSLCrypto::threadsSetup(boost::dll::program_location().remove_filename());
 
-    std::shared_ptr<void> opensslHandle(nullptr, [](void*) { OpenSSLCrypto::threadsCleanup(); });
+    auto opensslHandle = Trinity::make_unique_ptr_with_deleter(&dummy, [](void*) { OpenSSLCrypto::threadsCleanup(); });
 
     // Seed the OpenSSL's PRNG here.
     // That way it won't auto-seed when calling BigNumber::SetRand and slow down the first world login
@@ -200,7 +208,7 @@ extern int main(int argc, char** argv)
     for (int i = 0; i < numThreads; ++i)
         threadPool->PostWork([ioContext]() { ioContext->run(); });
 
-    std::shared_ptr<void> ioContextStopHandle(nullptr, [ioContext](void*) { ioContext->stop(); });
+    auto ioContextStopHandle = Trinity::make_unique_ptr_with_deleter(ioContext.get(), [](Trinity::Asio::IoContext* ctx) { ctx->stop(); });
 
     // Set process priority according to configuration settings
     SetProcessPriority("server.worldserver", sConfigMgr->GetIntDefault(CONFIG_PROCESSOR_AFFINITY, 0), sConfigMgr->GetBoolDefault(CONFIG_HIGH_PRIORITY, false));
@@ -218,15 +226,19 @@ extern int main(int argc, char** argv)
 
     //sScriptMgr->SetScriptLoader(AddScripts);
     sScriptMgr->SetLoader(AddScripts);
-    std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*)
-    {
-        sScriptMgr->Unload();
-        //sScriptReloadMgr->Unload();
-    });
+    auto sScriptMgrHandle = Trinity::make_unique_ptr_with_deleter(sScriptMgr, [](ScriptMgr* mgr) { mgr->Unload(); });
 
     // Initialize the World
     //sSecretMgr->Initialize();
     sWorld->SetInitialWorldSettings();
+
+    auto outdoorPvpMgrHandle = Trinity::make_unique_ptr_with_deleter(sOutdoorPvPMgr, [](OutdoorPvPMgr* mgr) { mgr->Die(); });
+
+    // unload all grids (including locked in memory)
+    auto mapManagementHandle = Trinity::make_unique_ptr_with_deleter(sMapMgr, [](MapManager* mgr) { mgr->UnloadAll(); });
+
+    // unload battleground templates before different singletons destroyed
+    auto battlegroundMgrHandle = Trinity::make_unique_ptr_with_deleter(sBattlegroundMgr, [](BattlegroundMgr* mgr) { mgr->DeleteAllBattlegrounds(); });
 
     // Start the Remote Access port (acceptor) if enabled
     std::unique_ptr<AsyncAcceptor> raAcceptor;
@@ -265,12 +277,12 @@ extern int main(int argc, char** argv)
         return 1;
     }
 
-    std::shared_ptr<void> sWorldSocketMgrHandle(nullptr, [](void*)
+    auto sWorldSocketMgrHandle = Trinity::make_unique_ptr_with_deleter(&sWorldSocketMgr, [](WorldSocketMgr* mgr)
     {
-        sWorld->KickAll();              // save and kick all players
-        sWorld->UpdateSessions(1);      // real players unload required UpdateSessions call
+        sWorld->KickAll();                                       // save and kick all players
+        sWorld->UpdateSessions(1);                             // real players unload required UpdateSessions call
 
-        sWorldSocketMgr.StopNetwork();
+        mgr->StopNetwork();
 
         ///- Clean database before leaving
         ClearOnlineAccounts();
@@ -289,6 +301,8 @@ extern int main(int argc, char** argv)
         FreezeDetector::Start(freezeDetector);
         TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
     }
+
+    sScriptMgr->OnStartup();
 
     // Launch CliRunnable thread
     std::shared_ptr<std::thread> cliThread;

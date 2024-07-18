@@ -74,15 +74,15 @@ struct AuctionEntry
 {
     uint32 Id;
     uint32 auctioneer;                                      // creature low guid
-    uint32 itemGUIDLow;
+    ObjectGuid::LowType itemGUIDLow;
     uint32 itemEntry;
     uint32 itemCount;
-    uint32 owner;
+    ObjectGuid::LowType owner;
     uint32 startbid;                                        //maybe useless
     uint32 bid;
     uint32 buyout;
     time_t expire_time;
-    uint32 bidder;
+    ObjectGuid::LowType bidder;
     uint32 deposit;                                         //deposit can be calculated only when creating auction
     AuctionHouseEntry const* auctionHouseEntry;             // in AuctionHouse.dbc
     uint32 factionTemplateId;
@@ -106,7 +106,7 @@ struct AuctionQueryContext
     ~AuctionQueryContext();
 
     uint32 auctioneerFaction;
-    uint64 playerGuid;
+    ObjectGuid playerGuid;
     LocaleConstant loc_idx;
     LocaleConstant locdbc_idx;
     std::string searchedname;
@@ -179,12 +179,12 @@ class AuctionHouseMgr
 
         void Unload();
 
-        typedef std::unordered_map<uint32, Item*> ItemMap;
+        typedef std::unordered_map<ObjectGuid::LowType, Item*> ItemMap;
 
         AuctionHouseObject* GetAuctionsMap(uint32 factionTemplateId);
         AuctionHouseObject* GetBidsMap(uint32 factionTemplateId);
 
-        Item* GetAItem(uint32 id)
+        Item* GetAItem(ObjectGuid::LowType id)
         {
             ItemMap::const_iterator itr = mAitems.find(id);
             if (itr != mAitems.end())
@@ -214,7 +214,7 @@ class AuctionHouseMgr
         void LoadAuctions();
 
         void AddAItem(Item* it);
-        bool RemoveAItem(uint32 id);
+        bool RemoveAItem(ObjectGuid::LowType id);
 
         void Update();
 

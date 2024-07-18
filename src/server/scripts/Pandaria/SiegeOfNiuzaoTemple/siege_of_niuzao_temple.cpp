@@ -383,7 +383,7 @@ class npc_mantid_catapult : public CreatureScript
             }
         private:
             EventMap events;
-            std::list<uint64> soldierList;
+            std::list<ObjectGuid> soldierList;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -407,7 +407,7 @@ class npc_mantid_soldier_catapult : public CreatureScript
         {
             npc_mantid_soldier_catapultAI(Creature* creature) : ScriptedAI(creature)
             {
-                catapultGUID = 0;
+                catapultGUID = ObjectGuid::Empty;
                 counter = 0;
             }
 
@@ -427,7 +427,7 @@ class npc_mantid_soldier_catapult : public CreatureScript
                 return 0;
             }
 
-            void SetGUID(uint64 guid, int32 type) override
+            void SetGUID(ObjectGuid guid, int32 type) override
             {
                 // 62384 only
                 catapultGUID = guid;
@@ -464,7 +464,7 @@ class npc_mantid_soldier_catapult : public CreatureScript
             }
 
         private:
-            uint64 catapultGUID;
+            ObjectGuid catapultGUID;
             int32 counter;
             uint32 bladetimer;
         };

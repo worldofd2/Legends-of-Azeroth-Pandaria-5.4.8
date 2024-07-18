@@ -53,9 +53,9 @@ class instance_molten_core : public InstanceMapScript
             instance_molten_core_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
-                _golemaggTheIncineratorGUID = 0;
-                _majordomoExecutusGUID = 0;
-                _cacheOfTheFirelordGUID = 0;
+                _golemaggTheIncineratorGUID = ObjectGuid::Empty;
+                _majordomoExecutusGUID = ObjectGuid::Empty;
+                _cacheOfTheFirelordGUID = ObjectGuid::Empty;
                 _executusSchedule = NULL;
                 _deadBossCount = 0;
                 _ragnarosAddDeaths = 0;
@@ -127,7 +127,7 @@ class instance_molten_core : public InstanceMapScript
                 return 0;
             }
 
-            uint64 GetData64(uint32 type) const override
+            ObjectGuid GetGuidData(uint32 type) const override
             {
                 switch (type)
                 {
@@ -137,7 +137,7 @@ class instance_molten_core : public InstanceMapScript
                         return _majordomoExecutusGUID;
                 }
 
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             bool SetBossState(uint32 bossId, EncounterState state) override
@@ -241,9 +241,9 @@ class instance_molten_core : public InstanceMapScript
             }
 
         private:
-            uint64 _golemaggTheIncineratorGUID;
-            uint64 _majordomoExecutusGUID;
-            uint64 _cacheOfTheFirelordGUID;
+            ObjectGuid _golemaggTheIncineratorGUID;
+            ObjectGuid _majordomoExecutusGUID;
+            ObjectGuid _cacheOfTheFirelordGUID;
             bool* _executusSchedule;
             uint8 _deadBossCount;
             uint8 _ragnarosAddDeaths;

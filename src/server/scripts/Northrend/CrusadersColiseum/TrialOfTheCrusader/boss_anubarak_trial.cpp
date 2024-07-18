@@ -339,7 +339,7 @@ class boss_anubarak_trial : public CreatureScript
                             /* WORKAROUND
                             * - The correct implementation is more likely the comment below but it needs spell knowledge
                             */
-                            std::list<uint64>::iterator i = _burrowGUID.begin();
+                            std::list<ObjectGuid>::iterator i = _burrowGUID.begin();
                             uint32 at = urand(0, _burrowGUID.size()-1);
                             for (uint32 k = 0; k < at; k++)
                                 ++i;
@@ -414,8 +414,8 @@ class boss_anubarak_trial : public CreatureScript
             }
 
             private:
-                std::list<uint64> _burrowGUID;
-                uint64 _sphereGUID[6];
+                std::list<ObjectGuid> _burrowGUID;
+                ObjectGuid _sphereGUID[6];
                 bool _intro;
                 bool _reachedPhase3;
         };
@@ -445,7 +445,7 @@ class npc_swarm_scarab : public CreatureScript
                 DoCast(me, SPELL_ACID_MANDIBLE);
                 me->SetInCombatWithZone();
                 if (me->IsInCombat())
-                    if (Creature* Anubarak = ObjectAccessor::GetCreature(*me, _instance->GetData64(NPC_ANUBARAK)))
+                    if (Creature* Anubarak = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(NPC_ANUBARAK)))
                         Anubarak->AI()->JustSummoned(me);
             }
 
@@ -519,7 +519,7 @@ class npc_nerubian_burrower : public CreatureScript
                 DoCast(me, SPELL_AWAKENED);
                 me->SetInCombatWithZone();
                 if (me->IsInCombat())
-                    if (Creature* Anubarak = ObjectAccessor::GetCreature(*me, _instance->GetData64(NPC_ANUBARAK)))
+                    if (Creature* Anubarak = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(NPC_ANUBARAK)))
                         Anubarak->AI()->JustSummoned(me);
             }
 

@@ -22,6 +22,7 @@
 #include "Map.h"
 #include "ModelIgnoreFlags.h"
 #include "ObjectDefines.h"
+#include "ObjectGuid.h"
 #include "Optional.h"
 #include "Position.h"
 #include "UpdateMask.h"
@@ -31,38 +32,6 @@
 #include <string>
 #include <sstream>
 #include <array>
-
-enum TypeMask
-{
-    TYPEMASK_OBJECT         = 0x0001,
-    TYPEMASK_ITEM           = 0x0002,
-    TYPEMASK_CONTAINER      = 0x0006,                       // TYPEMASK_ITEM | 0x0004
-    TYPEMASK_UNIT           = 0x0008,                       // creature
-    TYPEMASK_PLAYER         = 0x0010,
-    TYPEMASK_GAMEOBJECT     = 0x0020,
-    TYPEMASK_DYNAMICOBJECT  = 0x0040,
-    TYPEMASK_CORPSE         = 0x0080,
-    TYPEMASK_AREATRIGGER    = 0x0100,
-    TYPEMASK_SEER           = TYPEMASK_PLAYER | TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT
-};
-
-enum TypeID
-{
-    TYPEID_OBJECT        = 0,
-    TYPEID_ITEM          = 1,
-    TYPEID_CONTAINER     = 2,
-    TYPEID_UNIT          = 3,
-    TYPEID_PLAYER        = 4,
-    TYPEID_GAMEOBJECT    = 5,
-    TYPEID_DYNAMICOBJECT = 6,
-    TYPEID_CORPSE        = 7,
-    TYPEID_AREATRIGGER   = 8,
-    TYPEID_SCENEOBJECT   = 9
-};
-
-#define NUM_CLIENT_OBJECT_TYPES             10
-
-uint32 GuidHigh2TypeId(uint32 guid_hi);
 
 // Reasons for why object was flagged as active
 enum class ActiveFlags : uint32
@@ -117,11 +86,8 @@ class TC_GAME_API Object
         virtual void AddToWorld();
         virtual void RemoveFromWorld();
 
-        uint64 GetGUID() const { return GetUInt64Value(0); }
-        uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
-        uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(0)); }
-        uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(0)); }
-        const ByteBuffer& GetPackGUID() const { return m_PackGUID; }
+        ObjectGuid GetGUID() const { return GetGuidValue(OBJECT_FIELD_GUID); }
+        PackedGuid const& GetPackGUID() const { return m_PackGUID; }
         uint32 GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY_ID); }
         void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY_ID, entry); }
 
@@ -146,6 +112,7 @@ class TC_GAME_API Object
         uint8 GetByteValue(uint16 index, uint8 offset) const;
         uint16 GetUInt16Value(uint16 index, uint8 offset) const;
         uint32 GetDynamicUInt32Value(uint32 tab, uint16 index) const;
+        ObjectGuid GetGuidValue(uint16 index) const;
 
         void SetInt32Value(uint16 index, int32 value);
         void SetUInt32Value(uint16 index, uint32 value);
@@ -155,13 +122,14 @@ class TC_GAME_API Object
         void SetByteValue(uint16 index, uint8 offset, uint8 value);
         void SetUInt16Value(uint16 index, uint8 offset, uint16 value);
         void SetInt16Value(uint16 index, uint8 offset, int16 value) { SetUInt16Value(index, offset, (uint16)value); }
+        void SetGuidValue(uint16 index, ObjectGuid value);
         void SetStatFloatValue(uint16 index, float value);
         void SetStatInt32Value(uint16 index, int32 value);
         void SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value);
         void RemoveDynamicValue(uint32 tab, uint16 index);
 
-        bool AddUInt64Value(uint16 index, uint64 value);
-        bool RemoveUInt64Value(uint16 index, uint64 value);
+        bool AddGuidValue(uint16 index, ObjectGuid value);
+        bool RemoveGuidValue(uint16 index, ObjectGuid value);
 
         void ApplyModUInt32Value(uint16 index, int32 val, bool apply);
         void ApplyModInt32Value(uint16 index, int32 val, bool apply);
@@ -203,6 +171,12 @@ class TC_GAME_API Object
         void ForceValuesUpdateAtIndex(uint32);
         void ForceDynamicValuesUpdateTabAtIndex(uint32, uint16);
 
+        inline bool IsWorldObject() const { return isType(TYPEMASK_WORLDOBJECT); }
+        static WorldObject* ToWorldObject(Object* o) { return o ? o->ToWorldObject() : nullptr; }
+        static WorldObject const* ToWorldObject(Object const* o) { return o ? o->ToWorldObject() : nullptr; }
+        WorldObject* ToWorldObject() { if (IsWorldObject()) return reinterpret_cast<WorldObject*>(this); else return nullptr; }
+        WorldObject const* ToWorldObject() const { if (IsWorldObject()) return reinterpret_cast<WorldObject const*>(this); else return nullptr; }
+
         inline bool IsPlayer() const { return GetTypeId() == TYPEID_PLAYER; }
         static Player* ToPlayer(Object* o) { return o ? o->ToPlayer() : nullptr; }
         static Player const* ToPlayer(Object const* o) { return o ? o->ToPlayer() : nullptr; }        
@@ -237,7 +211,7 @@ class TC_GAME_API Object
         Object();
 
         void _InitValues();
-        void _Create(uint32 guidlow, uint32 entry, HighGuid guidhigh);
+        void _Create(ObjectGuid::LowType guidlow, uint32 entry, HighGuid guidhigh);
         std::string _ConcatFields(uint16 startIndex, uint16 size) const;
         void _LoadIntoDataField(std::string const& data, uint32 startOffset, uint32 count);
 
@@ -316,7 +290,7 @@ class TC_GAME_API Object
     private:
         bool m_inWorld;
 
-        ByteBuffer m_PackGUID;
+        PackedGuid m_PackGUID;
 
         // for output helpfull error messages from asserts
         bool PrintIndexError(uint32 index, bool set) const;
@@ -341,7 +315,7 @@ struct MovementInfo
     {
         void Reset()
         {
-            guid = 0;
+            guid.Clear();
             pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
             seat = -1;
             time = 0;
@@ -349,7 +323,7 @@ struct MovementInfo
             time3 = 0;
         }
 
-        uint64 guid;
+        ObjectGuid guid;
         Position pos;
         int8 seat;
         uint32 time;
@@ -398,7 +372,7 @@ struct MovementInfo
     void RemoveExtraMovementFlag(uint16 flag) { flags2 &= ~flag; }
     bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
 
-    void SetFallTime(uint32 time) { jump.fallTime = time; }
+    void SetFallTime(uint32 ft) { jump.fallTime = ft; }
 
     void ResetTransport()
     {
@@ -496,7 +470,7 @@ namespace CustomVisibility
         CustomVisibility::Importance Importance;
         std::string Comment;
     };
-};
+}
 
 class TC_GAME_API WorldObject : public Object, public WorldLocation
 {
@@ -631,7 +605,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void PlayDirectSound(uint32 sound_id, Player* target = NULL);
         void PlayDirectMusic(uint32 music_id, Player* target = NULL);
 
-        void SendObjectDeSpawnAnim(uint64 guid);
+        void SendObjectDeSpawnAnim(ObjectGuid guid);
 
         virtual void SaveRespawnTime() { }
         void AddObjectToRemoveList();
@@ -667,8 +641,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummon* SummonCreature(uint32 id, Position const &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 privateObjectOwner = 0);
-        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 privateObjectOwner = 0);
+        TempSummon* SummonCreature(uint32 id, Position const &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, ObjectGuid privateObjectOwner = ObjectGuid::Empty);
+        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, ObjectGuid privateObjectOwner = ObjectGuid::Empty);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 respawnTime, GOSummonType summonType = GO_SUMMON_TIMED_OR_CORPSE_DESPAWN);
 
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
@@ -698,7 +672,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void UpdateStealthVisibility(uint32 diff);
         void UpdatePositionData();
         
-        void BuildUpdate(UpdateDataMapType&);
+        void BuildUpdate(UpdateDataMapType&) override;
 
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool on, ActiveFlags flag = ActiveFlags::InCombat);
@@ -732,7 +706,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         float GetTransOffsetO() const { return m_movementInfo.transport.pos.GetOrientation(); }
         uint32 GetTransTime()   const { return m_movementInfo.transport.time; }
         int8 GetTransSeat()     const { return m_movementInfo.transport.seat; }
-        virtual uint64 GetTransGUID()   const;
+        virtual ObjectGuid GetTransGUID() const;
         void SetTransport(Transport* t) { m_transport = t; }
         bool AddToTransportIfNeeded(Transport* transport, bool setHome = false, float extents = 0.0f); // Add the object to transport and adjust positions if it is inside transport's bounds + extents
 
@@ -757,8 +731,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         // Watcher
         bool IsPrivateObject() const { return _privateObjectOwner != 0; }
-        uint64 GetPrivateObjectOwner() const { return _privateObjectOwner; }
-        void SetPrivateObjectOwner(uint64 owner) { _privateObjectOwner = owner; }
+        ObjectGuid GetPrivateObjectOwner() const { return _privateObjectOwner; }
+        void SetPrivateObjectOwner(ObjectGuid owner) { _privateObjectOwner = owner; }
         bool CheckPrivateObjectOwnerVisibility(WorldObject const* seer) const;
 
         void AddToUpdate() override;
@@ -812,7 +786,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         std::set<uint32> _terrainSwaps;
         std::set<uint32> _worldMapSwaps;
 
-        uint64 _privateObjectOwner;
+        ObjectGuid _privateObjectOwner;
 
         bool m_hasCustomVisibility = false;
         float m_customVisibilityDistance = 0;

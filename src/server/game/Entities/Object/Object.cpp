@@ -58,26 +58,7 @@
 
 #define STEALTH_VISIBILITY_UPDATE_TIMER 500
 
-uint32 GuidHigh2TypeId(uint32 guid_hi)
-{
-    switch (guid_hi)
-    {
-        case HIGHGUID_ITEM:         return TYPEID_ITEM;
-        //case HIGHGUID_CONTAINER:    return TYPEID_CONTAINER; HIGHGUID_CONTAINER == HIGHGUID_ITEM currently
-        case HIGHGUID_UNIT:         return TYPEID_UNIT;
-        case HIGHGUID_PET:          return TYPEID_UNIT;
-        case HIGHGUID_PLAYER:       return TYPEID_PLAYER;
-        case HIGHGUID_GAMEOBJECT:   return TYPEID_GAMEOBJECT;
-        case HIGHGUID_DYNAMICOBJECT:return TYPEID_DYNAMICOBJECT;
-        case HIGHGUID_CORPSE:       return TYPEID_CORPSE;
-        case HIGHGUID_AREATRIGGER:  return TYPEID_AREATRIGGER;
-        case HIGHGUID_MO_TRANSPORT: return TYPEID_GAMEOBJECT;
-        case HIGHGUID_VEHICLE:      return TYPEID_UNIT;
-    }
-    return NUM_CLIENT_OBJECT_TYPES;                         // unknown
-}
-
-Object::Object() : m_PackGUID(sizeof(uint64)+1)
+Object::Object()
 {
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
@@ -88,8 +69,6 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1)
 
     m_inWorld           = false;
     m_objectUpdated     = false;
-
-    m_PackGUID.appendPackGUID(0);
 }
 
 WorldObject::~WorldObject()
@@ -100,7 +79,7 @@ WorldObject::~WorldObject()
         if (GetTypeId() == TYPEID_CORPSE)
         {
             TC_LOG_FATAL("misc", "Object::~Object Corpse guid=" UI64FMTD ", type=%d, entry=%u deleted but still in map!!",
-                GetGUID(), ((Corpse*)this)->GetType(), GetEntry());
+                GetGUID().GetRawValue(), ((Corpse*)this)->GetType(), GetEntry());
             ASSERT(false);
         }
         ResetMap();
@@ -111,7 +90,7 @@ Object::~Object()
 {
     if (IsInWorld())
     {
-        TC_LOG_FATAL("misc", "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in world!!", GetGUID(), GetTypeId(), GetEntry());
+        TC_LOG_FATAL("misc", "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in world!!", GetGUID().GetRawValue(), GetTypeId(), GetEntry());
         if (isType(TYPEMASK_ITEM))
             TC_LOG_FATAL("misc", "Item slot %u", ((Item*)this)->GetSlot());
         ASSERT(false);
@@ -120,7 +99,7 @@ Object::~Object()
 
     if (m_objectUpdated)
     {
-        TC_LOG_FATAL("misc", "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in update list!!", GetGUID(), GetTypeId(), GetEntry());
+        TC_LOG_FATAL("misc", "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in update list!!", GetGUID().GetRawValue(), GetTypeId(), GetEntry());
         ASSERT(false);
     }
 
@@ -150,15 +129,14 @@ void Object::_InitValues()
     m_objectUpdated = false;
 }
 
-void Object::_Create(uint32 guidlow, uint32 entry, HighGuid guidhigh)
+void Object::_Create(ObjectGuid::LowType guidlow, uint32 entry, HighGuid guidhigh)
 {
     if (!m_uint32Values) _InitValues();
 
-    uint64 guid = MAKE_NEW_GUID(guidlow, entry, guidhigh);
-    SetUInt64Value(OBJECT_FIELD_GUID, guid);
+    ObjectGuid guid = ObjectGuid(guidhigh, entry, guidlow);
+    SetGuidValue(OBJECT_FIELD_GUID, guid);
     SetUInt16Value(OBJECT_FIELD_TYPE, 0, m_objectType);
-    m_PackGUID.clear();
-    m_PackGUID.appendPackGUID(GetGUID());
+    m_PackGUID.Set(guid);
 }
 
 std::string Object::_ConcatFields(uint16 startIndex, uint16 size) const
@@ -205,27 +183,27 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
     if (target == this)                                      // building packet for yourself
         flags |= UPDATEFLAG_SELF;
 
-    switch (GetGUIDHigh())
+    switch (GetGUID().GetHigh())
     {
-        case HIGHGUID_PLAYER:
-        case HIGHGUID_PET:
-        case HIGHGUID_CORPSE:
-        case HIGHGUID_DYNAMICOBJECT:
-        case HIGHGUID_AREATRIGGER:
+        case HighGuid::Player:
+        case HighGuid::Pet:
+        case HighGuid::Corpse:
+        case HighGuid::DynamicObject:
+        case HighGuid::AreaTrigger:
             updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
-        case HIGHGUID_UNIT:
-        case HIGHGUID_VEHICLE:
+        case HighGuid::Unit:
+        case HighGuid::Vehicle:
         {
             if (TempSummon const* summon = ToUnit()->ToTempSummon())
-                if (IS_PLAYER_GUID(summon->GetSummonerGUID()))
+                if (summon->GetSummonerGUID().IsPlayer())
                     updateType = UPDATETYPE_CREATE_OBJECT2;
 
             break;
         }
-        case HIGHGUID_GAMEOBJECT:
+        case HighGuid::GameObject:
         {
-            if (IS_PLAYER_GUID(ToGameObject()->GetOwnerGUID()))
+            if (ToGameObject()->GetOwnerGUID().IsPlayer())
                 updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         }
@@ -266,9 +244,9 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
         if (unit->GetVictim())
             flags |= UPDATEFLAG_HAS_TARGET;
 
-    ByteBuffer buf(500);
+    ByteBuffer buf;
     buf << uint8(updateType);
-    buf.append(GetPackGUID());
+    buf << GetPackGUID();
     buf << uint8(m_objectTypeId);
 
     BuildMovementUpdate(&buf, flags);
@@ -289,10 +267,10 @@ void Object::SendUpdateToPlayer(Player* player)
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
 {
-    ByteBuffer buf(500);
+    ByteBuffer buf;
 
     buf << uint8(UPDATETYPE_VALUES);
-    buf.append(GetPackGUID());
+    buf << GetPackGUID();
 
     BuildValuesUpdate(UPDATETYPE_VALUES, &buf, target);
 
@@ -316,8 +294,22 @@ void Object::DestroyForPlayer(Player* target, bool onDeath) const
             {
                 ObjectGuid guid = GetGUID();
                 WorldPacket data(SMSG_ARENA_UNIT_DESTROYED, 8);
-                data.WriteGuidMask(guid, 3, 2, 6, 0, 4, 5, 7, 1);
-                data.WriteGuidBytes(guid, 6, 1, 5, 7, 3, 4, 2, 0);
+                data.WriteBit(guid[3]);
+                data.WriteBit(guid[2]);
+                data.WriteBit(guid[6]);
+                data.WriteBit(guid[0]);
+                data.WriteBit(guid[4]);
+                data.WriteBit(guid[5]);
+                data.WriteBit(guid[7]);
+                data.WriteBit(guid[1]);
+                data.WriteByteSeq(guid[6]);
+                data.WriteByteSeq(guid[1]);
+                data.WriteByteSeq(guid[5]);
+                data.WriteByteSeq(guid[7]);
+                data.WriteByteSeq(guid[3]);
+                data.WriteByteSeq(guid[4]);
+                data.WriteByteSeq(guid[2]);
+                data.WriteByteSeq(guid[0]);
                 target->GetSession()->SendPacket(&data);
             }
         }
@@ -389,6 +381,12 @@ uint16 Object::GetUInt16Value(uint16 index, uint8 offset) const
     ASSERT(index < m_valuesCount || PrintIndexError(index, false));
     ASSERT(offset < 2);
     return *(((uint16*)&m_uint32Values[index])+offset);
+}
+
+ObjectGuid Object::GetGuidValue(uint16 index) const
+{
+    ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, false));
+    return *((ObjectGuid*)&(m_uint32Values[index]));
 }
 
 uint32 Object::GetDynamicUInt32Value(uint32 tab, uint16 index) const
@@ -487,13 +485,13 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             ObjectGuid transGuid = self->m_movementInfo.transport.guid;
             data->WriteBit(transGuid[4]);
             data->WriteBit(transGuid[2]);
-            data->WriteBit(self->m_movementInfo.transport.time3 && self->m_movementInfo.transport.guid);
+            data->WriteBit(self->m_movementInfo.transport.time3 && !self->m_movementInfo.transport.guid.IsEmpty());
             data->WriteBit(transGuid[0]);
             data->WriteBit(transGuid[1]);
             data->WriteBit(transGuid[3]);
             data->WriteBit(transGuid[6]);
             data->WriteBit(transGuid[7]);
-            data->WriteBit(self->m_movementInfo.transport.time2 && self->m_movementInfo.transport.guid);
+            data->WriteBit(self->m_movementInfo.transport.time2 && !self->m_movementInfo.transport.guid.IsEmpty());
             data->WriteBit(transGuid[5]);
         }
 
@@ -540,13 +538,13 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteBit(transGuid[4]);
         data->WriteBit(transGuid[1]);
         data->WriteBit(transGuid[0]);
-        data->WriteBit(self->m_movementInfo.transport.time2 && self->m_movementInfo.transport.guid);
+        data->WriteBit(self->m_movementInfo.transport.time2 && !self->m_movementInfo.transport.guid.IsEmpty());
         data->WriteBit(transGuid[6]);
         data->WriteBit(transGuid[5]);
         data->WriteBit(transGuid[3]);
         data->WriteBit(transGuid[2]);
         data->WriteBit(transGuid[7]);
-        data->WriteBit(self->m_movementInfo.transport.time3 && self->m_movementInfo.transport.guid);
+        data->WriteBit(self->m_movementInfo.transport.time3 && !self->m_movementInfo.transport.guid.IsEmpty());
     }
 
     if (hasAreaTriggerData)
@@ -604,7 +602,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteByteSeq(transGuid[7]);
             *data << float(self->GetTransOffsetX());
 
-            if (self->m_movementInfo.transport.time3 && self->m_movementInfo.transport.guid)
+            if (self->m_movementInfo.transport.time3 && !self->m_movementInfo.transport.guid.IsEmpty())
                 *data << uint32(self->m_movementInfo.transport.time3);
 
             *data << float(self->GetTransOffsetO());
@@ -615,7 +613,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << float(self->GetTransOffsetZ());
             data->WriteByteSeq(transGuid[5]);
 
-            if (self->m_movementInfo.transport.time2 && self->m_movementInfo.transport.guid)
+            if (self->m_movementInfo.transport.time2 && !self->m_movementInfo.transport.guid.IsEmpty())
                 *data << uint32(self->m_movementInfo.transport.time2);
 
             data->WriteByteSeq(transGuid[0]);
@@ -711,7 +709,9 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << float(self->GetTransOffsetY());
         *data << int8(self->GetTransSeat());
         *data << float(self->GetTransOffsetX());
-        data->WriteGuidBytes(transGuid, 2, 4, 1);
+        data->WriteByteSeq(transGuid[2]);
+        data->WriteByteSeq(transGuid[4]);
+        data->WriteByteSeq(transGuid[1]);
 
         if (self->m_movementInfo.transport.time3 && self->m_movementInfo.transport.guid)
             *data << uint32(self->m_movementInfo.transport.time3);
@@ -721,7 +721,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << float(self->GetTransOffsetO());
         *data << float(self->GetTransOffsetZ());
 
-        data->WriteGuidBytes(transGuid, 6, 0, 5, 3, 7);
+        data->WriteByteSeq(transGuid[6]);
+        data->WriteByteSeq(transGuid[0]);
+        data->WriteByteSeq(transGuid[5]);
+        data->WriteByteSeq(transGuid[3]);
+        data->WriteByteSeq(transGuid[7]);
     }
 
     if (hasTarget)
@@ -1022,13 +1026,12 @@ void Object::SetUInt64Value(uint16 index, uint64 value)
     }
 }
 
-bool Object::AddUInt64Value(uint16 index, uint64 value)
+bool Object::AddGuidValue(uint16 index, ObjectGuid value)
 {
     ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
-    if (value && !*((uint64*)&(m_uint32Values[index])))
+    if (value && !*((ObjectGuid*)&(m_uint32Values[index])))
     {
-        m_uint32Values[index] = PAIR64_LOPART(value);
-        m_uint32Values[index + 1] = PAIR64_HIPART(value);
+        *((ObjectGuid*)&(m_uint32Values[index])) = value;
         _changesMask.SetBit(index);
         _changesMask.SetBit(index + 1);
 
@@ -1041,10 +1044,10 @@ bool Object::AddUInt64Value(uint16 index, uint64 value)
     return false;
 }
 
-bool Object::RemoveUInt64Value(uint16 index, uint64 value)
+bool Object::RemoveGuidValue(uint16 index, ObjectGuid value)
 {
     ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
-    if (value && *((uint64*)&(m_uint32Values[index])) == value)
+    if (value && *((ObjectGuid*)&(m_uint32Values[index])) == value)
     {
         m_uint32Values[index] = 0;
         m_uint32Values[index + 1] = 0;
@@ -1110,6 +1113,20 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
         m_uint32Values[index] &= ~uint32(uint32(0xFFFF) << (offset * 16));
         m_uint32Values[index] |= uint32(uint32(value) << (offset * 16));
         _changesMask.SetBit(index);
+
+        if (m_inWorld && !m_objectUpdated)
+            AddToUpdate();
+    }
+}
+
+void Object::SetGuidValue(uint16 index, ObjectGuid value)
+{
+    ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
+    if (*((ObjectGuid*)&(m_uint32Values[index])) != value)
+    {
+        *((ObjectGuid*)&(m_uint32Values[index])) = value;
+        _changesMask.SetBit(index);
+        _changesMask.SetBit(index + 1);
 
         if (m_inWorld && !m_objectUpdated)
             AddToUpdate();
@@ -1331,7 +1348,7 @@ void MovementInfo::OutDebug()
     if (transport.guid)
     {
         TC_LOG_INFO("misc", "TRANSPORT:");
-        TC_LOG_INFO("misc", "guid: " UI64FMTD, transport.guid);
+        TC_LOG_INFO("misc", "guid: " UI64FMTD, transport.guid.GetRawValue());
         TC_LOG_INFO("misc", "position: `%s`", transport.pos.ToString().c_str());
         TC_LOG_INFO("misc", "seat: %i", transport.seat);
         TC_LOG_INFO("misc", "time: %u", transport.time);
@@ -1519,7 +1536,7 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
     float sizefactor = GetObjectSize() + obj->GetObjectSize();
     float maxdist = dist2compare + sizefactor;
 
-    if (GetTransport() && obj->GetTransport() &&  obj->GetTransport()->GetGUIDLow() == GetTransport()->GetGUIDLow())
+    if (GetTransport() && obj->GetTransport() &&  obj->GetTransport()->GetGUID() == GetTransport()->GetGUID())
     {
         float dtx = m_movementInfo.transport.pos.m_positionX - obj->m_movementInfo.transport.pos.m_positionX;
         float dty = m_movementInfo.transport.pos.m_positionY - obj->m_movementInfo.transport.pos.m_positionY;
@@ -2205,7 +2222,7 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
                     return false;
 
             // Allow visible by guid
-            if (auto info = sObjectMgr->GetObjectVisibilityStateData(-(int32)obj->GetGUIDLow()))
+            if (auto info = sObjectMgr->GetObjectVisibilityStateData(-(int32)obj->GetGUID().GetCounter()))
                 if (info->type == (obj->GetTypeId() == TYPEID_GAMEOBJECT ? ObjectVisibilityState::objectType::GameObject : ObjectVisibilityState::objectType::Creature) && player->GetQuestStatus(info->questId) != info->questState)
                     return false;
         }
@@ -2611,28 +2628,27 @@ void WorldObject::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr
     VisitNearbyWorldObject(GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, notifier, false, true);
 }
 
-void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
+void WorldObject::SendObjectDeSpawnAnim(ObjectGuid guid)
 {
-    ObjectGuid Guid = guid;
     WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8);
 
-    data.WriteBit(Guid[0]);
-    data.WriteBit(Guid[2]);
-    data.WriteBit(Guid[4]);
-    data.WriteBit(Guid[1]);
-    data.WriteBit(Guid[7]);
-    data.WriteBit(Guid[3]);
-    data.WriteBit(Guid[6]);
-    data.WriteBit(Guid[5]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
 
-    data.WriteByteSeq(Guid[0]);
-    data.WriteByteSeq(Guid[2]);
-    data.WriteByteSeq(Guid[4]);
-    data.WriteByteSeq(Guid[5]);
-    data.WriteByteSeq(Guid[7]);
-    data.WriteByteSeq(Guid[3]);
-    data.WriteByteSeq(Guid[1]);
-    data.WriteByteSeq(Guid[6]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[6]);
 
     SendMessageToSet(&data, true);
 }
@@ -2680,14 +2696,14 @@ void WorldObject::AddObjectToRemoveList()
     Map* map = FindMap();
     if (!map)
     {
-        TC_LOG_ERROR("misc", "Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).", GetTypeId(), GetEntry(), GetGUIDLow(), GetMapId());
+        TC_LOG_ERROR("misc", "Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).", GetTypeId(), GetEntry(), GetGUID().GetCounter(), GetMapId());
         return;
     }
 
     map->AddObjectToRemoveList(this);
 }
 
-TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 privateObjectOwner /*= 0*/)
+TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, ObjectGuid privateObjectOwner /*= 0*/)
 {
     if (!Trinity::IsValidMapCoord(pos.GetPositionX(), pos.GetPositionY()))
     {
@@ -2784,7 +2800,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     if (!summon->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
         summon->HideSummonedBy();
 
-    if (!summon->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), this, phase, entry, vehId, team, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
+    if (!summon->Create(GenerateLowGuid<HighGuid::Unit>(), this, phase, entry, vehId, team, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
     {
         delete summon;
         return nullptr;
@@ -2813,7 +2829,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
             summoner->AddSummon(summon);
         else if (summoner->FindMap() != summon->FindMap()) // Okay, owner isn't in world, just some shit in scripts on instance unload/etc or summon was despawned (yeah, its's possible)
         {
-            TC_LOG_ERROR("shitlog", "Map::SummonCreature spellId: %u, owner (" UI64FMTD ", entry: %u) map: %u (instance: %u), summon (" UI64FMTD ", entry: %u, in world: %u) map: %u (instance: %u)\n", spellId, summoner->GetGUID(), summoner->GetEntry(), summoner->GetMap()->GetId(), summoner->GetInstanceId(), summon->GetGUID(), summon->GetEntry(), summon->IsInWorld(), summon->GetMap()->GetId(), summon->GetInstanceId());
+            TC_LOG_ERROR("shitlog", "Map::SummonCreature spellId: %u, owner (" UI64FMTD ", entry: %u) map: %u (instance: %u), summon (" UI64FMTD ", entry: %u, in world: %u) map: %u (instance: %u)\n", spellId, summoner->GetGUID().GetRawValue(), summoner->GetEntry(), summoner->GetMap()->GetId(), summoner->GetInstanceId(), summon->GetGUID().GetRawValue(), summon->GetEntry(), summon->IsInWorld(), summon->GetMap()->GetId(), summon->GetInstanceId());
         }
     }
 
@@ -2859,7 +2875,7 @@ void WorldObject::SetZoneScript()
     }
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, uint32 vehId, uint64 privateObjectOwner /*= 0*/)
+TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, uint32 vehId, ObjectGuid privateObjectOwner /*= 0*/)
 {
     if (Map* map = FindMap())
     {
@@ -2873,7 +2889,7 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang /*= 0*/, TempSummonType spwtype /*= TEMPSUMMON_MANUAL_DESPAWN*/, uint32 despwtime /*= 0*/, uint64 privateObjectOwner /*= 0*/)
+TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang /*= 0*/, TempSummonType spwtype /*= TEMPSUMMON_MANUAL_DESPAWN*/, uint32 despwtime /*= 0*/, ObjectGuid privateObjectOwner /*= 0*/)
 {
     if (!x && !y && !z)
     {
@@ -2899,7 +2915,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
 
     Map* map = GetMap();
     GameObject* go = new GameObject();
-    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, GetPhaseMask(), x, y, z, ang, rotation, 100, GO_STATE_READY))
+    if (!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), entry, map, GetPhaseMask(), x, y, z, ang, rotation, 100, GO_STATE_READY))
     {
         delete go;
         return NULL;
@@ -3366,7 +3382,7 @@ void WorldObject::MovePosition(Position &pos, float dist, float angle)
     if (!Trinity::IsValidMapCoord(destx, desty, pos.m_positionZ))
     {
         TC_LOG_FATAL("misc", "WorldObject::MovePosition: Object (TypeId: %u Entry: %u GUID: %u) has invalid coordinates X: %f and Y: %f were passed!",
-            GetTypeId(), GetEntry(), GetGUIDLow(), destx, desty);
+            GetTypeId(), GetEntry(), GetGUID().GetCounter(), destx, desty);
         return;
     }
 
@@ -3800,7 +3816,7 @@ void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= NULL*/)
 
 void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
 {
-    ObjectGuid guid = target ? target->GetGUID() : 0;
+    ObjectGuid guid = target ? target->GetGUID() : ObjectGuid::Empty;
 
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data.WriteBit(guid[2]);
@@ -3944,9 +3960,9 @@ struct WorldObjectChangeAccumulator
         for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
             source = iter->GetSource();
-            uint64 guid = source->GetCasterGUID();
+            ObjectGuid guid = source->GetCasterGUID();
 
-            if (IS_PLAYER_GUID(guid))
+            if (guid.IsPlayer())
             {
                 //Caster may be NULL if DynObj is in removelist
                 if (Player* caster = ObjectAccessor::FindPlayer(guid))
@@ -3983,11 +3999,11 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     ClearUpdateMask(false);
 }
 
-uint64 WorldObject::GetTransGUID() const
+ObjectGuid WorldObject::GetTransGUID() const
 {
     if (GetTransport())
         return GetTransport()->GetGUID();
-    return 0;
+    return ObjectGuid::Empty;
 }
 
 float WorldObject::GetFloorZ() const
@@ -4091,7 +4107,7 @@ void WorldObject::AddToUpdate()
     if (!m_currMap)
     {
         TC_LOG_ERROR("shitlog", "WorldObject::AddToUpdate - NULL in m_currMap (typeId %u, entry %u, guid " UI64FMTD ")",
-            GetTypeId(), GetEntry(), GetGUID());
+            GetTypeId(), GetEntry(), GetGUID().GetRawValue());
         return;
     }
 
@@ -4104,7 +4120,7 @@ void WorldObject::RemoveFromUpdate()
     if (!m_currMap)
     {
         TC_LOG_ERROR("shitlog", "WorldObject::RemoveFromUpdate - NULL in m_currMap (typeId %u, entry %u, guid " UI64FMTD ")",
-            GetTypeId(), GetEntry(), GetGUID());
+            GetTypeId(), GetEntry(), GetGUID().GetRawValue());
         return;
     }
 

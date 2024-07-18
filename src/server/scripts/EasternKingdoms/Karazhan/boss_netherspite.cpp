@@ -73,9 +73,9 @@ class boss_netherspite : public CreatureScript
 
                 for (int i=0; i<3; ++i)
                 {
-                    PortalGUID[i] = 0;
-                    BeamTarget[i] = 0;
-                    BeamerGUID[i] = 0;
+                    PortalGUID[i] = ObjectGuid::Empty;
+                    BeamTarget[i] = ObjectGuid::Empty;
+                    BeamerGUID[i] = ObjectGuid::Empty;
                 }
             }
 
@@ -89,9 +89,9 @@ class boss_netherspite : public CreatureScript
             uint32 NetherbreathTimer;
             uint32 EmpowermentTimer;
             uint32 PortalTimer; // timer for beam checking
-            uint64 PortalGUID[3]; // guid's of portals
-            uint64 BeamerGUID[3]; // guid's of auxiliary beaming portals
-            uint64 BeamTarget[3]; // guid's of portals' current targets
+            ObjectGuid PortalGUID[3]; // guid's of portals
+            ObjectGuid BeamerGUID[3]; // guid's of auxiliary beaming portals
+            ObjectGuid BeamTarget[3]; // guid's of portals' current targets
 
             bool IsBetween(WorldObject* u1, WorldObject* target, WorldObject* u2) // the in-line checker
             {
@@ -155,8 +155,8 @@ class boss_netherspite : public CreatureScript
                         portal->DisappearAndDie();
                     if (Creature* portal = Unit::GetCreature(*me, BeamerGUID[i]))
                         portal->DisappearAndDie();
-                    PortalGUID[i] = 0;
-                    BeamTarget[i] = 0;
+                    PortalGUID[i] = ObjectGuid::Empty;
+                    BeamTarget[i] = ObjectGuid::Empty;
                 }
             }
 
@@ -200,7 +200,7 @@ class boss_netherspite : public CreatureScript
                             {
                                 beamer->CastSpell(target, PortalBeam[j], false);
                                 beamer->DisappearAndDie();
-                                BeamerGUID[j] = 0;
+                                BeamerGUID[j] = ObjectGuid::Empty;
                             }
                             // create new one and start beaming on the target
                             if (Creature* beamer = portal->SummonCreature(PortalID[j],portal->GetPositionX(),portal->GetPositionY(),portal->GetPositionZ(),portal->GetOrientation(),TEMPSUMMON_TIMED_DESPAWN,60000))
@@ -244,7 +244,7 @@ class boss_netherspite : public CreatureScript
 
             void HandleDoors(bool open) // Massive Door switcher
             {
-                if (GameObject *Door = GameObject::GetGameObject(*me, instance ? instance->GetData64(DATA_GO_MASSIVE_DOOR) : 0))
+                if (GameObject *Door = GameObject::GetGameObject(*me, instance ? instance->GetGuidData(DATA_GO_MASSIVE_DOOR) : ObjectGuid::Empty))
                     Door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
             }
 

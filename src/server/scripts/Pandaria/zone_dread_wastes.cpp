@@ -2074,14 +2074,14 @@ struct npc_mistblade_reapper : public ScriptedAI
     npc_mistblade_reapper(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap events;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 delay;
 
     void Reset() override
     {
         events.Reset();
         delay      = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -2522,7 +2522,7 @@ class npc_hisek_the_swarmkeeper : public CreatureScript
             if (quest->GetQuestId() == 31441)
             {
                 Position pos = creature->GetPosition();
-                uint64 playerGUID = player->GetGUID();
+                ObjectGuid playerGUID = player->GetGUID();
                 if (auto qgiver = creature->SummonCreature(64705, pos))
                 {
                     qgiver->SetExplicitSeerGuid(playerGUID);
@@ -2545,18 +2545,18 @@ class npc_hisek_the_swarmkeeper_summon : public CreatureScript
 
             uint8 phase;
             uint32 phaseTimer;
-            uint64 playerGUID;
-            uint64 traitorGUID;
+            ObjectGuid playerGUID;
+            ObjectGuid traitorGUID;
 
             void Reset() override
             {
                 phase = 0;
                 phaseTimer = 500;
-                traitorGUID = 0;
-                playerGUID = 0;
+                traitorGUID = ObjectGuid::Empty;
+                playerGUID = ObjectGuid::Empty;
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 playerGUID = guid;
             }
@@ -2610,7 +2610,7 @@ class npc_hisek_the_swarmkeeper_summon : public CreatureScript
                             traitor->AI()->Talk(4);
                             traitor->UpdateEntry(64583);
                             AttackStart(traitor);
-                            playerGUID = 0;
+                            playerGUID = ObjectGuid::Empty;
                         }
                     }
 
@@ -2859,7 +2859,7 @@ class npc_kilruk_quest_shadow_of_empire : public CreatureScript
         {
             npc_kilruk_quest_shadow_of_empireAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay;
 
             void IsSummonedBy(Unit* summoner) override
@@ -3015,7 +3015,7 @@ class npc_malik_the_unscathed_quest_empress_gambit_trigger : public CreatureScri
         {
             npc_malik_the_unscathed_quest_empress_gambit_triggerAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay;
             float x, y;
 
@@ -3073,7 +3073,7 @@ class npc_grand_vizier_zorlok_quest_empress_gambit : public CreatureScript
         {
             npc_grand_vizier_zorlok_quest_empress_gambitAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 summonerGUID;
+            ObjectGuid summonerGUID;
             uint32 delay;
             float x, y;
 
@@ -3398,7 +3398,7 @@ class spell_dread_waster_gather_shade : public SpellScript
     {
         if (Player* target = GetHitPlayer())
             if (target->GetQuestStatus(QUEST_BOUND_WITH_SHADES) == QUEST_STATUS_INCOMPLETE)
-                target->KilledMonsterCredit(NPC_SHADE_CREDIT, 0, GetSpellInfo()->Effects[effIndex].BasePoints);
+                target->KilledMonsterCredit(NPC_SHADE_CREDIT, ObjectGuid::Empty, GetSpellInfo()->Effects[effIndex].BasePoints);
     }
 
     void Register() override

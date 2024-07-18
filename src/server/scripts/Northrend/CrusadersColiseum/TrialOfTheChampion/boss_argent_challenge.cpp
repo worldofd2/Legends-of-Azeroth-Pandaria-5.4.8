@@ -249,9 +249,9 @@ class boss_eadric : public CreatureScript
 
                     Talk(SAY_COMMON_DEATH);
 
-                    if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetData64(DATA_MAIN_GATE)))
+                    if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetGuidData(DATA_MAIN_GATE)))
                         _instance->HandleGameObject(go->GetGUID(), true);
-                    if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetData64(DATA_PORTCULLIS)))
+                    if (GameObject* go = GameObject::GetGameObject(*me, _instance->GetGuidData(DATA_PORTCULLIS)))
                         _instance->HandleGameObject(go->GetGUID(), true);
                 }
             }
@@ -556,9 +556,9 @@ class boss_paletress : public CreatureScript
 
                     Talk(SAY_COMMON_DEATH);
 
-                    if (GameObject* go = GameObject::GetGameObject(*me, _instance ? _instance->GetData64(DATA_MAIN_GATE) : 0))
+                    if (GameObject* go = GameObject::GetGameObject(*me, _instance ? _instance->GetGuidData(DATA_MAIN_GATE) : ObjectGuid::Empty))
                         _instance->HandleGameObject(go->GetGUID(), true);
-                    if (GameObject* go = GameObject::GetGameObject(*me, _instance ? _instance->GetData64(DATA_PORTCULLIS) : 0))
+                    if (GameObject* go = GameObject::GetGameObject(*me, _instance ? _instance->GetGuidData(DATA_PORTCULLIS) : ObjectGuid::Empty))
                         _instance->HandleGameObject(go->GetGUID(), true);
                 }
             }
@@ -917,7 +917,7 @@ class npc_argent_soldier : public CreatureScript
                         break;
                 }
 
-                Start(false, true, 0);
+                Start(false, true, ObjectGuid::Empty);
                 _waypoint = type;
             }
 

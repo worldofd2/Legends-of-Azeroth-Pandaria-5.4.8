@@ -20,8 +20,10 @@
 
 #include "Object.h"
 #include "Map.h"
+#include "MapInstanced.h"
 #include "GridStates.h"
 #include "MapUpdater.h"
+#include <boost/dynamic_bitset_fwd.hpp>
 
 #include <mutex>
 
@@ -96,9 +98,14 @@ class TC_GAME_API MapManager
             return IsValidMAP(mapid, false) && Trinity::IsValidMapCoord(x, y, z, o);
         }
 
+        static bool IsValidMapCoord(uint32 mapid, Position const& pos)
+        {
+            return IsValidMapCoord(mapid, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+        }
+
         static bool IsValidMapCoord(WorldLocation const& loc)
         {
-            return IsValidMapCoord(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation());
+            return IsValidMapCoord(loc.GetMapId(), loc);
         }
 
         void DoDelayedMovesAndRemoves();
@@ -121,9 +128,21 @@ class TC_GAME_API MapManager
 
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
+        template<typename Worker>
+        void DoForAllMaps(Worker&& worker);
+
+        template<typename Worker>
+        void DoForAllMapsWithMapId(uint32 mapId, Worker&& worker);
+
+        Map* FindBaseMap(uint32 mapId) const
+        {
+            MapMapType::const_iterator iter = i_maps.find(mapId);
+            return (iter == i_maps.end() ? nullptr : iter->second);
+        }
+
     private:
         typedef std::unordered_map<uint32, Map*> MapMapType;
-        typedef std::vector<bool> InstanceIds;
+        typedef boost::dynamic_bitset<size_t> InstanceIds;
 
         // debugging code, should be deleted some day
         void checkAndCorrectGridStatesArray();              // just for debugging to find some memory overwrites
@@ -133,25 +152,58 @@ class TC_GAME_API MapManager
         MapManager();
         ~MapManager();
 
-    public:
-        Map* FindBaseMap(uint32 mapId) const
-        {
-            MapMapType::const_iterator iter = i_maps.find(mapId);
-            return (iter == i_maps.end() ? NULL : iter->second);
-        }
-    private:
-
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
 
-        std::mutex Lock;
+        mutable std::shared_mutex _mapsLock;
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;
 
-        InstanceIds _instanceIds;
+        std::unique_ptr<InstanceIds> _freeInstanceIds;
         uint32 _nextInstanceId;
         MapUpdater m_updater;
 };
+
+template<typename Worker>
+inline void MapManager::DoForAllMaps(Worker&& worker)
+{
+    std::shared_lock<std::shared_mutex> lock(_mapsLock);
+
+    for (auto& mapPair : i_maps)
+    {
+        Map* map = mapPair.second;
+        if (MapInstanced* mapInstanced = map->ToMapInstanced())
+        {
+            MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
+            for (auto& instancePair : instances)
+                worker(instancePair.second);
+        }
+        else
+            worker(map);
+    }
+}
+
+template<typename Worker>
+void MapManager::DoForAllMapsWithMapId(uint32 mapId, Worker&& worker)
+{
+    std::shared_lock<std::shared_mutex> lock(_mapsLock);
+
+    auto itr = i_maps.find(mapId);
+    if (itr != i_maps.end())
+    {
+        Map* map = itr->second;
+        if (MapInstanced* mapInstanced = map->ToMapInstanced())
+        {
+            MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
+            for (auto& p : instances)
+                worker(p.second);
+        }
+        else
+            worker(map);
+    }
+}
+
 #define sMapMgr MapManager::instance()
+
 #endif

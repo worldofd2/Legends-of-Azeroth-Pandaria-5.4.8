@@ -31,14 +31,28 @@
 //Param1:(guid) the guid of Bf
 //Param2:(ZoneId) the zone where the battle is (4197 for wg)
 //Param3:(time) Time in second that the player have for accept
-void WorldSession::SendBfInvitePlayerToWar(uint64 guid, uint32 zoneId, uint32 pTime)
+void WorldSession::SendBfInvitePlayerToWar(ObjectGuid guid, uint32 zoneId, uint32 pTime)
 {
     ObjectGuid guidBytes = guid;
 
     WorldPacket data(SMSG_BATTLEFIELD_MGR_ENTRY_INVITE, 16);
 
-    data.WriteGuidMask(guidBytes, 0, 2, 7, 6, 1, 4, 5, 3);
-    data.WriteGuidBytes(guidBytes, 4, 2, 0, 1, 7, 3, 6, 5);
+    data.WriteBit(guidBytes[0]);
+    data.WriteBit(guidBytes[2]);
+    data.WriteBit(guidBytes[7]);
+    data.WriteBit(guidBytes[6]);
+    data.WriteBit(guidBytes[1]);
+    data.WriteBit(guidBytes[4]);
+    data.WriteBit(guidBytes[5]);
+    data.WriteBit(guidBytes[3]);
+    data.WriteByteSeq(guidBytes[4]);
+    data.WriteByteSeq(guidBytes[2]);
+    data.WriteByteSeq(guidBytes[0]);
+    data.WriteByteSeq(guidBytes[1]);
+    data.WriteByteSeq(guidBytes[7]);
+    data.WriteByteSeq(guidBytes[3]);
+    data.WriteByteSeq(guidBytes[6]);
+    data.WriteByteSeq(guidBytes[5]);
 
     data << uint32(zoneId);             // Zone Id
     data << uint32(time(NULL) + pTime); // Invite lasts until
@@ -48,7 +62,7 @@ void WorldSession::SendBfInvitePlayerToWar(uint64 guid, uint32 zoneId, uint32 pT
 }
 
 //This send invitation to player to join the queue
-void WorldSession::SendBfInvitePlayerToQueue(uint64 guid)
+void WorldSession::SendBfInvitePlayerToQueue(ObjectGuid guid)
 {
     ObjectGuid guidBytes = guid;
 
@@ -91,7 +105,7 @@ void WorldSession::SendBfInvitePlayerToQueue(uint64 guid)
 //Param2:(ZoneId) the zone where the battle is (4197 for wg)
 //Param3:(CanQueue) if able to queue
 //Param4:(Full) on log in is full
-void WorldSession::SendBfQueueInviteResponse(uint64 guid, uint32 ZoneId, bool CanQueue, bool Full)
+void WorldSession::SendBfQueueInviteResponse(ObjectGuid guid, uint32 ZoneId, bool CanQueue, bool Full)
 {
     const bool hasSecondGuid = false;
     const bool warmup = true;
@@ -136,7 +150,7 @@ void WorldSession::SendBfQueueInviteResponse(uint64 guid, uint32 ZoneId, bool Ca
 }
 
 //This is call when player accept to join war
-void WorldSession::SendBfEntered(uint64 guid)
+void WorldSession::SendBfEntered(ObjectGuid guid)
 {
     uint8 isAFK = _player->isAFK() ? 1 : 0;
     ObjectGuid guidBytes = guid;
@@ -167,7 +181,7 @@ void WorldSession::SendBfEntered(uint64 guid)
     SendPacket(&data);
 }
 
-void WorldSession::SendBfLeaveMessage(uint64 guid, BFLeaveReason reason)
+void WorldSession::SendBfLeaveMessage(ObjectGuid guid, BFLeaveReason reason)
 {
     ObjectGuid guidBytes = guid;
 

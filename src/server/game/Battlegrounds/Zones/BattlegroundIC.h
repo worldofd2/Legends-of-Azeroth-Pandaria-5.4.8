@@ -925,7 +925,7 @@ class BattlegroundIC : public Battleground
         void StartingEventOpenDoors() override;
         void PostUpdateImpl(uint32 diff) override;
 
-        void RemovePlayer(Player* plr, uint64 guid, uint32 team) override;
+        void RemovePlayer(Player* plr, ObjectGuid guid, uint32 team) override;
         void HandleAreaTrigger(Player* player, uint32 trigger, bool entered) override;
         bool SetupBattleground() override;
         void HandleKillUnit(Creature* unit, Player* killer) override;
@@ -943,7 +943,7 @@ class BattlegroundIC : public Battleground
 
         void FillInitialWorldStates(WorldStateBuilder& builder) override;
 
-        void DoAction(uint32 action, uint64 var) override;
+        void DoAction(uint32 action, ObjectGuid var) override;
 
         void HandlePlayerResurrect(Player* player) override;
 

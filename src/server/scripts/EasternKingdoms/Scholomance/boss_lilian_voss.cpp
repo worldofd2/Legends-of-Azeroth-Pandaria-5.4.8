@@ -115,7 +115,7 @@ class boss_lilian_voss : public CreatureScript
                     instance->SetData(DATA_LILIAN_VOSS, DONE);
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 }
-                if (Creature* LilianSoul = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_LILIAN_SOUL)))
+                if (Creature* LilianSoul = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_LILIAN_SOUL)))
                     LilianSoul->AI()->DoAction(ACTION_REMOVE_LILIAN_SOUL);
 
                 me->Kill(me);
@@ -222,7 +222,7 @@ class boss_lilian_voss : public CreatureScript
                     me->CastSpell(me, SPELL_LILIAN_VOSS_DEAD, false);
                     me->GetMotionMaster()->MovePoint(1, lilianDeathPoint);
 
-                    if (Creature* Gandling = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GRANDMASTER_GANDLING_INTRO)))
+                    if (Creature* Gandling = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GRANDMASTER_GANDLING_INTRO)))
                         Gandling->AI()->DoAction(ACTION_DIFF_INTRO);
 
                     events.ScheduleEvent(EVENT_SOUL_DISMISS, 9000);
@@ -238,7 +238,7 @@ class boss_lilian_voss : public CreatureScript
                     me->SetFaction(35);
                     me->SetReactState(REACT_PASSIVE);
 
-                    if (Creature* LilianSoul = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_LILIAN_SOUL)))
+                    if (Creature* LilianSoul = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_LILIAN_SOUL)))
                         LilianSoul->AI()->DoAction(ACTION_REMOVE_LILIAN_SOUL);
 
                     nonCombatEvents.ScheduleEvent(EVENT_DIE_NECROMANCE, 2500);
@@ -281,7 +281,7 @@ class boss_lilian_voss : public CreatureScript
                             me->GetMotionMaster()->MovePoint(0, GandlinglilianDoorPoint);
                             break;
                         case EVENT_SPECIAL:
-                            if (Creature* Rattlegore = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RATTLEGORE)))
+                            if (Creature* Rattlegore = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RATTLEGORE)))
                                 Rattlegore->AI()->DoAction(ACTION_INTRO);
 
                             me->NearTeleportTo(LilianTeleportPos.GetPositionX(), LilianTeleportPos.GetPositionY(), LilianTeleportPos.GetPositionZ(), LilianTeleportPos.GetOrientation());
@@ -292,7 +292,7 @@ class boss_lilian_voss : public CreatureScript
                             me->SetReactState(REACT_AGGRESSIVE);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_PACIFIED);
 
-                            if (Creature* Gandling = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GRANDMASTER_GANDLING_INTRO)))
+                            if (Creature* Gandling = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GRANDMASTER_GANDLING_INTRO)))
                                 Gandling->CastSpell(me, SPELL_COSMETIC_SOUL_RIP, false);
                             break;
                         case EVENT_INTRO_DONE:
@@ -302,7 +302,7 @@ class boss_lilian_voss : public CreatureScript
                             JustDied(me);
                             break;
                         case EVENT_DIE_NECROMANCE:
-                            if (Creature* Gandling = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_GRANDMASTER_GANDLING_INTRO)))
+                            if (Creature* Gandling = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_GRANDMASTER_GANDLING_INTRO)))
                             {
                                 Gandling->AI()->Talk(TALK_4);
                                 me->GetMotionMaster()->MoveJump(Gandling->GetPositionX(), Gandling->GetPositionY(), 107.76f, 20.0f, 30.0f, EVENT_JUMP);
@@ -442,7 +442,7 @@ class npc_lilian_soul : public CreatureScript
                             me->GetMotionMaster()->Clear();
 
                             if (instance)
-                                if (Creature* Lilian = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_LILIAN_VOSS)))
+                                if (Creature* Lilian = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_LILIAN_VOSS)))
                                     Lilian->AI()->DoAction(ACTION_LILIAN_RESSURECTED);
 
                             DoCast(me, SPELL_UNLEASHED_ANGUISH);

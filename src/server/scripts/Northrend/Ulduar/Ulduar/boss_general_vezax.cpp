@@ -482,7 +482,7 @@ class npc_saronite_vapors : public CreatureScript
                     DoCast(me, SPELL_SARONITE_VAPORS);
                     me->DespawnOrUnsummon(30*IN_MILLISECONDS);
 
-                    if (Creature* Vezax = me->GetCreature(*me, instance->GetData64(BOSS_VEZAX)))
+                    if (Creature* Vezax = me->GetCreature(*me, instance->GetGuidData(BOSS_VEZAX)))
                         Vezax->AI()->DoAction(ACTION_VAPORS_DIE);
                 }
             }
@@ -534,14 +534,14 @@ class npc_vezax_bunny : public CreatureScript
             void JustSummoned(Creature* summon) override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* vezax = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_VEZAX)))
+                    if (Creature* vezax = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_VEZAX)))
                         vezax->AI()->JustSummoned(summon);
             }
 
             void SummonedCreatureDies(Creature* summon, Unit* killer) override
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* vezax = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_VEZAX)))
+                    if (Creature* vezax = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_VEZAX)))
                         vezax->AI()->SummonedCreatureDies(summon, killer);
             }
 

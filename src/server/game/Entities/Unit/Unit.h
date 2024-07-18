@@ -880,7 +880,7 @@ uint32 createProcExtendMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missC
 
 struct RedirectThreatInfo
 {
-    uint64 TargetGUID;
+    ObjectGuid TargetGUID;
     uint32 ThreatPct;
 };
 
@@ -1194,11 +1194,6 @@ public:
         int32 _total;
         int32 _ticks;
     };
-
-
-
-
-    typedef std::set<uint32> ComboPointHolderSet;
 
     virtual ~Unit();
 
@@ -1695,41 +1690,41 @@ public:
     void EnergizeBySpell(Unit* victim, uint32 SpellID, int32 Damage, Powers powertype);
     uint32 SpellNonMeleeDamageLog(Unit* victim, uint32 spellID, uint32 damage);
 
-    void CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastSpell(Position const &pos, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastSpell(Position const &pos, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
 
-    void CastSpell(Position const &pos, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0)
+    void CastSpell(Position const &pos, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty)
     {
         CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), spellId, triggered, castItem, triggeredByAura, originalCaster);
     }
 
-    void CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastCustomSpell(float x, float y, float z, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem = NULL, AuraEffect const *triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim = NULL, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* victim = NULL, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void CastCustomSpell(float x, float y, float z, uint32 spellId, CustomSpellValues const &value, bool triggered = true, Item* castItem = NULL, AuraEffect const *triggeredByAura = NULL, uint64 originalCaster = 0);
+    void CastCustomSpell(Unit* victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastCustomSpell(float x, float y, float z, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem = NULL, AuraEffect const *triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* victim = NULL, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* victim = NULL, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
+    void CastCustomSpell(float x, float y, float z, uint32 spellId, CustomSpellValues const &value, bool triggered = true, Item* castItem = NULL, AuraEffect const *triggeredByAura = NULL, ObjectGuid originalCaster = ObjectGuid::Empty);
 
     Aura* AddAura(uint32 spellId, Unit* target);
     Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
     Aura* AddAuraForTarget(Aura* aura, Unit* target);
     void SetAuraStack(uint32 spellId, Unit* target, uint32 stack);
     void SendPlaySpellVisualKit(uint32 SpellVisualId, uint32 Duration, int32 Type);
-    void SendPlaySpellVisual(uint32 spellVisualId, uint64 target, float speed, uint16 missReason = 0, uint16 reflectStatus = 0)
+    void SendPlaySpellVisual(uint32 spellVisualId, ObjectGuid target, float speed, uint16 missReason = 0, uint16 reflectStatus = 0)
     {
         SendPlaySpellVisual(spellVisualId, target, 0.0f, 0.0f, 0.0f, speed, false, missReason, reflectStatus);
     }
     void SendPlaySpellVisual(uint32 spellVisualId, float x, float y, float z, float speed, uint16 missReason = 0, uint16 reflectStatus = 0)
     {
-        SendPlaySpellVisual(spellVisualId, 0, x, y, z, speed, true, missReason, reflectStatus);
+        SendPlaySpellVisual(spellVisualId, ObjectGuid::Empty, x, y, z, speed, true, missReason, reflectStatus);
     }
-    void SendPlaySpellVisual(uint32 spellVisualId, uint64 targetGuid, float x, float y, float z, float speed, bool hasDest, uint16 missReason, uint16 reflectStatus);
+    void SendPlaySpellVisual(uint32 spellVisualId, ObjectGuid targetGuid, float x, float y, float z, float speed, bool hasDest, uint16 missReason, uint16 reflectStatus);
 
     void DeMorph();
 
@@ -1808,66 +1803,28 @@ public:
     }
     virtual void setDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
-    uint64 GetOwnerGUID() const
-    {
-        return GetUInt64Value(UNIT_FIELD_SUMMONED_BY);
-    }
-    void SetOwnerGUID(uint64 owner);
-    uint64 GetCreatorGUID() const
-    {
-        return GetUInt64Value(UNIT_FIELD_CREATED_BY);
-    }
-    void SetCreatorGUID(uint64 creator)
-    {
-        SetUInt64Value(UNIT_FIELD_CREATED_BY, creator);
-    }
-    uint64 GetMinionGUID() const
-    {
-        return GetUInt64Value(UNIT_FIELD_SUMMON);
-    }
-    void SetMinionGUID(uint64 guid)
-    {
-        SetUInt64Value(UNIT_FIELD_SUMMON, guid);
-    }
-    uint64 GetCharmerGUID() const
-    {
-        return GetUInt64Value(UNIT_FIELD_CHARMED_BY);
-    }
-    void SetCharmerGUID(uint64 owner)
-    {
-        SetUInt64Value(UNIT_FIELD_CHARMED_BY, owner);
-    }
-    uint64 GetCharmGUID() const
-    {
-        return GetUInt64Value(UNIT_FIELD_CHARM);
-    }
-    void SetPetGUID(uint64 guid)
-    {
-        m_SummonSlot [SUMMON_SLOT_PET] = guid;
-    }
-    uint64 GetPetGUID() const
-    {
-        return m_SummonSlot [SUMMON_SLOT_PET];
-    }
-    void SetCritterGUID(uint64 guid)
-    {
-        SetUInt64Value(UNIT_FIELD_CRITTER, guid);
-    }
-    uint64 GetCritterGUID() const
-    {
-        return GetUInt64Value(UNIT_FIELD_CRITTER);
-    }
+    ObjectGuid GetOwnerGUID() const { return GetGuidValue(UNIT_FIELD_SUMMONED_BY); }
+    void SetOwnerGUID(ObjectGuid owner);
+    ObjectGuid GetCreatorGUID() const { return GetGuidValue(UNIT_FIELD_CREATED_BY); }
+    void SetCreatorGUID(ObjectGuid creator) { SetGuidValue(UNIT_FIELD_CREATED_BY, creator); }
+    ObjectGuid GetMinionGUID() const { return GetGuidValue(UNIT_FIELD_SUMMON); }
+    void SetMinionGUID(ObjectGuid guid) { SetGuidValue(UNIT_FIELD_SUMMON, guid); }
+    ObjectGuid GetCharmerGUID() const { return GetGuidValue(UNIT_FIELD_CHARMED_BY); }
+    void SetCharmerGUID(ObjectGuid owner) { SetGuidValue(UNIT_FIELD_CHARMED_BY, owner); }
+    ObjectGuid GetCharmGUID() const { return GetGuidValue(UNIT_FIELD_CHARM); }
+
+    void SetPetGUID(ObjectGuid guid) { m_SummonSlot [SUMMON_SLOT_PET] = guid; }
+    ObjectGuid GetPetGUID() const { return m_SummonSlot [SUMMON_SLOT_PET]; }
+    void SetCritterGUID(ObjectGuid guid) { SetGuidValue(UNIT_FIELD_CRITTER, guid); }
+    ObjectGuid GetCritterGUID() const { return GetGuidValue(UNIT_FIELD_CRITTER); }
 
     bool IsControlledByPlayer() const
     {
         return m_ControlledByPlayer;
     }
-    uint64 GetCharmerOrOwnerGUID() const;
-    uint64 GetCharmerOrOwnerOrOwnGUID() const;
-    bool IsCharmedOwnedByPlayerOrPlayer() const
-    {
-        return IS_PLAYER_GUID(GetCharmerOrOwnerOrOwnGUID());
-    }
+    ObjectGuid GetCharmerOrOwnerGUID() const;
+    ObjectGuid GetCharmerOrOwnerOrOwnGUID() const;
+    bool IsCharmedOwnedByPlayerOrPlayer() const { return GetCharmerOrOwnerOrOwnGUID().IsPlayer(); }
 
     Player* GetSpellModOwner() const;
 
@@ -1931,7 +1888,7 @@ public:
     bool InitTamedPet(Pet* pet, uint8 level, uint32 spell_id);
 
     // aura apply/remove helpers - you should better not use these
-    Aura* _TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount = NULL, Item* castItem = NULL, uint64 casterGUID = 0);
+    Aura* _TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount = NULL, Item* castItem = NULL, ObjectGuid casterGUID = ObjectGuid::Empty);
     void _AddAura(UnitAura* aura, Unit* caster);
     AuraApplication * _CreateAuraApplication(Aura* aura, uint32 effMask);
     void _ApplyAuraEffect(Aura* aura, uint8 effIndex);
@@ -1952,10 +1909,10 @@ public:
     }
 
     void RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
-    void RemoveOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
+    void RemoveOwnedAura(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
     void RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
-    Aura* GetOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, Aura* except = NULL) const;
+    Aura* GetOwnedAura(uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty, ObjectGuid itemCasterGUID = ObjectGuid::Empty, uint32 reqEffMask = 0, Aura* except = NULL) const;
 
     // m_appliedAuras container management
     AuraApplicationMap      & GetAppliedAuras()
@@ -2160,8 +2117,8 @@ public:
     uint16 _movementAnimKitId;
     uint16 _meleeAnimKitId;
 
-    uint64 m_SummonSlot [SUMMON_SLOT_MAX];
-    uint64 m_ObjectSlot [MAX_GAMEOBJECT_SLOT];
+    std::array<ObjectGuid, SUMMON_SLOT_MAX> m_SummonSlot;
+    std::array<ObjectGuid, MAX_GAMEOBJECT_SLOT> m_ObjectSlot;
 
     ShapeshiftForm GetShapeshiftForm() const
     {
@@ -2421,9 +2378,9 @@ public:
     void removeFollower(FollowerReference* /*pRef*/)
     { /* nothing to do yet */
     }
-    static Unit* GetUnit(WorldObject& object, uint64 guid);
-    static Player* GetPlayer(WorldObject& object, uint64 guid);
-    static Creature* GetCreature(WorldObject& object, uint64 guid);
+    static Unit* GetUnit(WorldObject& object, ObjectGuid guid);
+    static Player* GetPlayer(WorldObject& object, ObjectGuid guid);
+    static Creature* GetCreature(WorldObject& object, ObjectGuid guid);
 
     MotionMaster* GetMotionMaster() { return i_motionMaster; }
     MotionMaster const* GetMotionMaster() const { return i_motionMaster; }
@@ -2471,14 +2428,8 @@ public:
 
     void SetControlled(bool apply, UnitState state);
 
-    void AddComboPointHolder(uint32 lowguid)
-    {
-        m_comboPointHolders.insert(lowguid);
-    }
-    void RemoveComboPointHolder(uint32 lowguid)
-    {
-        m_comboPointHolders.erase(lowguid);
-    }
+    void AddComboPointHolder(ObjectGuid lowguid) { m_comboPointHolders.insert(lowguid); }
+    void RemoveComboPointHolder(ObjectGuid lowguid) { m_comboPointHolders.erase(lowguid); }
     void ClearComboPointHolders();
 
     ///----------Pet responses methods-----------------
@@ -2520,14 +2471,14 @@ public:
     uint32 GetModelForTotem(uint32 totemType) const;
 
     // Redirect Threat
-    void SetRedirectThreat(uint64 guid, uint32 pct)
+    void SetRedirectThreat(ObjectGuid guid, uint32 pct)
     {
         _redirectThreatInfo.TargetGUID = guid;
         _redirectThreatInfo.ThreatPct = pct; 
     }
     void ResetRedirectThreat()
     {
-        _redirectThreatInfo.TargetGUID = 0;
+        _redirectThreatInfo.TargetGUID.Clear();
     }
     uint32 GetRedirectThreatPercent() const
     {
@@ -2537,7 +2488,7 @@ public:
 
     friend class VehicleJoinEvent;
     bool IsAIEnabled, NeedChangeAI;
-    uint64 LastCharmerGUID;
+    ObjectGuid LastCharmerGUID;
     bool CreateVehicleKit(uint32 id, uint32 creatureEntry, bool loading = false);
     void RemoveVehicleKit(bool remove = false);
     Vehicle* GetVehicleKit() const
@@ -2556,7 +2507,7 @@ public:
     bool IsOnVehicle(const Unit* vehicle) const;
     Unit* GetVehicleBase()  const;
     Creature* GetVehicleCreatureBase() const;
-    uint64 GetTransGUID() const override;
+    ObjectGuid GetTransGUID() const override;
     /// Returns the transport this unit is on directly (if on vehicle and transport, return vehicle)
     TransportBase* GetDirectTransport() const;
 
@@ -2616,8 +2567,8 @@ public:
     TempSummon* ToTempSummon() { if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return nullptr; }
     TempSummon const* ToTempSummon() const { if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return nullptr; }
 
-    uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
-    virtual void SetTarget(uint64 /*guid*/) = 0;
+    ObjectGuid GetTarget() const { return GetGuidValue(UNIT_FIELD_TARGET); }
+    virtual void SetTarget(ObjectGuid /*guid*/) { };
 
     void OnRelocated();
 
@@ -2815,7 +2766,7 @@ private:
 
     FollowerRefManager m_FollowingRefManager;
 
-    ComboPointHolderSet m_comboPointHolders;
+    GuidSet m_comboPointHolders;
     uint32 m_comboPointResetTimer = 0;
 
     std::unique_ptr<SpellHistory> m_spellHistory;

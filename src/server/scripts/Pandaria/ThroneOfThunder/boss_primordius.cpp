@@ -589,7 +589,7 @@ class npc_living_fluid : public CreatureScript
                             .SetValidator([this] { return instance && instance->GetBossState(DATA_PRIMORDIUS) == IN_PROGRESS; })
                             .Schedule(Seconds(1), [this](TaskContext context)
                         {
-                            if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_PRIMORDIUS) : 0))
+                            if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_PRIMORDIUS) : ObjectGuid::Empty))
                                 me->GetMotionMaster()->MoveFollow(primordius, 0.0f, me->GetAngle(primordius));
 
                             context.Repeat(Seconds(1));
@@ -603,7 +603,7 @@ class npc_living_fluid : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_PRIMORDIUS) : 0))
+                if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_PRIMORDIUS) : ObjectGuid::Empty))
                     if (Creature* pStalker = primordius->SummonCreature(NPC_AT_STALKER, me->GetPositionX(), me->GetPositionY(), 55.8f, TEMPSUMMON_MANUAL_DESPAWN))
                         pStalker->CastSpell(pStalker, SPELL_MUTAGENIC_POOL, true);
             }
@@ -629,7 +629,7 @@ class npc_living_fluid : public CreatureScript
 
             void Move()
             {
-                if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_PRIMORDIUS) : 0))
+                if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_PRIMORDIUS) : ObjectGuid::Empty))
                     me->GetMotionMaster()->MovePoint(4, *primordius);
 
                 events.ScheduleEvent(EVENT_MOVE, 200);
@@ -637,7 +637,7 @@ class npc_living_fluid : public CreatureScript
 
             void CheckProximity()
             {
-                if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_PRIMORDIUS) : 0))
+                if (Creature* primordius = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_PRIMORDIUS) : ObjectGuid::Empty))
                 {
                     if (me->GetExactDist2d(primordius) < 5.1f)
                     {
@@ -1311,7 +1311,7 @@ class AreaTrigger_at_primordius_intro : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/) override
         {
-            if (Creature* primordius = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetData64(DATA_PRIMORDIUS) : 0))
+            if (Creature* primordius = ObjectAccessor::GetCreature(*player, player->GetInstanceScript() ? player->GetInstanceScript()->GetGuidData(DATA_PRIMORDIUS) : ObjectGuid::Empty))
                 primordius->AI()->DoAction(ACTION_START_INTRO);
 
             return true;

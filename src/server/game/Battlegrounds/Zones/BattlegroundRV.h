@@ -105,7 +105,7 @@ class BattlegroundRV : public Battleground
         void Reset() override;
         void FillInitialWorldStates(WorldStateBuilder& builder) override;
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
+        void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
         void HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered) override;
         bool SetupBattleground() override;
         void HandleKillPlayer(Player* player, Player* killer) override;

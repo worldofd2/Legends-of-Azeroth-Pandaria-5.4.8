@@ -77,7 +77,7 @@ class boss_sha_of_anger : public CreatureScript
             uint32 timer;
             bool phase1;
             bool range;
-            std::list<uint64> targetedDominationPlayerGuids;
+            std::list<ObjectGuid> targetedDominationPlayerGuids;
             EventMap events;
             SummonList summons;
 

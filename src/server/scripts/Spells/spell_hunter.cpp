@@ -1257,7 +1257,7 @@ public:
     std::set<uint64> targetsRight;
     Position startPositon;
     Position destPosition;
-    uint64 mainTarget = 0;
+    ObjectGuid mainTarget = ObjectGuid::Empty;
     TimeValue timeToTarget;
     TimeValue startTime;
     bool done = false;
@@ -1298,7 +1298,7 @@ class spell_hunt_glaive_toss_damage : public SpellScript
 {
     PrepareSpellScript(spell_hunt_glaive_toss_damage);
 
-    uint64 mainTarget = 0;
+    ObjectGuid mainTarget = ObjectGuid::Empty;
     std::list<WorldObject*> selected;
 
     void SelectTargets(std::list<WorldObject*>& targets)
@@ -2065,7 +2065,7 @@ class spell_hunt_lynx_rush : public AuraScript
 {
     PrepareAuraScript(spell_hunt_lynx_rush);
 
-    std::set<uint64> m_targets;
+    GuidSet m_targets;
 
     void HandleTick(AuraEffect const*)
     {
@@ -2074,7 +2074,7 @@ class spell_hunt_lynx_rush : public AuraScript
         Unit* target = nullptr;
         while (!m_targets.empty())
         {
-            uint64 guid = Trinity::Containers::SelectRandomContainerElement(m_targets);
+            ObjectGuid guid = Trinity::Containers::SelectRandomContainerElement(m_targets);
             target = ObjectAccessor::GetUnit(*pet, guid);
             if (target)
                 break;
@@ -2336,7 +2336,7 @@ class spell_hunt_barrage : public SpellScript
 {
     PrepareSpellScript(spell_hunt_barrage);
 
-    uint64 mainTarget;
+    ObjectGuid mainTarget;
 
     void GetMainTarget(SpellEffIndex)
     {
@@ -2852,7 +2852,7 @@ class spell_hunt_fetch : public SpellScript
 
         if (Unit* pet = GetCaster()->GetGuardianPet())
         {
-            uint64 guid = GetHitCreature()->GetGUID();
+            ObjectGuid guid = GetHitCreature()->GetGUID();
             pet->GetMotionMaster()->MovePoint(0, GetHitCreature()->GetPosition());
             pet->Schedule(Milliseconds(pet->GetSplineDuration()), [=]()
             {

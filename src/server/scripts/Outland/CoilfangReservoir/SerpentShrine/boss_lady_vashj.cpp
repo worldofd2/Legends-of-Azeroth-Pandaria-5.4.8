@@ -151,12 +151,12 @@ public:
             JustCreated = true;
             creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // set it only once on Creature create (no need do intro if wiped)
             for (uint8 i = 0; i < 4; ++i)
-                ShieldGeneratorChannel[i] = 0;
+                ShieldGeneratorChannel[i] = ObjectGuid::Empty;
         }
 
         InstanceScript* instance;
 
-        uint64 ShieldGeneratorChannel[4];
+        ObjectGuid ShieldGeneratorChannel[4];
 
         uint32 AggroTimer;
         uint32 ShockBlastTimer;
@@ -209,7 +209,7 @@ public:
                     if (Unit* remo = Unit::GetUnit(*me, ShieldGeneratorChannel[i]))
                     {
                         remo->setDeathState(JUST_DIED);
-                        ShieldGeneratorChannel[i] = 0;
+                        ShieldGeneratorChannel[i] = ObjectGuid::Empty;
                     }
                 }
             }
@@ -570,7 +570,7 @@ public:
         uint32 Phase;
         float X, Y, Z;
 
-        uint64 VashjGUID;
+        ObjectGuid VashjGUID;
 
         void Reset() override
         {
@@ -579,7 +579,7 @@ public:
             Move = 0;
             Phase = 1;
 
-            VashjGUID = 0;
+            VashjGUID = ObjectGuid::Empty;
 
             X = ElementWPPos[0][0];
             Y = ElementWPPos[0][1];
@@ -597,7 +597,7 @@ public:
             }
 
             if (instance)
-                VashjGUID = instance->GetData64(DATA_LADYVASHJ);
+                VashjGUID = instance->GetGuidData(DATA_LADYVASHJ);
         }
 
         void JustEngagedWith(Unit* /*who*/) override { }
@@ -674,7 +674,7 @@ public:
         void JustDied(Unit* /*killer*/) override
         {
             if (instance)
-                if (Creature* vashj = Unit::GetCreature((*me), instance->GetData64(DATA_LADYVASHJ)))
+                if (Creature* vashj = Unit::GetCreature((*me), instance->GetGuidData(DATA_LADYVASHJ)))
                     CAST_AI(boss_lady_vashj::boss_lady_vashjAI, vashj->AI())->EventTaintedElementalDeath();
         }
 
@@ -792,7 +792,7 @@ public:
                 if (instance)
                 {
                     // check if vashj is death
-                    Unit* Vashj = Unit::GetUnit(*me, instance->GetData64(DATA_LADYVASHJ));
+                    Unit* Vashj = Unit::GetUnit(*me, instance->GetGuidData(DATA_LADYVASHJ));
                     if (!Vashj || !Vashj->IsAlive() || CAST_AI(boss_lady_vashj::boss_lady_vashjAI, Vashj->ToCreature()->AI())->Phase != 3)
                     {
                         // remove
@@ -851,7 +851,7 @@ public:
 
             if (CheckTimer <= diff)
             {
-                Unit* vashj = Unit::GetUnit(*me, instance->GetData64(DATA_LADYVASHJ));
+                Unit* vashj = Unit::GetUnit(*me, instance->GetGuidData(DATA_LADYVASHJ));
 
                 if (vashj && vashj->IsAlive())
                 {
@@ -883,7 +883,7 @@ public:
             return true;
         }
 
-        Creature* vashj = Unit::GetCreature((*player), instance->GetData64(DATA_LADYVASHJ));
+        Creature* vashj = Unit::GetCreature((*player), instance->GetGuidData(DATA_LADYVASHJ));
         if (vashj && (CAST_AI(boss_lady_vashj::boss_lady_vashjAI, vashj->AI())->Phase == 2))
         {
             if (GameObject* gObj = targets.GetGOTarget())

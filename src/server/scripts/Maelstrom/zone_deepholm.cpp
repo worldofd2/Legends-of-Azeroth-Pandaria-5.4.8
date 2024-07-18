@@ -133,8 +133,8 @@ struct npc_deepholm_wyvern_ride : public CreatureAI
     npc_deepholm_wyvern_ride(Creature* creature) : CreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
-    uint64 aggraGUID;
+    ObjectGuid targetGUID;
+    ObjectGuid aggraGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -231,7 +231,7 @@ struct npc_maelstorm_aggra : public CreatureAI
     npc_maelstorm_aggra(Creature* creature) : CreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override

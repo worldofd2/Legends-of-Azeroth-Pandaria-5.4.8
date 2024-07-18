@@ -383,13 +383,13 @@ class npc_drakkari_inciter : public CreatureScript
 
         private:
             EventMap events;
-            uint64 earthshakerGuids[2];
-            std::vector<uint64> spectatorGuids[2];
+            ObjectGuid earthshakerGuids[2];
+            std::vector<ObjectGuid> spectatorGuids[2];
 
             Creature* GetLeftEarthshaker() const { return ObjectAccessor::GetCreature(*me, earthshakerGuids[0]); }
             Creature* GetRightEarthshaker() const { return ObjectAccessor::GetCreature(*me, earthshakerGuids[1]); }
-            std::vector<uint64> const& GetSouthSpectators() const { return spectatorGuids[0]; }
-            std::vector<uint64> const& GetNorthSpectators() const { return spectatorGuids[1]; }
+            std::vector<ObjectGuid> const& GetSouthSpectators() const { return spectatorGuids[0]; }
+            std::vector<ObjectGuid> const& GetNorthSpectators() const { return spectatorGuids[1]; }
         };
 
         CreatureAI* GetAI(Creature* creature) const override

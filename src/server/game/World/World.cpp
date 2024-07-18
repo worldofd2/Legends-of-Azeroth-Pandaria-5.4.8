@@ -64,6 +64,7 @@
 #include "GitRevision.h"
 #include "GridNotifiersImpl.h"
 #include "PoolMgr.h"
+#include "QuestPools.h"
 #include "CellImpl.h"
 #include "InstanceSaveMgr.h"
 #include "Util.h"
@@ -1068,6 +1069,19 @@ void World::LoadConfigSettings(bool reload)
     if (m_int_configs[CONFIG_BLACK_MARKET_AUCTION_DELAY_MOD] > CONFIG_BLACK_MARKET_AUCTION_DELAY_MOD)
         m_int_configs[CONFIG_BLACK_MARKET_AUCTION_DELAY_MOD] = CONFIG_BLACK_MARKET_AUCTION_DELAY_MOD;
 
+    m_int_configs[CONFIG_RESPAWN_GUIDWARNLEVEL] = sConfigMgr->GetIntDefault("Respawn.GuidWarnLevel", 12000000);
+    if (m_int_configs[CONFIG_RESPAWN_GUIDWARNLEVEL] > 16777215)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.GuidWarnLevel (%u) cannot be greater than maximum GUID (16777215). Set to 12000000.", m_int_configs[CONFIG_RESPAWN_GUIDWARNLEVEL]);
+        m_int_configs[CONFIG_RESPAWN_GUIDWARNLEVEL] = 12000000;
+    }
+    m_int_configs[CONFIG_RESPAWN_GUIDALERTLEVEL] = sConfigMgr->GetIntDefault("Respawn.GuidAlertLevel", 16000000);
+    if (m_int_configs[CONFIG_RESPAWN_GUIDALERTLEVEL] > 16777215)
+    {
+        TC_LOG_ERROR("server.loading", "Respawn.GuidWarnLevel (%u) cannot be greater than maximum GUID (16777215). Set to 16000000.", m_int_configs[CONFIG_RESPAWN_GUIDALERTLEVEL]);
+        m_int_configs[CONFIG_RESPAWN_GUIDALERTLEVEL] = 16000000;
+    }
+
     // battle pay
     sBattlePayMgr->SetEnableState(sConfigMgr->GetBoolDefault("BattlePay.StoreEnabled", false));
     sBattlePayMgr->SetStoreCurrency(sConfigMgr->GetIntDefault("BattlePay.Currency", BATTLE_PAY_CURRENCY_BETA));
@@ -1733,11 +1747,6 @@ void World::SetInitialWorldSettings()
 
     LoginDatabase.PExecute("UPDATE realmlist SET icon = %u, timezone = %u WHERE id = '%d'", server_type, realm_zone, realm.Id.Realm);      // One-time query
 
-    ///- Remove the bones (they should not exist in DB though) and old corpses after a restart
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_OLD_CORPSES);
-    stmt->setUInt32(0, 3 * DAY);
-    CharacterDatabase.Execute(stmt);
-
     ///- Load the DBC files
     TC_LOG_INFO("server.loading", "Initialize data stores...");
     LoadDBCStores(m_dataPath, m_availableDbcLocaleMask);
@@ -1972,6 +1981,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Objects Pooling Data...");
     sPoolMgr->LoadFromDB();
 
+    TC_LOG_INFO("server.loading", "Loading Quest Pooling Data...");
+    sQuestPoolMgr->LoadFromDB();
+
     TC_LOG_INFO("server.loading", "Loading Game Event Data...");               // must be after loading pools fully
     sGameEventMgr->LoadHolidayDates();                           // Must be after loading DBC
     sGameEventMgr->LoadFromDB();                                 // Must be after loading holiday dates
@@ -2049,9 +2061,6 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading pet level stats...");
     sObjectMgr->LoadPetLevelInfo();
-
-    TC_LOG_INFO("server.loading", "Loading Player Corpses...");
-    sObjectMgr->LoadCorpses();
 
     TC_LOG_INFO("server.loading", "Loading Player level dependent mail rewards...");
     sObjectMgr->LoadMailLevelRewards();
@@ -2372,8 +2381,7 @@ void World::SetInitialWorldSettings()
     sRatedPvpMgr->LoadFromDB();
 
     TC_LOG_INFO("misc", "Initializing Opcodes...");
-    serverOpcodeTable.InitializeServerTable();
-    clientOpcodeTable.InitializeClientTable();
+    opcodeTable.Initialize();
 
     TC_LOG_INFO("misc", "Loading hotfix info...");
     sObjectMgr->LoadHotfixData();
@@ -2674,7 +2682,10 @@ void World::Update(uint32 diff)
     if (m_timers[WUPDATE_CORPSES].Passed())
     {
         m_timers[WUPDATE_CORPSES].Reset();
-        sObjectAccessor->RemoveOldCorpses();
+        sMapMgr->DoForAllMaps([](Map* map)
+        {
+            map->RemoveOldCorpses();
+        });
     }
 
     ///- Process Game events when necessary
@@ -3091,8 +3102,8 @@ bool World::RemoveBanAccount(BanMode mode, std::string const& nameOrIP)
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
 BanReturn World::BanCharacter(std::string const& name, std::string const& duration, std::string const& reason, std::string const& author)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name);
-    uint32 guid = 0;
+    Player* pBanned = ObjectAccessor::FindPlayerByName(name);
+    ObjectGuid guid;
 
     uint32 duration_secs = TimeStringToSecs(duration);
 
@@ -3106,19 +3117,19 @@ BanReturn World::BanCharacter(std::string const& name, std::string const& durati
         if (!resultCharacter)
             return BAN_NOTFOUND;                                    // Nobody to ban
 
-        guid = (*resultCharacter)[0].GetUInt32();
+        guid = ObjectGuid(HighGuid::Player, (*resultCharacter)[0].GetUInt32());
     }
     else
-        guid = pBanned->GetGUIDLow();
+        guid = pBanned->GetGUID();
 
     CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
     // make sure there is only one active ban
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_BAN);
-    stmt->setUInt32(0, guid);
+    stmt->setUInt32(0, guid.GetCounter());
     trans->Append(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_BAN);
-    stmt->setUInt32(0, guid);
+    stmt->setUInt32(0, guid.GetCounter());
     stmt->setUInt32(1, duration_secs);
     stmt->setString(2, author);
     stmt->setString(3, reason);
@@ -3134,8 +3145,8 @@ BanReturn World::BanCharacter(std::string const& name, std::string const& durati
 /// Remove a ban from a character
 bool World::RemoveBanCharacter(std::string const& name)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name);
-    uint32 guid = 0;
+    Player* pBanned = ObjectAccessor::FindPlayerByName(name);
+    ObjectGuid guid;
 
     /// Pick a player to ban if not online
     if (!pBanned)
@@ -3147,16 +3158,16 @@ bool World::RemoveBanCharacter(std::string const& name)
         if (!resultCharacter)
             return false;
 
-        guid = (*resultCharacter)[0].GetUInt32();
+        guid = ObjectGuid(HighGuid::Player, (*resultCharacter)[0].GetUInt32());
     }
     else
-        guid = pBanned->GetGUIDLow();
+        guid = pBanned->GetGUID();
 
     if (!guid)
         return false;
 
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_BAN);
-    stmt->setUInt32(0, guid);
+    stmt->setUInt32(0, guid.GetCounter());
     CharacterDatabase.Execute(stmt);
     LoginDatabase.PExecute("DELETE FROM account_muted WHERE char_id = %u AND realmid  = %u", guid, realm.Id.Realm);
     CharacterDatabase.PExecute("DELETE FROM rated_pvp_info WHERE guid = %u", guid);
@@ -3585,7 +3596,7 @@ void World::ResetDailyQuests()
     }
 
     // change available dailies
-    sPoolMgr->ChangeDailyQuests();
+    sQuestPoolMgr->ChangeDailyQuests();
 
     sAnticheatMgr->ResetDailyReportStates();
 }
@@ -3677,7 +3688,7 @@ void World::ResetWeeklyQuests()
     sWorld->setWorldState(WS_WEEKLY_QUEST_RESET_TIME, uint64(m_NextWeeklyQuestReset));
 
     // change available weeklies
-    sPoolMgr->ChangeWeeklyQuests();
+    sQuestPoolMgr->ChangeWeeklyQuests();
 }
 
 void World::ResetMonthlyQuests()
@@ -3690,6 +3701,8 @@ void World::ResetMonthlyQuests()
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetMonthlyQuestStatus();
+
+    sQuestPoolMgr->ChangeMonthlyQuests();
 
     // generate time
     time_t curTime = time(NULL);
@@ -3936,7 +3949,7 @@ void World::LoadCharacterNameData()
             for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
                 declinedName->name[i] = fields[7 + i].GetString();
         }
-        AddCharacterNameData(fields[0].GetUInt32(), fields[1].GetString(),
+        AddCharacterNameData(ObjectGuid(HighGuid::Player, fields[0].GetUInt32()), fields[1].GetString(),
             fields[3].GetUInt8(), fields[2].GetUInt8(), fields[4].GetUInt8(), fields[5].GetUInt8());
         ++count;
     } while (result->NextRow());
@@ -3944,7 +3957,7 @@ void World::LoadCharacterNameData()
     TC_LOG_INFO("server.loading", "Loaded name data for %u characters", count);
 }
 
-void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level)
+void World::AddCharacterNameData(ObjectGuid guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level)
 {
     CharacterNameData& data = _characterNameDataMap[guid];
     data.m_name = name;
@@ -3954,9 +3967,9 @@ void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gen
     data.m_level = level;
 }
 
-void World::UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender /*= GENDER_NONE*/, uint8 race /*= RACE_NONE*/, DeclinedName const* declinedName)
+void World::UpdateCharacterNameData(ObjectGuid guid, std::string const& name, uint8 gender /*= GENDER_NONE*/, uint8 race /*= RACE_NONE*/, DeclinedName const* declinedName)
 {
-    std::map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
+    std::map<ObjectGuid, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
     if (itr == _characterNameDataMap.end())
         return;
 
@@ -3974,59 +3987,58 @@ void World::UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 
         itr->second.m_declinedName = declinedName;
     }
 
-    ObjectGuid playerGuid = MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
     WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
-    data.WriteBit(playerGuid[6]);
-    data.WriteBit(playerGuid[3]);
-    data.WriteBit(playerGuid[1]);
-    data.WriteBit(playerGuid[2]);
-    data.WriteBit(playerGuid[7]);
-    data.WriteBit(playerGuid[5]);
-    data.WriteBit(playerGuid[0]);
-    data.WriteBit(playerGuid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[4]);
 
-    data.WriteByteSeq(playerGuid[7]);
-    data.WriteByteSeq(playerGuid[1]);
-    data.WriteByteSeq(playerGuid[2]);
-    data.WriteByteSeq(playerGuid[3]);
-    data.WriteByteSeq(playerGuid[6]);
-    data.WriteByteSeq(playerGuid[0]);
-    data.WriteByteSeq(playerGuid[4]);
-    data.WriteByteSeq(playerGuid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[5]);
 
     SendGlobalMessage(&data);
 }
 
-void World::UpdateCharacterNameDataLevel(uint32 guid, uint8 level)
+void World::UpdateCharacterNameDataLevel(ObjectGuid guid, uint8 level)
 {
-    std::map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
+    std::map<ObjectGuid, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
     if (itr == _characterNameDataMap.end())
         return;
 
     itr->second.m_level = level;
 }
 
-void World::UpdateCharacterNameDataClass(uint32 guid, uint8 classID)
+void World::UpdateCharacterNameDataClass(ObjectGuid guid, uint8 classID)
 {
-    std::map<uint32, CharacterNameData>::iterator iter = _characterNameDataMap.find(guid);
+    std::map<ObjectGuid, CharacterNameData>::iterator iter = _characterNameDataMap.find(guid);
     if (iter == _characterNameDataMap.end())
         return;
 
     iter->second.m_class = classID;
 }
 
-void World::UpdateCharacterNameDataAccount(uint32 guid, uint32 account)
+void World::UpdateCharacterNameDataAccount(ObjectGuid guid, ObjectGuid account)
 {
-    std::map<uint32, CharacterNameData>::iterator iter = _characterNameDataMap.find(guid);
+    std::map<ObjectGuid, CharacterNameData>::iterator iter = _characterNameDataMap.find(guid);
     if (iter == _characterNameDataMap.end())
         return;
 
     iter->second.m_accountID = account;
 }
 
-CharacterNameData const* World::GetCharacterNameData(uint32 guid) const
+CharacterNameData const* World::GetCharacterNameData(ObjectGuid guid) const
 {
-    std::map<uint32, CharacterNameData>::const_iterator itr = _characterNameDataMap.find(guid);
+    std::map<ObjectGuid, CharacterNameData>::const_iterator itr = _characterNameDataMap.find(guid);
     if (itr != _characterNameDataMap.end())
         return &itr->second;
     else
@@ -4048,7 +4060,7 @@ void World::LoadAccountCacheData()
     do
     {
         Field* fields = result->Fetch();
-        uint32 accountId = fields[0].GetUInt32();
+        ObjectGuid accountId(HighGuid::WowAccount, fields[0].GetUInt32());
 
         AccountCacheData& data = GetAccountCacheData(accountId);
         data.MemberID = fields[1].GetUInt32();
@@ -4059,7 +4071,7 @@ void World::LoadAccountCacheData()
     TC_LOG_INFO("server.loading", "Loaded account cache data for %u accounts", count);
 }
 
-AccountCacheData& World::GetAccountCacheData(uint32 accountId)
+AccountCacheData& World::GetAccountCacheData(ObjectGuid accountId)
 {
     auto itr = _accountCacheData.find(accountId);
     if (itr != _accountCacheData.end())
@@ -4405,6 +4417,11 @@ void World::InitServerAutoRestartTime()
 
 	if (!serverRestartTime)
 		sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, uint64(m_NextServerRestart));
+}
+
+void World::RemoveOldCorpses()
+{
+    m_timers[WUPDATE_CORPSES].SetCurrent(m_timers[WUPDATE_CORPSES].GetInterval());
 }
 
 Realm realm;

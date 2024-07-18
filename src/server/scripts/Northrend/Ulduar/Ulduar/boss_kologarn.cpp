@@ -530,7 +530,7 @@ class npc_focused_eyebeam : public CreatureScript
             void SpellHitTarget(Unit* target, SpellInfo const* spell) override
             {
                 if (spell->Id == SPELL_FOCUSED_EYEBEAM_DAMAGE_10 || spell->Id == SPELL_FOCUSED_EYEBEAM_DAMAGE_25)
-                    if (Creature* kologarn = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_KOLOGARN)))
+                    if (Creature* kologarn = ObjectAccessor::GetCreature(*me, instance->GetGuidData(BOSS_KOLOGARN)))
                         kologarn->AI()->SetData(DATA_IF_LOOKS_COULD_KILL, false);
             }
 
@@ -561,7 +561,7 @@ class spell_ulduar_rubble_summon : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                uint64 originalCaster = caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(BOSS_KOLOGARN) : 0;
+                ObjectGuid originalCaster = caster->GetInstanceScript() ? caster->GetInstanceScript()->GetGuidData(BOSS_KOLOGARN) : ObjectGuid::Empty;
                 uint32 spellId = GetEffectValue();
                 for (uint8 i = 0; i < 5; ++i)
                     caster->CastSpell(caster, spellId, true, nullptr, nullptr, originalCaster);

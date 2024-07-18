@@ -399,7 +399,7 @@ class npc_spirit_shade : public CreatureScript
 
         struct npc_spirit_shadeAI : public PassiveAI
         {
-            npc_spirit_shadeAI(Creature* creature) : PassiveAI(creature), _summonerGuid(0)
+            npc_spirit_shadeAI(Creature* creature) : PassiveAI(creature), _summonerGuid()
             {
             }
 
@@ -419,7 +419,7 @@ class npc_spirit_shade : public CreatureScript
             }
 
         private:
-            uint64 _summonerGuid;
+            ObjectGuid _summonerGuid;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

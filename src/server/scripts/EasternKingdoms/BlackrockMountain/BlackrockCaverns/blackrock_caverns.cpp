@@ -257,7 +257,7 @@ class AreaTrigger_at_second_bridge_blackrock_caverns : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* Raz = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_RAZ_THE_CRAZED)))
+                if (Creature* Raz = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_RAZ_THE_CRAZED)))
                     Raz->AI()->DoAction(ACTION_RAZ_NEXT_BRIDGE);
 
             return false;

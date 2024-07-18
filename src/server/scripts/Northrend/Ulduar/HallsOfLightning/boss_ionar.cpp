@@ -365,7 +365,7 @@ class npc_spark_of_ionar : public CreatureScript
                 {
                     if (instance)
                     {
-                        Creature* pIonar = instance->instance->GetCreature(instance->GetData64(DATA_IONAR));
+                        Creature* pIonar = instance->instance->GetCreature(instance->GetGuidData(DATA_IONAR));
                         if (pIonar && pIonar->IsAlive())
                         {
                             if (me->GetDistance(pIonar) > DATA_MAX_SPARK_DISTANCE)

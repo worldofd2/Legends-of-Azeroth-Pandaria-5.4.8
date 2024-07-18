@@ -1687,7 +1687,7 @@ class spell_warr_spell_reflection : public AuraScript
         // http://eu.battle.net/wow/en/game/patch-notes/5-3-0
         // Spell Reflection is no longer consumed by spells from player pets and guardians.
         Unit* actor = eventInfo.GetActor();
-        return actor && (!actor->GetOwnerGUID() || !IS_PLAYER_GUID(actor->GetOwnerGUID()));
+        return actor && (!actor->GetOwnerGUID() || !actor->GetOwnerGUID().IsPlayer());
     }
 
     void Register() override

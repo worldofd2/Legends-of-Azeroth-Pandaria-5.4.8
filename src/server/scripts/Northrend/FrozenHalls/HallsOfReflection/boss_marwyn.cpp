@@ -96,7 +96,7 @@ class boss_marwyn : public CreatureScript
 
             void DoAction(int32 action) override
             {
-                uint64 playerGuid = 0;
+                ObjectGuid playerGuid = ObjectGuid::Empty;
                 if (Player* player = me->FindNearestPlayer(100.0f))
                     playerGuid = player->GetGUID();
 

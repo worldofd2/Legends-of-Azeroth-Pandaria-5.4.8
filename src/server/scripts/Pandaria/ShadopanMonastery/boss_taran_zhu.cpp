@@ -176,7 +176,7 @@ class boss_taran_zhu : public CreatureScript
                             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                             instance->SetData(DATA_TARAN_ZHU, DONE);
 
-                            if (auto const snowdrift = Unit::GetCreature(*me, instance->GetData64(NPC_SNOWDRIFT_QUESTENDER)))
+                            if (auto const snowdrift = Unit::GetCreature(*me, instance->GetGuidData(NPC_SNOWDRIFT_QUESTENDER)))
                             {
                                 snowdrift->SetVisible(true);
                                 snowdrift->GetMotionMaster()->MovePoint(0, { 3855.144f, 2632.581f, 754.541f, 4.964f });
@@ -218,7 +218,7 @@ class boss_taran_zhu : public CreatureScript
                             me->SetStandState(UNIT_STAND_STATE_KNEEL);
                             break;
                         case EVENT_CHEST:
-                            if (auto const cache = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_TARAN_ZHU_CACHE)))
+                            if (auto const cache = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_TARAN_ZHU_CACHE)))
                                 cache->Respawn();
                             break;
                     }

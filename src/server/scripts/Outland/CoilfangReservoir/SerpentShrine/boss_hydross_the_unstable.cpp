@@ -93,13 +93,13 @@ public:
         boss_hydross_the_unstableAI(Creature* creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
-            beams[0] = 0;
-            beams[1] = 0;
+            beams[0] = ObjectGuid::Empty;
+            beams[1] = ObjectGuid::Empty;
         }
 
         InstanceScript* instance;
 
-        uint64 beams[2];
+        ObjectGuid beams[2];
         uint32 PosCheck_Timer;
         uint32 MarkOfHydross_Timer;
         uint32 MarkOfCorruption_Timer;
@@ -115,8 +115,8 @@ public:
         void Reset() override
         {
             DeSummonBeams();
-            beams[0] = 0;
-            beams[1] = 0;
+            beams[0] = ObjectGuid::Empty;
+            beams[1] = ObjectGuid::Empty;
             PosCheck_Timer = 2500;
             MarkOfHydross_Timer = 15000;
             MarkOfCorruption_Timer = 15000;

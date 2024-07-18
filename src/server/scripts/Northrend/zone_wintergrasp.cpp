@@ -350,15 +350,14 @@ class npc_wg_quest_giver : public CreatureScript
             // Player::PrepareQuestMenu(guid)
             if (creature->IsQuestGiver())
             {
-                QuestRelationBounds objectQR = sObjectMgr->GetCreatureQuestRelationBounds(creature->GetEntry());
-                QuestRelationBounds objectQIR = sObjectMgr->GetCreatureQuestInvolvedRelationBounds(creature->GetEntry());
+                QuestRelationResult objectQR = sObjectMgr->GetCreatureQuestRelations(creature->GetEntry());
+                QuestRelationResult objectQIR = sObjectMgr->GetCreatureQuestInvolvedRelations(creature->GetEntry());
 
                 QuestMenu& qm = player->PlayerTalkClass->GetQuestMenu();
                 qm.ClearMenu();
 
-                for (QuestRelations::const_iterator i = objectQIR.first; i != objectQIR.second; ++i)
+                for (uint32 questId : objectQIR)
                 {
-                    uint32 questId = i->second;
                     QuestStatus status = player->GetQuestStatus(questId);
                     if (status == QUEST_STATUS_COMPLETE)
                         qm.AddMenuItem(questId, 4);
@@ -368,9 +367,8 @@ class npc_wg_quest_giver : public CreatureScript
                     //    qm.AddMenuItem(quest_id, 2);
                 }
 
-                for (QuestRelations::const_iterator i = objectQR.first; i != objectQR.second; ++i)
+                for (uint32 questId : objectQR)
                 {
-                    uint32 questId = i->second;
                     Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
                     if (!quest)
                         continue;

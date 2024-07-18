@@ -69,8 +69,8 @@ class npc_nightmare_illusion : public CreatureScript
                 me->SetSpeed(MOVE_FLIGHT, 0.25f, true);
                 //me->SetWalk(true);
                 aiSet = false;
-                nightmareOwner = 0;
-                nightmareTarget = 0;
+                nightmareOwner = ObjectGuid::Empty;
+                nightmareTarget = ObjectGuid::Empty;
             }
 
             void JustDied(Unit* /*killer*/) override
@@ -110,7 +110,7 @@ class npc_nightmare_illusion : public CreatureScript
                 }
             }
 
-            void SetNightmareTarget(uint64 owner, uint64 target)
+            void SetNightmareTarget(ObjectGuid owner, ObjectGuid target)
             {
                 nightmareOwner = owner;
                 nightmareTarget = target;
@@ -132,8 +132,8 @@ class npc_nightmare_illusion : public CreatureScript
 
         protected:
             bool aiSet;
-            uint64 nightmareOwner;
-            uint64 nightmareTarget;
+            ObjectGuid nightmareOwner;
+            ObjectGuid nightmareTarget;
 
         private:
             InstanceScript* instance;
@@ -254,7 +254,7 @@ class boss_hazzarah : public CreatureScript
                 me->InterruptSpell(CURRENT_CHANNELED_SPELL);
 
                 // Gather all nearby player GUIDs
-                uint64 playerGuids[5];
+                ObjectGuid playerGuids[5];
                 uint32 playerCount = 0;
                 ObjectList* units = GetWorldObjectsInDist(me, 100);
                 for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); ++itr)
@@ -292,8 +292,8 @@ class boss_hazzarah : public CreatureScript
                 // Spawn nightmare for each player
                 for (uint32 i = 0; i < stunnedPlayerCount; ++i)
                 {
-                    uint64 guid = playerGuids[stunnedPlayerIndexes[i]];
-                    playerGuids[stunnedPlayerIndexes[i]] = 0;
+                    ObjectGuid guid = playerGuids[stunnedPlayerIndexes[i]];
+                    playerGuids[stunnedPlayerIndexes[i]] = ObjectGuid::Empty;
                     if (Player* player = ObjectAccessor::GetPlayer(*me, guid))
                     {
                         Position pos;
@@ -313,10 +313,10 @@ class boss_hazzarah : public CreatureScript
                     // Announce to the only player that is not sleeping
                     for (uint32 i = 0; i < playerCount; ++i)
                     {
-                        uint64 guid = playerGuids[i];
+                        ObjectGuid guid = playerGuids[i];
                         if (guid)
                         {
-                            playerGuids[i] = 0;
+                            playerGuids[i] = ObjectGuid::Empty;
                             if (Player* player = ObjectAccessor::GetPlayer(*me, guid))
                                 Talk(SAY_DREAMSTATE_ANNOUNCE, player);
                         }

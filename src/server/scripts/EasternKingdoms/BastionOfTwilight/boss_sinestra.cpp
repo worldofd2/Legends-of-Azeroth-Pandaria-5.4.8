@@ -202,7 +202,7 @@ const Position addsPos[16] =
     private:
         WorldObject const* i_obj;
         uint32 i_entry;
-        uint64 i_guid;
+        ObjectGuid i_guid;
 };*/
 
 class TwilightSlicerTargetSelector

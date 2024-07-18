@@ -70,7 +70,7 @@ void Pet::AddToWorld()
     if (!IsInWorld())
     {
         ///- Register the pet for guid lookup
-        sObjectAccessor->AddObject(this);
+        GetMap()->GetObjectsStore().Insert<Pet>(GetGUID(), this);
         Unit::AddToWorld();
         AIM_Initialize();
     }
@@ -97,14 +97,14 @@ void Pet::RemoveFromWorld()
     {
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
-        sObjectAccessor->RemoveObject(this);
+        GetMap()->GetObjectsStore().Remove<Pet>(GetGUID());
     }
 }
 
 bool Pet::LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos)
 {
     Player* owner = GetOwner();
-    uint32 ownerid = owner->GetGUIDLow();
+    uint32 ownerid = owner->GetGUID().GetCounter();
 
     CharacterDatabasePreparedStatement* stmt;
     PreparedQueryResult result;
@@ -197,7 +197,7 @@ bool Pet::LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos)
     }
 
     Map* map = owner->GetMap();
-    uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
     if (!Create(guid, map, owner->GetPhaseMask(), petEntry, petId))
         return false;
 
@@ -211,7 +211,7 @@ bool Pet::LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos)
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.pet", "Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
+            GetGUID().GetCounter(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -339,7 +339,7 @@ bool Pet::LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos)
     if (getPetType() == HUNTER_PET)
     {
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_DECLINED_NAME);
-        stmt->setUInt32(0, owner->GetGUIDLow());
+        stmt->setUInt32(0, owner->GetGUID().GetCounter());
         stmt->setUInt32(1, GetCharmInfo()->GetPetNumber());
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -395,7 +395,7 @@ void Pet::SavePetToDB(CharacterDatabaseTransaction trans)
         return;
 
     // not save not player pets
-    if (!IS_PLAYER_GUID(GetOwnerGUID()))
+    if (!GetOwnerGUID().IsPlayer())
         return;
 
     Player* owner = GetOwner();
@@ -417,7 +417,7 @@ void Pet::SavePetToDB(CharacterDatabaseTransaction trans)
     _SaveSpells(trans);
     GetSpellHistory()->SaveToDB<Pet>(trans);
 
-    uint32 ownerLowGUID = GUID_LOPART(GetOwnerGUID());
+    uint32 ownerLowGUID = GetOwnerGUID().GetCounter();
     std::string name = m_name;
     CharacterDatabase.EscapeString(name);
     uint32 dbslot = 0;
@@ -619,7 +619,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.pet", "Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
+            GetGUID().GetCounter(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -656,7 +656,7 @@ bool Pet::CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner)
 bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask)
 {
     TC_LOG_DEBUG("entities.pet", "Pet::CreateBaseForTamed");
-    uint32 guid=sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
     uint32 petId = sObjectMgr->GeneratePetNumber();
     if (!Create(guid, map, phaseMask, cinfo->Entry, petId))
         return false;
@@ -916,7 +916,7 @@ uint32 Pet::GetCurrentFoodBenefitLevel(uint32 itemlevel) const
 
 void Pet::_LoadAuras(uint32 timediff)
 {
-    TC_LOG_DEBUG("entities.pet", "Loading auras for pet %u", GetGUIDLow());
+    TC_LOG_DEBUG("entities.pet", "Loading auras for pet %u", GetGUID().GetCounter());
 
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_AURAS);
     stmt->setUInt32(0, m_charmInfo->GetPetNumber());
@@ -960,7 +960,7 @@ void Pet::_LoadAuras(uint32 timediff)
             damage.fill(0);
             std::array<int32, MAX_SPELL_EFFECTS> baseDamage;
             baseDamage.fill(0);
-            uint64 casterGuid = fields[0].GetUInt64();
+            ObjectGuid casterGuid(fields[0].GetUInt64());
             // null guid stored - pet is the caster of the spell - see Pet::_SaveAuras
             if (!casterGuid)
                 casterGuid = GetGUID();
@@ -1373,7 +1373,7 @@ void Pet::resetTalentsForAllPetsOf(Player* owner, Pet* onlinePet /*= NULL*/)
     uint32 exceptPetNumber = onlinePet ? onlinePet->GetCharmInfo()->GetPetNumber() : 0;
 
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET);
-    stmt->setUInt32(0, owner->GetGUIDLow());
+    stmt->setUInt32(0, owner->GetGUID().GetCounter());
     stmt->setUInt32(1, exceptPetNumber);
     PreparedQueryResult resultPets = CharacterDatabase.Query(stmt);
 
@@ -1382,7 +1382,7 @@ void Pet::resetTalentsForAllPetsOf(Player* owner, Pet* onlinePet /*= NULL*/)
         return;
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SPELL_LIST);
-    stmt->setUInt32(0, owner->GetGUIDLow());
+    stmt->setUInt32(0, owner->GetGUID().GetCounter());
     stmt->setUInt32(1, exceptPetNumber);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -1531,7 +1531,7 @@ bool Pet::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint3
     SetMap(map);
 
     SetPhaseMask(phaseMask, false);
-    Object::_Create(guidlow, petId, HIGHGUID_PET);
+    Object::_Create(guidlow, petId, HighGuid::Pet);
 
     m_DBTableGuid = guidlow;
     m_originalEntry = Entry;
@@ -1885,7 +1885,7 @@ void Guardian::Regenerate(Powers power)
 bool TempSummon::IsMinorGuardian() const
 {
     // Probably we need to determine is spell used for summon...
-    if (!IS_PLAYER_GUID(GetCreatorGUID()))
+    if (!GetCreatorGUID().IsPlayer())
         return false;
 
     if (IsPet())

@@ -31,7 +31,7 @@ class InstanceScript;
 class SummonList
 {
     public:
-    typedef std::list<uint64> StorageType;
+    typedef std::list<ObjectGuid> StorageType;
     typedef StorageType::iterator iterator;
     typedef StorageType::const_iterator const_iterator;
     typedef StorageType::size_type size_type;
@@ -82,7 +82,7 @@ class SummonList
         storage_.clear();
     }
 
-    uint64 front()
+    ObjectGuid front()
     {
         return storage_.front();
     }
@@ -111,7 +111,7 @@ class SummonList
     {
         // We need to use a copy of SummonList here, otherwise original SummonList would be modified
         StorageType listCopy = storage_;
-        Trinity::Containers::RandomResizeList<uint64, Predicate>(listCopy, predicate, max);
+        Trinity::Containers::RandomResizeList<ObjectGuid, Predicate>(listCopy, predicate, max);
         for (StorageType::iterator i = listCopy.begin(); i != listCopy.end();)
         {
             Creature* summon = Unit::GetCreature(*me, *i++);
@@ -132,21 +132,17 @@ class SummonList
 class EntryCheckPredicate
 {
     public:
-    EntryCheckPredicate(uint32 entry) : _entry(entry)
-    { }
-    bool operator()(uint64 guid)
-    {
-        return GUID_ENPART(guid) == _entry;
-    }
+        EntryCheckPredicate(uint32 entry) : _entry(entry) { }
+        bool operator()(ObjectGuid guid) { return guid.GetEntry() == _entry; }
 
     private:
-    uint32 _entry;
+        uint32 _entry;
 };
 
 class DummyEntryCheckPredicate
 {
     public:
-    bool operator()(uint64)
+    bool operator()(ObjectGuid)
     {
         return true;
     }
@@ -602,7 +598,7 @@ struct customCreatureAI : public ScriptedAI
 {
     customCreatureAI(Creature* creature) : ScriptedAI(creature), summons(me), isCaster(false) { }
 
-    virtual uint64 GetLowestFriendGUID() { return 0; }
+    virtual ObjectGuid GetLowestFriendGUID() { return ObjectGuid::Empty; }
 
     void ExecuteTargetEvent(uint32 spell_id, uint32 repeat, uint32 event_id, uint32 curEventId, TargetPriority pTarget = PRIORITY_VICTIM)
     {
@@ -684,7 +680,7 @@ struct customCreatureAI : public ScriptedAI
         EventMap events, nonCombatEvents;
         SummonList summons;
         bool isCaster;
-        uint64 targetGUID = 0;
+        ObjectGuid targetGUID = ObjectGuid::Empty;
 
 };
 
@@ -696,7 +692,7 @@ public:
     void Update(uint32 diff);
 private:
     uint32 m_assistTimer = 0;
-    uint64 m_assistTarget = 0;
+    ObjectGuid m_assistTarget = ObjectGuid::Empty;
     Creature* me;
 };
 

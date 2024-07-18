@@ -20,9 +20,9 @@
 #include "Vehicle.h"
 #include "scarlet_monastery.h"
 
-bool HasHandleOneShotEmote(uint64 guid)
+bool HasHandleOneShotEmote(Creature* me, ObjectGuid guid)
 {
-    if (Unit* owner = ObjectAccessor::FindUnit(guid))
+    if (Unit* owner = ObjectAccessor::GetUnit(*me, guid))
         return owner&& owner->ToCreature() && (owner->ToCreature()->GetDBTableGUIDLow() == 537443 || owner->ToCreature()->GetDBTableGUIDLow() == 537459 || owner->ToCreature()->GetDBTableGUIDLow() == 537451);
 
     return false;
@@ -398,13 +398,13 @@ class npc_scarlet_judicator : public CreatureScript
 
             void InitializeAI() override
             {
-                if (HasHandleOneShotEmote(me->GetGUID()))
+                if (HasHandleOneShotEmote(me, me->GetGUID()))
                     nonCombatEvents.ScheduleEvent(EVENT_REPRODUCE_EMOTE, 2000);
             }
 
             void Reset() override
             {
-                if (HasHandleOneShotEmote(me->GetGUID()))
+                if (HasHandleOneShotEmote(me, me->GetGUID()))
                     nonCombatEvents.ScheduleEvent(EVENT_REPRODUCE_EMOTE, 2000);
                 me->RemoveAllAuras();
             }
@@ -692,7 +692,7 @@ class npc_scarlet_zealot : public CreatureScript
             npc_scarlet_zealotAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events;
-            uint64 ResTarget;
+            ObjectGuid ResTarget;
 
             void JustEngagedWith(Unit* /*who*/) override 
             {
@@ -763,7 +763,7 @@ class npc_scarlet_zealot : public CreatureScript
             }
 
             private:
-                uint64 GetLowestFriendlyGUID()
+                ObjectGuid GetLowestFriendlyGUID()
                 {
                     std::list<Creature*> tmpTargets;
 
@@ -773,17 +773,17 @@ class npc_scarlet_zealot : public CreatureScript
                     GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_SCARLET_PURIFIER, 50.0f);
 
                     if (tmpTargets.empty())
-                        return 0;
+                        return ObjectGuid::Empty;
 
                     tmpTargets.sort(Trinity::HealthPctOrderPred());
 
                     if (Creature* lowestTarget = tmpTargets.front())
                         return lowestTarget->GetGUID();
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
 
-                uint64 RessurectionTarget()
+                ObjectGuid RessurectionTarget()
                 {
                     std::list<Creature*> CorpsedScarlet;
                     GetCreatureListWithEntryInGrid(CorpsedScarlet, me, NPC_SCARLET_PURIFIER, 50.0f);
@@ -795,7 +795,7 @@ class npc_scarlet_zealot : public CreatureScript
                         if (!itr->IsAlive()) // ignore alive targets
                             return itr->GetGUID(); // just take first corpse on our way
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
         };
 
@@ -835,7 +835,7 @@ class npc_sc_spirit_of_redemption : public CreatureScript
             }
 
             private:
-                uint64 GetLowestFriendlyGUID()
+                ObjectGuid GetLowestFriendlyGUID()
                 {
                     std::list<Creature*> tmpTargets;
 
@@ -845,14 +845,14 @@ class npc_sc_spirit_of_redemption : public CreatureScript
                     GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_SCARLET_PURIFIER, 50.0f);
 
                     if (tmpTargets.empty())
-                        return 0;
+                        return ObjectGuid::Empty;
 
                     tmpTargets.sort(Trinity::HealthPctOrderPred());
 
                     if (Creature* lowestTarget = tmpTargets.front())
                         return lowestTarget->GetGUID();
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
         };
 

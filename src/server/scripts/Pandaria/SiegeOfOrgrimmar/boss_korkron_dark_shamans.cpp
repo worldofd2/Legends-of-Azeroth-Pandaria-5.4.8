@@ -199,7 +199,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                 scheduler
                     .Schedule(Milliseconds(3000), [this](TaskContext context)
                 {
-                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                         kardris->AI()->Talk(TALK_AGGRO);
                 });
 
@@ -211,7 +211,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                 {
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                         kardris->SetInCombatWithZone();
                 }
 
@@ -243,7 +243,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_IRON_PRISON);
                     instance->DoRemoveBloodLustDebuffSpellOnPlayers();
 
-                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                         kardris->AI()->EnterEvadeMode();
                 }
 
@@ -281,7 +281,7 @@ class boss_earthbreaker_haromm : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage) override
             {
-                if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+                if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                 {
                     if (damage < kardris->GetHealth() && attacker->GetEntry() != NPC_WAVEBINDER_KARDIS)
                     {
@@ -324,7 +324,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                     Talk(TALK_HAROMM_BLOODLUST_ANN);
                     DoCast(me, SPELL_BLOODLUST, true);
 
-                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                     {
                         kardris->AI()->Talk(TALK_KARDRIS_BLOODLUST);
                         kardris->AI()->Talk(TALK_KARDRIS_BLOODLUST_ANN);
@@ -337,7 +337,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                 {
                     hasDie = true;
 
-                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+                    if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                     {
                         kardris->LowerPlayerDamageReq(kardris->GetMaxHealth());
                         attacker->DealDamage(kardris, kardris->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -425,7 +425,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                     return 0;
                 }
 
-                uint64 GetStreamTargetGUID()
+                ObjectGuid GetStreamTargetGUID()
                 {
                     std::list<Player*> targets, m_targets;
                     GetPlayerListInGrid(targets, me, 80.0f);
@@ -437,7 +437,7 @@ class boss_earthbreaker_haromm : public CreatureScript
                     if (!targets.empty())
                         return Trinity::Containers::SelectRandomContainerElement(targets)->GetGUID();
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
 
                 void HandleRemoveIronTombs()
@@ -473,7 +473,7 @@ class boss_wavebinder_kardris : public CreatureScript
             EventMap events;
             SummonList summons;
             InstanceScript* instance;
-            uint64 foulGeyserGUID;
+            ObjectGuid foulGeyserGUID;
             uint32 nextHealthTotem;
             uint32 healthShift;
             uint32 geyserSuccess;
@@ -485,7 +485,7 @@ class boss_wavebinder_kardris : public CreatureScript
             void Reset() override
             {
                 events.Reset();
-                foulGeyserGUID  = 0;
+                foulGeyserGUID = ObjectGuid::Empty;
                 nextHealthTotem = 85;
                 healthShift     = 1;
                 geyserSuccess   = 0;
@@ -535,7 +535,7 @@ class boss_wavebinder_kardris : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage) override
             {
-                if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+                if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
                 {
                     if (damage < haromm->GetHealth() && attacker->GetEntry() != NPC_EARTHBREAKER_HAROMM)
                     {
@@ -549,7 +549,7 @@ class boss_wavebinder_kardris : public CreatureScript
                     DoCast(me, invTotemsType.find(nextHealthTotem)->second[0], true);
 
                     // Announce only if we`r not near
-                    if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+                    if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
                         if (me->GetExactDist2d(haromm) > 40.0f)
                             Talk(invTotemsType.find(nextHealthTotem)->second[5]);
 
@@ -577,7 +577,7 @@ class boss_wavebinder_kardris : public CreatureScript
                 {
                     hasDie = true;
 
-                    if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+                    if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
                     {
                         haromm->LowerPlayerDamageReq(haromm->GetMaxHealth());
                         attacker->DealDamage(haromm, haromm->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -598,7 +598,7 @@ class boss_wavebinder_kardris : public CreatureScript
                 me->setActive(true, ActiveFlags::InCombat);
                 DoZoneInCombat();
 
-                if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+                if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
                     DoZoneInCombat(haromm, 200.0f);
 
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -657,7 +657,7 @@ class boss_wavebinder_kardris : public CreatureScript
                 {
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 
-                    if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+                    if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
                         haromm->AI()->EnterEvadeMode();
                 }
 
@@ -677,7 +677,7 @@ class boss_wavebinder_kardris : public CreatureScript
                 me->GetMap()->CreatureRelocation(me, darkShamansRelocatePos[invWolfType.find(me->GetEntry())->second[1]].GetPositionX(), darkShamansRelocatePos[invWolfType.find(me->GetEntry())->second[1]].GetPositionY(), darkShamansRelocatePos[invWolfType.find(me->GetEntry())->second[1]].GetPositionZ(), darkShamansRelocatePos[invWolfType.find(me->GetEntry())->second[1]].GetOrientation());
             }
 
-            uint64 GetGUID(int32 type) const override
+            ObjectGuid GetGUID(int32 type) const override
             {
                 return foulGeyserGUID;
             }
@@ -737,7 +737,7 @@ class boss_wavebinder_kardris : public CreatureScript
                             if (Unit* target = ObjectAccessor::GetUnit(*me, GetCasterGuidIfPossible()))
                             {
                                 events.DelayEvents(200);
-                                uint64 tempStormGUID = target->GetGUID();
+                                ObjectGuid tempStormGUID = target->GetGUID();
                                 me->SetTarget(target->GetGUID());
 
                                 // Target Scanning (DBM)
@@ -778,7 +778,7 @@ class boss_wavebinder_kardris : public CreatureScript
             }
 
             private: // default doesn`t work here - so much los and distance
-                uint64 GetCasterGuidIfPossible()
+                ObjectGuid GetCasterGuidIfPossible()
                 {
                     std::list<Player*> targets, m_targets;
                     GetPlayerListInGrid(targets, me, 80.0f);
@@ -798,7 +798,7 @@ class boss_wavebinder_kardris : public CreatureScript
                     if (!targets.empty())
                         return Trinity::Containers::SelectRandomContainerElement(targets)->GetGUID();
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
         };
 
@@ -824,10 +824,10 @@ struct npc_dark_shamans_wolf : public ScriptedAI
 
     void JustEngagedWith(Unit* who) override
     {
-        if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+        if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
             DoZoneInCombat(haromm, 200.0f);
 
-        if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+        if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
             DoZoneInCombat(kardris, 200.0f);
 
         events.ScheduleEvent(EVENT_REND, 5 * IN_MILLISECONDS);
@@ -842,10 +842,10 @@ struct npc_dark_shamans_wolf : public ScriptedAI
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 
-            if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KORKRON_DARK_SHAMANS)))
+            if (Creature* haromm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_KORKRON_DARK_SHAMANS)))
                 haromm->AI()->EnterEvadeMode();
 
-            if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAVEBINDER_KARDIS)))
+            if (Creature* kardris = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAVEBINDER_KARDIS)))
                 kardris->AI()->EnterEvadeMode();
         }
     }
@@ -940,7 +940,7 @@ struct npc_dark_shamans_toxic_tornado : public ScriptedAI
         spawnPos = { me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation() };
         DoCast(me, SPELL_TOXIC_TORNADO);
 
-        if (Creature* haromm = ObjectAccessor::GetCreature(*me, me->GetInstanceId() ? me->GetInstanceScript()->GetData64(DATA_KORKRON_DARK_SHAMANS) : 0))
+        if (Creature* haromm = ObjectAccessor::GetCreature(*me, me->GetInstanceId() ? me->GetInstanceScript()->GetGuidData(DATA_KORKRON_DARK_SHAMANS) : ObjectGuid::Empty))
             haromm->AI()->JustSummoned(me);
 
         scheduler

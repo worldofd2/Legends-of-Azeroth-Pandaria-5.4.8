@@ -2320,7 +2320,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
         {
             // for players, start regeneration after 1s (in polymorph fast regeneration case)
             // only if caster is Player (after patch 2.4.2)
-            if (IS_PLAYER_GUID(GetCasterGUID()))
+            if (GetCasterGUID().IsPlayer())
                 target->ToPlayer()->setRegenTimerCount(1*IN_MILLISECONDS);
 
             //dismount polymorphed target (after patch 2.4.2)
@@ -5689,7 +5689,7 @@ void AuraEffect::HandleAuraOpenStable(AuraApplication const* aurApp, uint8 mode,
         return;
 
     if (apply)
-        target->ToPlayer()->GetSession()->SendPetList(0, PET_SLOT_ACTIVE_FIRST, PET_SLOT_STABLE_LAST);
+        target->ToPlayer()->GetSession()->SendPetList(ObjectGuid::Empty, PET_SLOT_ACTIVE_FIRST, PET_SLOT_STABLE_LAST);
 
      // client auto close stable dialog at !apply aura
 }
@@ -5777,7 +5777,7 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
 
     if (apply && target->IsPet())
     {
-        TC_LOG_ERROR("shitlog", "AuraEffect::HandleAuraSetVehicle, target is pet, spell: %u, caster: " UI64FMTD "\n", GetSpellInfo()->Id, GetCasterGUID());
+        TC_LOG_ERROR("shitlog", "AuraEffect::HandleAuraSetVehicle, target is pet, spell: %u, caster: " UI64FMTD "\n", GetSpellInfo()->Id, GetCasterGUID().GetRawValue());
     }
 
     uint32 vehicleId = GetMiscValue();
@@ -6493,7 +6493,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         procEx |= PROC_EX_ABSORB;
 
     TC_LOG_INFO("spells", "PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-        GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), damage, GetId(), absorb);
+        GetCasterGUID().GetCounter(), GetCasterGUID().GetTypeId(), target->GetGUID().GetCounter(), target->GetTypeId(), damage, GetId(), absorb);
 
     caster->DealDamageMods(target, damage, &absorb);
 
@@ -6593,7 +6593,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) c
         damage = uint32(target->GetHealth());
 
     TC_LOG_INFO("spells", "PeriodicTick: %u (TypeId: %u) health leech of %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-        GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), damage, GetId(), absorb);
+        GetCasterGUID().GetCounter(), GetCasterGUID().GetTypeId(), target->GetGUID().GetCounter(), target->GetTypeId(), damage, GetId(), absorb);
 
     caster->SendSpellNonMeleeDamageLog(target, GetId(), damage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0, crit);
 
@@ -6713,7 +6713,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
         amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
 
     TC_LOG_INFO("spells", "PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
-        GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), amount, GetId());
+        GetCasterGUID().GetCounter(), GetCasterGUID().GetTypeId(), target->GetGUID().GetCounter(), target->GetTypeId(), amount, GetId());
 
     uint32 absorb = 0;
     uint32 heal = uint32(amount);
@@ -6796,7 +6796,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) con
     }
 
     TC_LOG_INFO("spells", "PeriodicTick: %u (TypeId: %u) power leech of %u (TypeId: %u) for %u dmg inflicted by %u",
-        GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), drainAmount, GetId());
+        GetCasterGUID().GetCounter(), GetCasterGUID().GetTypeId(), target->GetGUID().GetCounter(), target->GetTypeId(), drainAmount, GetId());
 
     int32 drainedAmount = -target->ModifyPower(powerType, -drainAmount);
 
@@ -6857,7 +6857,7 @@ void AuraEffect::HandleObsModPowerAuraTick(Unit* target, Unit* caster) const
         amount /= target->GetFloatValue(UNIT_FIELD_MOD_HASTE_REGEN);
 
     TC_LOG_INFO("spells", "PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
-        GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), amount, GetId());
+        GetCasterGUID().GetCounter(), GetCasterGUID().GetTypeId(), target->GetGUID().GetCounter(), target->GetTypeId(), amount, GetId());
 
     SpellPeriodicAuraLogInfo pInfo(this, amount, 0, 0, 0, 0.0f, false);
     target->SendPeriodicAuraLog(&pInfo);
@@ -6895,7 +6895,7 @@ void AuraEffect::HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster) cons
     target->SendPeriodicAuraLog(&pInfo);
 
     TC_LOG_INFO("spells", "PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
-        GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), amount, GetId());
+        GetCasterGUID().GetCounter(), GetCasterGUID().GetTypeId(), target->GetGUID().GetCounter(), target->GetTypeId(), amount, GetId());
 
     int32 gain = target->ModifyPower(powerType, amount);
 
@@ -7184,7 +7184,7 @@ void AuraEffect::HandleAreaTrigger(AuraApplication const* aurApp, uint8 mode, bo
     {
         Unit* target = aurApp->GetTarget();
         AreaTrigger* trigger = new AreaTrigger(this);
-        if (!trigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), entry, GetCaster(), GetSpellInfo(), *target, target))
+        if (!trigger->CreateAreaTrigger(aurApp->GetTarget()->GetMap()->GenerateLowGuid<HighGuid::AreaTrigger>(), entry, GetCaster(), GetSpellInfo(), *target, target))
             delete trigger;
     }
     else

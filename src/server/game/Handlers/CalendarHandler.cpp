@@ -51,8 +51,8 @@ Copied events should probably have a new owner
 
 void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
 {
-    uint64 playerGuid = _player->GetGUID();
-    TC_LOG_DEBUG("network", "CMSG_CALENDAR_GET_CALENDAR [" UI64FMTD "]", playerGuid);
+    ObjectGuid playerGuid = _player->GetGUID();
+    TC_LOG_DEBUG("network", "CMSG_CALENDAR_GET_CALENDAR [" UI64FMTD "]", playerGuid.GetRawValue());
 
     time_t currTime = time(NULL);
     uint32 counter = 0;
@@ -81,14 +81,27 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
             if (itr.second.perm)
             {
                 InstanceSave const* save = itr.second.save;
-                ObjectGuid guid = save->GetInstanceId();
-                data.WriteGuidMask(guid, 6, 7, 2, 1, 5, 4, 0, 3);
+                ObjectGuid guid(uint64(save->GetInstanceId()));
+                data.WriteBit(guid[6]);
+                data.WriteBit(guid[7]);
+                data.WriteBit(guid[2]);
+                data.WriteBit(guid[1]);
+                data.WriteBit(guid[5]);
+                data.WriteBit(guid[4]);
+                data.WriteBit(guid[0]);
+                data.WriteBit(guid[3]);
 
                 lockoutInfoBuffer << uint32(save->GetDifficulty());
-                lockoutInfoBuffer.WriteGuidBytes(guid, 3, 0, 1, 5);
+                lockoutInfoBuffer.WriteByteSeq(guid[3]);
+                lockoutInfoBuffer.WriteByteSeq(guid[0]);
+                lockoutInfoBuffer.WriteByteSeq(guid[1]);
+                lockoutInfoBuffer.WriteByteSeq(guid[5]);
                 lockoutInfoBuffer << uint32(save->GetResetTime() - currTime);
                 lockoutInfoBuffer << uint32(save->GetMapId());
-                lockoutInfoBuffer.WriteGuidBytes(guid, 2, 7, 6, 4);
+                lockoutInfoBuffer.WriteByteSeq(guid[2]);
+                lockoutInfoBuffer.WriteByteSeq(guid[7]);
+                lockoutInfoBuffer.WriteByteSeq(guid[6]);
+                lockoutInfoBuffer.WriteByteSeq(guid[4]);
 
                 ++counter;
             }
@@ -318,14 +331,26 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
     {
         CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(calendarInvite->GetEventId());
         ObjectGuid guid = calendarInvite->GetSenderGUID();
-        data.WriteGuidMask(guid, 1, 2, 6, 7, 3, 0, 4, 5);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[5]);
 
-        invitesInfoBuffer.WriteGuidBytes(guid, 2);
+        invitesInfoBuffer.WriteByteSeq(guid[2]);
         invitesInfoBuffer << uint64(calendarInvite->GetInviteId());
         invitesInfoBuffer << uint8(calendarInvite->GetStatus());
-        invitesInfoBuffer.WriteGuidBytes(guid, 6, 3, 4, 1, 0);
+        invitesInfoBuffer.WriteByteSeq(guid[6]);
+        invitesInfoBuffer.WriteByteSeq(guid[3]);
+        invitesInfoBuffer.WriteByteSeq(guid[4]);
+        invitesInfoBuffer.WriteByteSeq(guid[1]);
+        invitesInfoBuffer.WriteByteSeq(guid[0]);
         invitesInfoBuffer << uint64(calendarInvite->GetEventId());
-        invitesInfoBuffer.WriteGuidBytes(guid, 7, 5);
+        invitesInfoBuffer.WriteByteSeq(guid[7]);
+        invitesInfoBuffer.WriteByteSeq(guid[5]);
 
         invitesInfoBuffer << uint8(calendarInvite->GetRank());
         invitesInfoBuffer << uint8((calendarEvent && calendarEvent->IsGuildEvent() && calendarEvent->GetGuildId() == _player->GetGuildId()) ? 1 : 0);
@@ -335,33 +360,47 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
     for (auto&& calendarEvent : playerEvents)
     {
         Guild* guild = sGuildMgr->GetGuildById(calendarEvent->GetGuildId());
-        ObjectGuid guildGuid = guild ? guild->GetGUID() : 0;
+        ObjectGuid guildGuid = guild ? guild->GetGUID() : ObjectGuid::Empty;
         ObjectGuid creatorGuid = calendarEvent->GetCreatorGUID();
 
-        data.WriteGuidMask(creatorGuid, 2);
-        data.WriteGuidMask(guildGuid, 1, 7);
-        data.WriteGuidMask(creatorGuid, 4);
-        data.WriteGuidMask(guildGuid, 5, 6, 3, 4);
-        data.WriteGuidMask(creatorGuid, 7);
+        data.WriteBit(creatorGuid[2]);
+        data.WriteBit(guildGuid[1]);
+        data.WriteBit(guildGuid[7]);
+        data.WriteBit(creatorGuid[4]);
+        data.WriteBit(guildGuid[5]);
+        data.WriteBit(guildGuid[6]);
+        data.WriteBit(guildGuid[3]);
+        data.WriteBit(guildGuid[4]);
+        data.WriteBit(creatorGuid[7]);
         data.WriteBits(calendarEvent->GetTitle().size(), 8);
-        data.WriteGuidMask(creatorGuid, 1);
-        data.WriteGuidMask(guildGuid, 2, 0);
-        data.WriteGuidMask(creatorGuid, 0, 3, 6, 5);
+        data.WriteBit(creatorGuid[1]);
+        data.WriteBit(guildGuid[2]);
+        data.WriteBit(guildGuid[0]);
+        data.WriteBit(creatorGuid[0]);
+        data.WriteBit(creatorGuid[3]);
+        data.WriteBit(creatorGuid[6]);
+        data.WriteBit(creatorGuid[5]);
 
-        eventsInfoBuffer.WriteGuidBytes(creatorGuid, 5);
-        eventsInfoBuffer.WriteGuidBytes(guildGuid, 3);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[5]);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[3]);
         eventsInfoBuffer.WriteString(calendarEvent->GetTitle());
-        eventsInfoBuffer.WriteGuidBytes(guildGuid, 7);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[7]);
         eventsInfoBuffer << int32(calendarEvent->GetDungeonId());
-        eventsInfoBuffer.WriteGuidBytes(creatorGuid, 0, 4);
-        eventsInfoBuffer.WriteGuidBytes(guildGuid, 2);
-        eventsInfoBuffer.WriteGuidBytes(creatorGuid, 7, 2);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[0]);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[4]);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[2]);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[7]);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[2]);
         eventsInfoBuffer.AppendPackedTime(calendarEvent->GetEventTime());
-        eventsInfoBuffer.WriteGuidBytes(creatorGuid, 3, 1);
-        eventsInfoBuffer.WriteGuidBytes(guildGuid, 6, 1);
-        eventsInfoBuffer.WriteGuidBytes(creatorGuid, 6);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[3]);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[1]);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[6]);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[1]);
+        eventsInfoBuffer.WriteByteSeq(creatorGuid[6]);
         eventsInfoBuffer << uint32(calendarEvent->GetFlags());
-        eventsInfoBuffer.WriteGuidBytes(guildGuid, 4, 5, 0);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[4]);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[5]);
+        eventsInfoBuffer.WriteByteSeq(guildGuid[0]);
         eventsInfoBuffer << uint64(calendarEvent->GetEventId());
         eventsInfoBuffer << uint8(calendarEvent->GetType());
     }
@@ -408,7 +447,7 @@ void WorldSession::HandleCalendarGetEvent(WorldPacket& recvData)
     uint64 eventId = recvData.read<uint64>();
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_GET_EVENT. Player ["
-        UI64FMTD "] Event [" UI64FMTD "]", _player->GetGUID(), eventId);
+        UI64FMTD "] Event [" UI64FMTD "]", _player->GetGUID().GetRawValue(), eventId);
 
     if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(eventId))
         sCalendarMgr->SendCalendarEvent(_player->GetGUID(), *calendarEvent, CALENDAR_SENDTYPE_GET);
@@ -418,7 +457,7 @@ void WorldSession::HandleCalendarGetEvent(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarGuildFilter(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "CMSG_CALENDAR_GUILD_FILTER [" UI64FMTD "]", _player->GetGUID());
+    TC_LOG_DEBUG("network", "CMSG_CALENDAR_GUILD_FILTER [" UI64FMTD "]", _player->GetGUID().GetRawValue());
 
     uint8 maxLevel = recvData.read<uint8>();
     uint8 minRank = recvData.read<uint8>();
@@ -432,7 +471,7 @@ void WorldSession::HandleCalendarGuildFilter(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     uint32 maxInvites = recvData.read<uint32>();  // always 100, necesary? Not find the way how to change it
     uint32 flags = recvData.read<uint32>();
@@ -455,7 +494,14 @@ void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
     for (uint32 i = 0; i < inviteeCount; i++)
     {
         CalendarInvitePacketInfo info;
-        recvData.ReadGuidMask(info.Guid, 7, 2, 6, 3, 5, 1, 0, 4);
+        info.Guid[7] = recvData.ReadBit();
+        info.Guid[2] = recvData.ReadBit();
+        info.Guid[6] = recvData.ReadBit();
+        info.Guid[3] = recvData.ReadBit();
+        info.Guid[5] = recvData.ReadBit();
+        info.Guid[1] = recvData.ReadBit();
+        info.Guid[0] = recvData.ReadBit();
+        info.Guid[4] = recvData.ReadBit();
         calendarInviteList.push_back(info);
     }
 
@@ -463,9 +509,15 @@ void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
 
     for (auto&& itr : calendarInviteList)
     {
-        recvData.ReadGuidBytes(itr.Guid, 4, 2, 3, 1, 0, 6, 7);
+        recvData.ReadByteSeq(itr.Guid[4]);
+        recvData.ReadByteSeq(itr.Guid[2]);
+        recvData.ReadByteSeq(itr.Guid[3]);
+        recvData.ReadByteSeq(itr.Guid[1]);
+        recvData.ReadByteSeq(itr.Guid[0]);
+        recvData.ReadByteSeq(itr.Guid[6]);
+        recvData.ReadByteSeq(itr.Guid[7]);
         recvData >> itr.Status;
-        recvData.ReadGuidBytes(itr.Guid, 5);
+        recvData.ReadByteSeq(itr.Guid[5]);
         recvData >> itr.ModerationRank;
     }
 
@@ -498,7 +550,7 @@ void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarUpdateEvent(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
     time_t oldEventTime;
 
     ObjectGuid eventId, inviteId;
@@ -516,37 +568,49 @@ void WorldSession::HandleCalendarUpdateEvent(WorldPacket& recvData)
 
     uint32 flags = recvData.read<uint32>();
     uint8 type = recvData.read<uint8>();
-    recvData.ReadGuidMask(eventId, 4, 5, 2);
-    recvData.ReadGuidMask(inviteId, 4);
-    recvData.ReadGuidMask(eventId, 7, 0);
-    recvData.ReadGuidMask(inviteId, 5, 3);
-    recvData.ReadGuidMask(eventId, 6, 1);
-    recvData.ReadGuidMask(inviteId, 6, 2, 7, 1, 0);
+    eventId[4] = recvData.ReadBit();
+    eventId[5] = recvData.ReadBit();
+    eventId[2] = recvData.ReadBit();
+    inviteId[4] = recvData.ReadBit();
+    eventId[7] = recvData.ReadBit();
+    eventId[0] = recvData.ReadBit();
+    inviteId[5] = recvData.ReadBit();
+    inviteId[3] = recvData.ReadBit();
+    eventId[6] = recvData.ReadBit();
+    eventId[1] = recvData.ReadBit();
+    inviteId[6] = recvData.ReadBit();
+    inviteId[2] = recvData.ReadBit();
+    inviteId[7] = recvData.ReadBit();
+    inviteId[1] = recvData.ReadBit();
+    inviteId[0] = recvData.ReadBit();
     uint16 descriptionLength = recvData.ReadBits(11);
     uint16 titleLength = recvData.ReadBits(8);
-    recvData.ReadGuidMask(eventId, 3);
+    eventId[3] = recvData.ReadBit();
 
 
-    recvData.ReadGuidBytes(inviteId, 6);
-    recvData.ReadGuidBytes(eventId, 0);
-    recvData.ReadGuidBytes(inviteId, 7, 3);
-    recvData.ReadGuidBytes(eventId, 6);
-    recvData.ReadGuidBytes(inviteId, 1);
-    recvData.ReadGuidBytes(eventId, 2);
+    recvData.ReadByteSeq(inviteId[6]);
+    recvData.ReadByteSeq(eventId[0]);
+    recvData.ReadByteSeq(inviteId[7]);
+    recvData.ReadByteSeq(inviteId[3]);
+    recvData.ReadByteSeq(eventId[6]);
+    recvData.ReadByteSeq(inviteId[1]);
+    recvData.ReadByteSeq(eventId[2]);
     std::string title = recvData.ReadString(titleLength);
-    recvData.ReadGuidBytes(inviteId, 5, 4);
-    recvData.ReadGuidBytes(eventId, 5, 3);
-    recvData.ReadGuidBytes(inviteId, 0);
-    recvData.ReadGuidBytes(eventId, 4);
+    recvData.ReadByteSeq(inviteId[5]);
+    recvData.ReadByteSeq(inviteId[4]);
+    recvData.ReadByteSeq(eventId[5]);
+    recvData.ReadByteSeq(eventId[3]);
+    recvData.ReadByteSeq(inviteId[0]);
+    recvData.ReadByteSeq(eventId[4]);
     std::string description = recvData.ReadString(descriptionLength);
-    recvData.ReadGuidBytes(eventId, 1);
-    recvData.ReadGuidBytes(inviteId, 2);
-    recvData.ReadGuidBytes(eventId, 7);
+    recvData.ReadByteSeq(eventId[1]);
+    recvData.ReadByteSeq(inviteId[2]);
+    recvData.ReadByteSeq(eventId[7]);
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_UPDATE_EVENT [" UI64FMTD "] EventId [" UI64FMTD
         "], InviteId [" UI64FMTD "] Title %s, Description %s, type %u "
         "MaxInvites %u, Dungeon ID %d, Time %u, Flags %u",
-        guid, (uint64)eventId, (uint64)inviteId, title.c_str(),
+        guid.GetRawValue(), (uint64)eventId, (uint64)inviteId, title.c_str(),
         description.c_str(), type, maxInvites, dungeonId,
         eventPackedTime, flags);
 
@@ -570,7 +634,7 @@ void WorldSession::HandleCalendarUpdateEvent(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarRemoveEvent(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     recvData.read_skip<uint64>(); // Skip InviteId
     uint64 eventId = recvData.read<uint64>();
@@ -581,14 +645,14 @@ void WorldSession::HandleCalendarRemoveEvent(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarCopyEvent(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     uint64 eventId = recvData.read<uint64>();
     uint64 inviteId = recvData.read<uint64>();
     uint32 time = recvData.ReadPackedTime();
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_COPY_EVENT [" UI64FMTD "], EventId [" UI64FMTD
-        "] inviteId [" UI64FMTD "] Time: %u", guid, eventId, inviteId, time);
+        "] inviteId [" UI64FMTD "] Time: %u", guid.GetRawValue(), eventId, inviteId, time);
 
     if (CalendarEvent* oldEvent = sCalendarMgr->GetEvent(eventId))
     {
@@ -609,9 +673,9 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_INVITE");
 
-    uint64 playerGuid = _player->GetGUID();
+    ObjectGuid playerGuid = _player->GetGUID();
 
-    uint64 inviteeGuid = 0;
+    ObjectGuid inviteeGuid = ObjectGuid::Empty;
     uint32 inviteeTeam = 0;
     uint32 inviteeGuildId = 0;
 
@@ -622,7 +686,7 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
     bool isGuildEvent = recvData.ReadBit();
     std::string name = recvData.ReadString(length);
 
-    Player* player = sObjectAccessor->FindPlayerByName(name.c_str());
+    Player* player = ObjectAccessor::FindPlayerByName(name.c_str());
     if (player)
     {
         // Invitee is online
@@ -638,7 +702,7 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
         if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
         {
             Field* fields = result->Fetch();
-            inviteeGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+            inviteeGuid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
             inviteeTeam = Player::TeamForRace(fields[1].GetUInt8());
             inviteeGuildId = Player::GetGuildIdFromDB(inviteeGuid);
         }
@@ -705,12 +769,12 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarEventSignup(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     uint64 eventId = recvData.read<uint64>();
     bool tentative = recvData.ReadBit();
 
-    TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_SIGNUP [" UI64FMTD "] EventId [" UI64FMTD "] Tentative %u", guid, eventId, tentative);
+    TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_SIGNUP [" UI64FMTD "] EventId [" UI64FMTD "] Tentative %u", guid.GetRawValue(), eventId, tentative);
 
     if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(eventId))
     {
@@ -731,14 +795,14 @@ void WorldSession::HandleCalendarEventSignup(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarEventRsvp(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     uint64 eventId = recvData.read<uint64>();
     uint64 inviteId = recvData.read<uint64>();
     uint8 status = recvData.read<uint8>();
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_RSVP [" UI64FMTD "] EventId ["
-        UI64FMTD "], InviteId [" UI64FMTD "], status %u", guid, eventId,
+        UI64FMTD "], InviteId [" UI64FMTD "], status %u", guid.GetRawValue(), eventId,
         inviteId, status);
 
     if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(eventId))
@@ -769,19 +833,33 @@ void WorldSession::HandleCalendarEventRsvp(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarEventRemoveInvite(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     ObjectGuid invitee;
     uint64 inviteId = recvData.read<uint64>();
     uint64 senderId = recvData.read<uint64>();
     uint64 eventId = recvData.read<uint64>();
-    recvData.ReadGuidMask(invitee, 6, 3, 2, 4, 5, 7, 0, 1);
-    recvData.ReadGuidBytes(invitee, 0, 4, 7, 3, 5, 1, 2, 6);
+    invitee[6] = recvData.ReadBit();
+    invitee[3] = recvData.ReadBit();
+    invitee[2] = recvData.ReadBit();
+    invitee[4] = recvData.ReadBit();
+    invitee[5] = recvData.ReadBit();
+    invitee[7] = recvData.ReadBit();
+    invitee[0] = recvData.ReadBit();
+    invitee[1] = recvData.ReadBit();
+    recvData.ReadByteSeq(invitee[0]);
+    recvData.ReadByteSeq(invitee[4]);
+    recvData.ReadByteSeq(invitee[7]);
+    recvData.ReadByteSeq(invitee[3]);
+    recvData.ReadByteSeq(invitee[5]);
+    recvData.ReadByteSeq(invitee[1]);
+    recvData.ReadByteSeq(invitee[2]);
+    recvData.ReadByteSeq(invitee[6]);
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_REMOVE_INVITE ["
         UI64FMTD "] EventId [" UI64FMTD "], senderId ["
         UI64FMTD "], Invitee ([" UI64FMTD "] id: [" UI64FMTD "])",
-        guid, eventId, senderId, (uint64)invitee, inviteId);
+        guid.GetRawValue(), eventId, senderId, (uint64)invitee, inviteId);
 
     if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(eventId))
     {
@@ -799,19 +877,33 @@ void WorldSession::HandleCalendarEventRemoveInvite(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarEventStatus(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     ObjectGuid invitee;
     uint64 senderId = recvData.read<uint64>();
     uint64 eventId = recvData.read<uint64>();
     uint64 inviteId = recvData.read<uint64>();
     uint8 status = recvData.read<uint8>();
-    recvData.ReadGuidMask(invitee, 4, 3, 7, 6, 2, 0, 5, 1);
-    recvData.ReadGuidBytes(invitee, 7, 5, 2, 1, 4, 6, 0, 3);
+    invitee[4] = recvData.ReadBit();
+    invitee[3] = recvData.ReadBit();
+    invitee[7] = recvData.ReadBit();
+    invitee[6] = recvData.ReadBit();
+    invitee[2] = recvData.ReadBit();
+    invitee[0] = recvData.ReadBit();
+    invitee[5] = recvData.ReadBit();
+    invitee[1] = recvData.ReadBit();
+    recvData.ReadByteSeq(invitee[7]);
+    recvData.ReadByteSeq(invitee[5]);
+    recvData.ReadByteSeq(invitee[2]);
+    recvData.ReadByteSeq(invitee[1]);
+    recvData.ReadByteSeq(invitee[4]);
+    recvData.ReadByteSeq(invitee[6]);
+    recvData.ReadByteSeq(invitee[0]);
+    recvData.ReadByteSeq(invitee[3]);
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_STATUS [" UI64FMTD"] EventId ["
         UI64FMTD "] senderId [" UI64FMTD "], Invitee ([" UI64FMTD "] id: ["
-        UI64FMTD "], status %u", guid, eventId, senderId, (uint64)invitee, inviteId, status);
+        UI64FMTD "], status %u", guid.GetRawValue(), eventId, senderId, (uint64)invitee, inviteId, status);
 
     if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(eventId))
     {
@@ -833,19 +925,33 @@ void WorldSession::HandleCalendarEventStatus(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarEventModeratorStatus(WorldPacket& recvData)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
 
     ObjectGuid invitee;
     uint8 rank = recvData.read<uint8>();
     uint64 eventId = recvData.read<uint64>();
     uint64 senderId = recvData.read<uint64>();
     uint64 inviteId = recvData.read<uint64>();
-    recvData.ReadGuidMask(invitee, 6, 5, 1, 3, 4, 7, 0, 2);
-    recvData.ReadGuidBytes(invitee, 7, 5, 0, 4, 1, 3, 2, 6);
+    invitee[6] = recvData.ReadBit();
+    invitee[5] = recvData.ReadBit();
+    invitee[1] = recvData.ReadBit();
+    invitee[3] = recvData.ReadBit();
+    invitee[4] = recvData.ReadBit();
+    invitee[7] = recvData.ReadBit();
+    invitee[0] = recvData.ReadBit();
+    invitee[2] = recvData.ReadBit();
+    recvData.ReadByteSeq(invitee[7]);
+    recvData.ReadByteSeq(invitee[5]);
+    recvData.ReadByteSeq(invitee[0]);
+    recvData.ReadByteSeq(invitee[4]);
+    recvData.ReadByteSeq(invitee[1]);
+    recvData.ReadByteSeq(invitee[3]);
+    recvData.ReadByteSeq(invitee[2]);
+    recvData.ReadByteSeq(invitee[6]);
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_EVENT_MODERATOR_STATUS [" UI64FMTD "] EventId ["
         UI64FMTD "] senderId [" UI64FMTD "], Invitee ([" UI64FMTD "] id: ["
-        UI64FMTD "], rank %u", guid, eventId, senderId, (uint64)invitee, inviteId, rank);
+        UI64FMTD "], rank %u", guid.GetRawValue(), eventId, senderId, (uint64)invitee, inviteId, rank);
 
     if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(eventId))
     {
@@ -875,8 +981,22 @@ void WorldSession::HandleCalendarComplain(WorldPacket& recvData)
     ObjectGuid complainGUID;
     uint64 inviteId = recvData.read<uint64>();
     uint64 eventId = recvData.read<uint64>();
-    recvData.ReadGuidMask(complainGUID, 4, 6, 2, 7, 1, 5, 3, 0);
-    recvData.ReadGuidBytes(complainGUID, 6, 7, 1, 0, 4, 2, 3, 5);
+    complainGUID[4] = recvData.ReadBit();
+    complainGUID[6] = recvData.ReadBit();
+    complainGUID[2] = recvData.ReadBit();
+    complainGUID[7] = recvData.ReadBit();
+    complainGUID[1] = recvData.ReadBit();
+    complainGUID[5] = recvData.ReadBit();
+    complainGUID[3] = recvData.ReadBit();
+    complainGUID[0] = recvData.ReadBit();
+    recvData.ReadByteSeq(complainGUID[6]);
+    recvData.ReadByteSeq(complainGUID[7]);
+    recvData.ReadByteSeq(complainGUID[1]);
+    recvData.ReadByteSeq(complainGUID[0]);
+    recvData.ReadByteSeq(complainGUID[4]);
+    recvData.ReadByteSeq(complainGUID[2]);
+    recvData.ReadByteSeq(complainGUID[3]);
+    recvData.ReadByteSeq(complainGUID[5]);
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_COMPLAIN [" UI64FMTD "] EventId ["
         UI64FMTD "] guid [" UI64FMTD "] InviteId [" UI64FMTD "]", guid, eventId, (uint64)complainGUID, inviteId);
@@ -886,11 +1006,11 @@ void WorldSession::HandleCalendarComplain(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarGetNumPending(WorldPacket& /*recvData*/)
 {
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
     uint32 pending = sCalendarMgr->GetPlayerNumPending(guid);
 
     TC_LOG_DEBUG("network", "CMSG_CALENDAR_GET_NUM_PENDING: [" UI64FMTD
-        "] Pending: %u", guid, pending);
+        "] Pending: %u", guid.GetRawValue(), pending);
 
     WorldPacket data(SMSG_CALENDAR_SEND_NUM_PENDING, 4);
     data << uint32(pending);
@@ -923,20 +1043,31 @@ void WorldSession::SendCalendarRaidLockout(InstanceSave const* save, bool add)
     TC_LOG_DEBUG("network", "%s", add ? "SMSG_CALENDAR_RAID_LOCKOUT_ADDED" : "SMSG_CALENDAR_RAID_LOCKOUT_REMOVED");
     time_t currTime = time(NULL);
 
-    ObjectGuid guid = save->GetInstanceId();
+    ObjectGuid guid(uint64(save->GetInstanceId()));
     if (add)
     {
         WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_ADDED, 4 + 4 + 4 + 4 + 8);
 
-        data.WriteGuidMask(guid, 3, 1, 2, 0, 4, 7, 5, 6);
-        data.WriteGuidBytes(guid, 6);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[6]);
+        data.WriteByteSeq(guid[6]);
         data << uint32(save->GetDifficulty());
-        data.WriteGuidBytes(guid, 0, 4, 5, 3, 2);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[2]);
         data << uint32(save->GetMapId());
-        data.WriteGuidBytes(guid, 1);
+        data.WriteByteSeq(guid[1]);
         data.AppendPackedTime(currTime);
         data << uint32(save->GetResetTime() - currTime);
-        data.WriteGuidBytes(guid, 7);
+        data.WriteByteSeq(guid[7]);
 
         SendPacket(&data);
     }
@@ -946,8 +1077,22 @@ void WorldSession::SendCalendarRaidLockout(InstanceSave const* save, bool add)
 
         data << uint32(save->GetDifficulty());
         data << uint32(save->GetMapId());
-        data.WriteGuidMask(guid, 2, 0, 4, 6, 5, 7, 3, 1);
-        data.WriteGuidBytes(guid, 6, 1, 7, 3, 4, 5, 0, 2);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[1]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[2]);
 
         SendPacket(&data);
     }
@@ -958,9 +1103,9 @@ void WorldSession::SendCalendarRaidLockoutUpdated(InstanceSave const* save)
     if (!save)
         return;
 
-    uint64 guid = _player->GetGUID();
+    ObjectGuid guid = _player->GetGUID();
     TC_LOG_DEBUG("network", "SMSG_CALENDAR_RAID_LOCKOUT_UPDATED [" UI64FMTD
-        "] Map: %u, Difficulty %u", guid, save->GetMapId(), save->GetDifficulty());
+        "] Map: %u, Difficulty %u", guid.GetRawValue(), save->GetMapId(), save->GetDifficulty());
 
     time_t currTime = time(NULL);
 

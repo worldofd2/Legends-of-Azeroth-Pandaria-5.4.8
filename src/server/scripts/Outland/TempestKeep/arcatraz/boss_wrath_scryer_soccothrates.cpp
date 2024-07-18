@@ -52,7 +52,7 @@ class boss_wrath_scryer_soccothrates : public CreatureScript
 
             EventMap nonCombatEvents;
             uint32 felfireCounter, felfireCalculate;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             float x, y;
             bool intro, hasYell;
 
@@ -69,7 +69,7 @@ class boss_wrath_scryer_soccothrates : public CreatureScript
                 events.Reset();
                 felfireCounter   = 1;
                 felfireCalculate = 0;
-                targetGUID       = 0;
+                targetGUID = ObjectGuid::Empty;
                 x                = 0.0f;
                 y                = 0.0f;
                 hasYell          = false;
@@ -80,7 +80,7 @@ class boss_wrath_scryer_soccothrates : public CreatureScript
 
             Creature* Dalliah()
             {
-                if (Creature* sDalliah = ObjectAccessor::GetCreature(*me, instance->GetData64(TYPE_DALLIAH)))
+                if (Creature* sDalliah = ObjectAccessor::GetCreature(*me, instance->GetGuidData(TYPE_DALLIAH)))
                     return sDalliah;
 
                 return 0;
@@ -308,7 +308,7 @@ class npc_scryer_felfire : public CreatureScript
 
                 if (InstanceScript* instance = me->GetInstanceScript())
                 {
-                    if (Creature* Scryer = ObjectAccessor::GetCreature(*me, instance->GetData64(TYPE_SOCCOTHRATES)))
+                    if (Creature* Scryer = ObjectAccessor::GetCreature(*me, instance->GetGuidData(TYPE_SOCCOTHRATES)))
                     {
                         if (felData = Scryer->AI()->GetData(TYPE_FELFIRE))
                         {

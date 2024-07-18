@@ -267,7 +267,7 @@ void SetOnElevator(Unit* unit, bool useTransport = true)
 {
     if (InstanceScript* instance = unit->GetInstanceScript())
     {
-        if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+        if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
         {
             unit->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
             if (useTransport)
@@ -286,7 +286,7 @@ void SetOnElevator(Unit* unit, bool useTransport = true)
             else if (unit->m_movementInfo.transport.guid)
             {
                 // Silently update position, client will continue to show the unit on top of the elevator
-                unit->m_movementInfo.transport.guid = 0;
+                unit->m_movementInfo.transport.guid = ObjectGuid::Empty;
                 unit->m_movementInfo.transport.seat = -1;
                 unit->m_movementInfo.transport.pos.Relocate(0, 0, 0, 0);
                 unit->UpdatePosition(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ() + 13.90172f, elevator->GetOrientation());
@@ -350,7 +350,7 @@ class boss_bd_nefarian : public CreatureScript
                 if (SummonList.empty())
                     return;
 
-                for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
+                for (std::list<ObjectGuid>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
                     if (Creature* summon = ObjectAccessor::GetCreature(*me, *itr))
                         summon->DespawnOrUnsummon();
 
@@ -379,7 +379,7 @@ class boss_bd_nefarian : public CreatureScript
                     nefarius->AI()->DoAction(ACTION_RESET);
 
                 // Raise the elevator
-                if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                     elevator->SetGoState(GO_STATE_READY);
 
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -528,7 +528,7 @@ class boss_bd_nefarian : public CreatureScript
                             events.SetPhase(PHASE_FLIGHT);
                             events.ScheduleEvent(EVENT_LAND, 15000, PHASE_FLIGHT);
                             finalPhase = true;
-                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                                 elevator->SetGoState(GO_STATE_READY);
 
                             std::list<Creature*> summons;
@@ -697,7 +697,7 @@ class boss_bd_nefarian : public CreatureScript
                                 if (Creature* creature = *itr)
                                     creature->AI()->DoAction(ACTION_KILL_ANIMATED_WARRIOR);
                             // Lower the elevator
-                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                                 elevator->SetGoState(GO_STATE_ACTIVE);
                             break;
                         }
@@ -747,7 +747,7 @@ class boss_bd_nefarian : public CreatureScript
                                 events.SetPhase(PHASE_FLIGHT);
                                 events.ScheduleEvent(EVENT_LAND, 20000, PHASE_FLIGHT);
                                 finalPhase = true;
-                                if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                                if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                                     elevator->SetGoState(GO_STATE_READY);
 
                                 std::list<Creature*> summons;
@@ -781,7 +781,7 @@ class boss_bd_nefarian : public CreatureScript
             bool said, secondPhase, finalPhase;
 
             uint8 healthPct;
-            std::list<uint64> SummonList;
+            std::list<ObjectGuid> SummonList;
 
             bool waypointFlightActive;
             uint32 nextFlightWaypointIndex;
@@ -950,7 +950,7 @@ class npc_nefarian_intro : public CreatureScript
 
             void Reset() override
             {
-                if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                     elevator->SetGoState(GO_STATE_ACTIVE);
 
                 events.Reset();
@@ -1019,7 +1019,7 @@ class npc_nefarian_intro : public CreatureScript
                         case EVENT_NEFARIUS_INTRO_1:
                         {
                             Talk(SAY_INTRO_1);
-                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                                 elevator->SetGoState(GO_STATE_ACTIVE);
                             if (Creature* onyxia = me->SummonCreature(NPC_ONYXIA, -107.213f, -224.62f, -7.413594f, 3.122f))
                             {
@@ -1054,7 +1054,7 @@ class npc_nefarian_intro : public CreatureScript
                             break;
                         }
                         case EVENT_NEFARIUS_INTRO_2:
-                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetData64(DATA_NEFARIAN_FLOOR)))
+                            if (GameObject* elevator = instance->instance->GetGameObject(instance->GetGuidData(DATA_NEFARIAN_FLOOR)))
                                 elevator->SetGoState(GO_STATE_READY);
                             Talk(SAY_INTRO_2);
                             events.ScheduleEvent(EVENT_NEFARIUS_INTRO_3, 10000);

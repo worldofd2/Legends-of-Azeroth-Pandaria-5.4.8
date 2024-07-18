@@ -135,7 +135,7 @@ struct npc_stranglethorn_emerine : public ScriptedAI
     npc_stranglethorn_emerine(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {

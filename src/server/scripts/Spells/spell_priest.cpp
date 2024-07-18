@@ -260,7 +260,7 @@ class spell_pri_void_tendrils : public SpellScript
             tendril->CastSpell(GetHitUnit(), SPELL_PRIEST_VOID_TENDRILS_GRASP, true);
             tendril->m_Events.Schedule(200, [=]
             {
-                if (Unit* target = ObjectAccessor::GetUnit(*tendril, tendril->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)))
+                if (Unit* target = ObjectAccessor::GetUnit(*tendril, tendril->GetGuidValue(UNIT_FIELD_CHANNEL_OBJECT)))
                 {
                     if (!G3D::fuzzyEq(tendril->GetPositionX(), target->GetPositionX()) ||
                         !G3D::fuzzyEq(tendril->GetPositionY(), target->GetPositionY()) ||

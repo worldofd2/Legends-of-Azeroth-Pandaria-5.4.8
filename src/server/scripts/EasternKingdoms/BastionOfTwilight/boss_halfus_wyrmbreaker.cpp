@@ -182,7 +182,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                 bWhelps = false;
                 events.Reset();
                 summons.DespawnAll(true);
-                if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_WHELP_CAGE)))
+                if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_WHELP_CAGE)))
                 {
                     go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
                     go->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
@@ -209,11 +209,11 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                 {
                     switch (urand(0, 9))
                     {
-                        // 10 вариантов драконов
-                        // Двум неактивным раздаем баф нективности
-                        // Даем халфию + чудищу бафы от активных
+                        // 10 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     case 0:
-                        // Сланцевый + штормокрыл + потомок пустоты
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true); 
@@ -222,7 +222,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
                         break;
                     case 1:
-                        // Страж времени + штормокрыл + потомок пустоты
+                        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true);
@@ -231,7 +231,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
                         break;
                     case 2:
-                        // Сланцевый + потомок пустоты + дракончики
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         bWhelps = true;
                         timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
                         stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
@@ -240,7 +240,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
                         break;
                     case 3:
-                        // Сланцевый + штормокрыл + страж времени
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true);
@@ -249,7 +249,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         DoCast(me, SPELL_SHADOW_WARPED);
                         break;
                     case 4:
-                        // Потомок пустоты + штормокрыл + дракончики
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         bWhelps = true;
                         slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
                         timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
@@ -258,7 +258,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
                         break;
                     case 5:
-                        // Сланцевый + страж времени + потомок пустоты
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true);
@@ -267,7 +267,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
                         break;
                     case 6:
-                        // Штормокрыл + страж времени + дракончики
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         bWhelps = true;
                         slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
                         netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
@@ -276,7 +276,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);                    
                         break;
                     case 7:
-                        // Сланцевый + страж времени + дракончики
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         bWhelps = true;
                         stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
                         netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
@@ -285,7 +285,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);                    
                         break;
                     case 8:
-                        // Потомок пустоты + страж времени + дракончики
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         bWhelps = true;
                         slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
                         stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
@@ -294,7 +294,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
                         break;
                     case 9:
-                        // Сланцевый + штормокрыл + дракончики
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         bWhelps = true;
                         netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
                         timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
@@ -323,7 +323,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                     timewarden->GetAI()->DoAction(ACTION_ACTIVE_GOSSIP);
 
                 if (bWhelps)
-                    if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_WHELP_CAGE)))
+                    if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_WHELP_CAGE)))
                         go->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
 
                 if (me->HasAura(SPELL_SHADOW_WARPED))
@@ -618,7 +618,7 @@ class go_whelp_cage : public GameObjectScript
             if (!instance)
                 return true;
 
-            if (Creature* halfus = ObjectAccessor::GetCreature(*go, instance->GetData64(DATA_HALFUS)))
+            if (Creature* halfus = ObjectAccessor::GetCreature(*go, instance->GetGuidData(DATA_HALFUS)))
             {
                 halfus->AI()->DoAction(ACTION_WHELPS_RELEASE);
                 go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
@@ -652,7 +652,7 @@ class npc_halfus_dragon : public CreatureScript
             switch (action)
             {
                 case GOSSIP_ACTION_INFO_DEF+1:
-                    if (Creature* Halfus = Unit::GetCreature(*creature,instance->GetData64(DATA_HALFUS)))
+                    if (Creature* Halfus = Unit::GetCreature(*creature,instance->GetGuidData(DATA_HALFUS)))
                     {
                         switch (creature->GetEntry())
                         {
@@ -725,7 +725,7 @@ class npc_halfus_dragon : public CreatureScript
             {
                 DoCast(me, SPELL_DRAGON_VENGEANCE, true);
 
-                if (Creature* halfus = Unit::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_HALFUS) : 0))
+                if (Creature* halfus = Unit::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_HALFUS) : ObjectGuid::Empty))
                     halfus->AI()->DoAction(ACTION_ACHIEV_TIMING);
             }
         };

@@ -180,7 +180,7 @@ class boss_garajal : public CreatureScript
         {
             boss_garajalAI(Creature* creature) : BossAI(creature, DATA_GARAJAL) { }
 
-            std::vector<uint64> voodooTargets;
+            std::vector<ObjectGuid> voodooTargets;
             std::list<uint32> shadowySpells;
             bool intro;
             uint32 banishmentCount;
@@ -495,7 +495,7 @@ class boss_garajal : public CreatureScript
                                 pItr->AddAura(SPELL_VOODOO_DOLL_VISUAL, pItr);
                             }
 
-                            if (Unit* tank = sObjectAccessor->GetPlayer(*me, voodooTargets[0]))
+                            if (Unit* tank = ObjectAccessor::GetPlayer(*me, voodooTargets[0]))
                                 me->CastSpell(tank, SPELL_VOODOO_DOLL_SHARE, true);
 
                             break;
@@ -703,7 +703,7 @@ class npc_spirit_totem : public CreatureScript
                 {
                     // Interrupt process if garajal already got frenzie
                     if (instance)
-                        if (Creature* garajal = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_GARAJAL)))
+                        if (Creature* garajal = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_GARAJAL)))
                             if (garajal->HasAura(SPELL_FRENESIE))
                                 break;
 
@@ -777,13 +777,13 @@ class npc_shadowy_minion : public CreatureScript
             }
 
             InstanceScript* instance;
-            uint64 spiritGuid;
+            ObjectGuid spiritGuid;
             EventMap events;
 
             void Reset() override
             {
                 events.Reset();
-                spiritGuid = 0;
+                spiritGuid = ObjectGuid::Empty;
 
                 if (me->GetEntry() == NPC_SHADOWY_MINION_REAL)
                 {
@@ -907,7 +907,7 @@ class npc_soul_cutter : public CreatureScript
             {
                 if (instance)
                 {
-                    if (Creature* Garajal = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_GARAJAL)))
+                    if (Creature* Garajal = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_GARAJAL)))
                     {
                         uint32 sCount = IsHeroic() ? 3 : 1;
                         if (Garajal->AI()->GetData(TYPE_BANISHMENT) + 1 < sCount)

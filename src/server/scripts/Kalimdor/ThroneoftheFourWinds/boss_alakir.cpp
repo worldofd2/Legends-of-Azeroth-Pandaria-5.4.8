@@ -415,7 +415,7 @@ class boss_alakir : public CreatureScript
 
                 RemoveSummons();
                 if (Creature* trigger = me->FindNearestCreature(NPC_LIGHTNING_STRIKE_TRIGGER, 100))
-                    trigger->AI()->SetGUID(0);
+                    trigger->AI()->SetGUID(ObjectGuid::Empty);
 
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             }
@@ -431,7 +431,7 @@ class boss_alakir : public CreatureScript
                 Talk(SAY_DEFEAT);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                instance->DoRespawnGameObject(instance->GetData64(RAID_MODE(DATA_HEART_OF_WIND_10N, DATA_HEART_OF_WIND_25N, DATA_HEART_OF_WIND_10H, DATA_HEART_OF_WIND_25H)), DAY);
+                instance->DoRespawnGameObject(instance->GetGuidData(RAID_MODE(DATA_HEART_OF_WIND_10N, DATA_HEART_OF_WIND_25N, DATA_HEART_OF_WIND_10H, DATA_HEART_OF_WIND_25H)), DAY);
             }
 
             void DamageTaken(Unit* attacker, uint32& damage) override
@@ -763,11 +763,11 @@ class npc_lightning_strike_trigger : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_ALL, true);
-                lightningStrikeTarget = 0;
+                lightningStrikeTarget = ObjectGuid::Empty;
                 lightningStrikeCount = 0;
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 if (guid == 0)
                 {
@@ -825,7 +825,7 @@ class npc_lightning_strike_trigger : public CreatureScript
                                 events.ScheduleEvent(EVENT_LIGHTNING_STRIKE, 1000);
                             else
                             {
-                                lightningStrikeTarget = 0;
+                                lightningStrikeTarget = ObjectGuid::Empty;
                                 lightningStrikeCount = 0;
                                 events.CancelEvent(EVENT_LIGHTNING_STRIKE);
                             }
@@ -839,7 +839,7 @@ class npc_lightning_strike_trigger : public CreatureScript
 
         private:
             EventMap events;
-            uint64 lightningStrikeTarget;
+            ObjectGuid lightningStrikeTarget;
             uint32 lightningStrikeCount;
         };
 
@@ -867,7 +867,7 @@ class npc_stormling : public CreatureScript
 
             void JustDied(Unit* /*killer*/) override
             {
-                me->CastSpell(me, SPELL_FEEDBACK, true, NULL, NULL, me->GetInstanceScript()->GetData64(DATA_ALAKIR));
+                me->CastSpell(me, SPELL_FEEDBACK, true, NULL, NULL, me->GetInstanceScript()->GetGuidData(DATA_ALAKIR));
             }
         };
 

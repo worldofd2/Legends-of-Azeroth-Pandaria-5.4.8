@@ -1070,7 +1070,7 @@ class npc_harbinger_of_flame : public CreatureScript
 
             void JustEngagedWith(Unit* /*who*/) override
             {
-                if (Creature* bird = ObjectAccessor::GetCreature(*me, me->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)))
+                if (Creature* bird = ObjectAccessor::GetCreature(*me, me->GetGuidValue(UNIT_FIELD_CHANNEL_OBJECT)))
                     DoZoneInCombat(bird, 200.0f);
 
                 me->InterruptSpell(CURRENT_CHANNELED_SPELL);
@@ -1818,7 +1818,7 @@ struct npc_firelands_majordomo_stagheim_event : public CreatureAI
             .Schedule(Milliseconds(delay += 5500), [this](TaskContext context)
         {
             // Summon Alysrazor
-            if (Creature* firelandsEventBunny = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(DATA_FIRELANDS_EVENT_BUNNY) : 0))
+            if (Creature* firelandsEventBunny = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_FIRELANDS_EVENT_BUNNY) : ObjectGuid::Empty))
                 firelandsEventBunny->SummonCreature(NPC_ALYSRAZOR, *firelandsEventBunny, TEMPSUMMON_MANUAL_DESPAWN);
 
             // Leave this

@@ -71,7 +71,7 @@ void BattlegroundNA::OnInvite(Player* player, GroupQueueInfo const* ginfo)
     PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundNA::RemovePlayer(Player* player, uint64 guid, uint32 team)
+void BattlegroundNA::RemovePlayer(Player* player, ObjectGuid guid, uint32 team)
 {
     Battleground::RemovePlayer(player, guid, team);
     if (GetStatus() == STATUS_WAIT_LEAVE)

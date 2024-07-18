@@ -184,7 +184,7 @@ class npc_shu_water_spirit : public CreatureScript
 
             EventMap _events;
             uint8 actualPlace;
-            uint64 waterSpoutGUID;
+            ObjectGuid waterSpoutGUID;
 
             enum eShuSpells
             {
@@ -207,7 +207,7 @@ class npc_shu_water_spirit : public CreatureScript
             {
                 _events.Reset();
                 actualPlace = 0;
-                waterSpoutGUID = 0;
+                waterSpoutGUID = ObjectGuid::Empty;
 
                 _events.ScheduleEvent(EVENT_CHANGE_PLACE, 5000);
             }
@@ -261,7 +261,7 @@ class npc_shu_water_spirit : public CreatureScript
                     {
                         float x = 0.0f, y = 0.0f;
                         GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation() + frand(-M_PI, M_PI), x, y);
-                        waterSpoutGUID = 0;
+                        waterSpoutGUID = ObjectGuid::Empty;
 
                         if (Creature* waterSpout = me->SummonCreature(60488, x, y, 92.189629f))
                             waterSpoutGUID = waterSpout->GetGUID();
@@ -296,7 +296,7 @@ class npc_shu_water_spirit : public CreatureScript
                         if (Creature* waterSpout = getWaterSpout())
                             waterSpout->DespawnOrUnsummon();
 
-                        waterSpoutGUID = 0;
+                        waterSpoutGUID = ObjectGuid::Empty;
 
                         _events.ScheduleEvent(EVENT_CHANGE_PLACE, 2000);
                         break;

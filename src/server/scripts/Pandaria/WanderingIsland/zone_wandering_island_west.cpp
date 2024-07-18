@@ -591,12 +591,12 @@ class npc_master_shang_xi_after_zhao_escort : public CreatureScript
         {
             npc_master_shang_xi_after_zhao_escortAI(Creature* creature) : npc_escortAI(creature)
             {
-                summonGUID = 0;
+                summonGUID = ObjectGuid::Empty;
             }
 
             uint32 IntroTimer;
 
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
             void Reset() override
             {
@@ -604,7 +604,7 @@ class npc_master_shang_xi_after_zhao_escort : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 playerGuid = guid;
             }
@@ -686,7 +686,7 @@ class npc_master_shang_xi_after_zhao_escort : public CreatureScript
                 npc_escortAI::UpdateAI(diff);
             }
         private:
-            uint64 summonGUID;
+            ObjectGuid summonGUID;
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -728,7 +728,7 @@ class npc_master_shang_xi_thousand_staff_escort : public CreatureScript
             uint32 IntroTimer;
             uint8 phase;
 
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
             void Reset() override
             {
@@ -737,7 +737,7 @@ class npc_master_shang_xi_thousand_staff_escort : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 playerGuid = guid;
             }
@@ -816,13 +816,13 @@ class npc_shang_xi_air_balloon : public CreatureScript
         {
             npc_shang_xi_air_balloonAI(Creature* creature) : npc_escortAI(creature) { }
 
-            uint64 playerGUID;
+            ObjectGuid playerGUID;
             uint32 eventTimer;
             uint32 phase;
 
             void Reset() override
             {
-                playerGUID = 0;
+                playerGUID = ObjectGuid::Empty;
                 eventTimer = 250;
                 phase = 0;
 
@@ -1050,7 +1050,7 @@ class npc_shang_xi_air_balloon : public CreatureScript
                     player->KilledMonsterCredit(56378);
                 }
                 else
-                    playerGUID = 0;
+                    playerGUID = ObjectGuid::Empty;
             }
         };
 
@@ -1351,7 +1351,7 @@ public:
             if (!shen)
                 return;
 
-            if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+            if (Player* plr = ObjectAccessor::FindPlayer(playerGuid))
             {
                 Creature *head = me->GetMap()->GetCreature(headGUID);
                 if (!head)
@@ -1401,7 +1401,7 @@ public:
                     break;
                 case 15:
                 {
-                    if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+                    if (Player* plr = ObjectAccessor::FindPlayer(playerGuid))
                         me->CastSpell(plr, SPELL_CREDIT_2, true);
                     break;
                 }
@@ -1429,7 +1429,7 @@ public:
                     }
                     case EVENT_AISA_TALK_3:
                         if (Creature *head = me->GetMap()->GetCreature(headGUID))
-                            if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+                            if (Player* plr = ObjectAccessor::FindPlayer(playerGuid))
                             {
                                 plr->CastSpell(plr, SPELL_HEAD_ANIM_RISE, false);    //17:25:31.000
                                 head->SetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE, 0);  //hack

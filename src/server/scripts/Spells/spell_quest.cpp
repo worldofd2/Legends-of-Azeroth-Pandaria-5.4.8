@@ -754,7 +754,7 @@ class spell_q12937_relief_for_the_fallen : public SpellScriptLoader
                 if (Creature* target = GetHitCreature())
                 {
                     caster->CastSpell(caster, SPELL_TRIGGER_AID_OF_THE_EARTHEN, true, NULL);
-                    caster->KilledMonsterCredit(NPC_FALLEN_EARTHEN_DEFENDER, 0);
+                    caster->KilledMonsterCredit(NPC_FALLEN_EARTHEN_DEFENDER, ObjectGuid::Empty);
                     target->DespawnOrUnsummon();
                 }
             }
@@ -885,7 +885,7 @@ class spell_q12659_ahunaes_knife : public SpellScriptLoader
                 if (Creature* target = GetHitCreature())
                 {
                     target->DespawnOrUnsummon();
-                    caster->KilledMonsterCredit(NPC_SCALPS_KC_BUNNY, 0);
+                    caster->KilledMonsterCredit(NPC_SCALPS_KC_BUNNY, ObjectGuid::Empty);
                 }
             }
 
@@ -961,7 +961,7 @@ class spell_q12805_lifeblood_dummy : public SpellScriptLoader
                 Player* caster = GetCaster()->ToPlayer();
                 if (Creature* target = GetHitCreature())
                 {
-                    caster->KilledMonsterCredit(NPC_SHARD_KILL_CREDIT, 0);
+                    caster->KilledMonsterCredit(NPC_SHARD_KILL_CREDIT, ObjectGuid::Empty);
                     target->CastSpell(target, uint32(GetEffectValue()), true);
                     target->DespawnOrUnsummon(2000);
                 }
@@ -1004,7 +1004,7 @@ class spell_q13280_13283_plant_battle_standard: public SpellScriptLoader
                 Unit* caster = GetCaster();
                 if (caster->IsVehicle())
                     if (Unit* player = caster->GetVehicleKit()->GetPassenger(0))
-                         player->ToPlayer()->KilledMonsterCredit(NPC_KING_OF_THE_MOUNTAINT_KC, 0);
+                         player->ToPlayer()->KilledMonsterCredit(NPC_KING_OF_THE_MOUNTAINT_KC, ObjectGuid::Empty);
             }
 
             void Register() override
@@ -1158,7 +1158,7 @@ public:
             if (Player* target = GetTarget()->ToPlayer())
             {
                 target->MonsterWhisper(SAY_1, target, true);
-                target->KilledMonsterCredit(NPC_KILLCREDIT, 0);
+                target->KilledMonsterCredit(NPC_KILLCREDIT, ObjectGuid::Empty);
                 target->MonsterWhisper(SAY_2, target, true);
             }
         }
@@ -1372,7 +1372,7 @@ class spell_q12372_destabilize_azure_dragonshrine_dummy : public SpellScriptLoad
                         if (Vehicle* vehicle = caster->GetVehicleKit())
                             if (Unit* passenger = vehicle->GetPassenger(0))
                                 if (Player* player = passenger->ToPlayer())
-                                    player->KilledMonsterCredit(NPC_WYRMREST_TEMPLE_CREDIT, 0);
+                                    player->KilledMonsterCredit(NPC_WYRMREST_TEMPLE_CREDIT, ObjectGuid::Empty);
             }
 
             void Register() override

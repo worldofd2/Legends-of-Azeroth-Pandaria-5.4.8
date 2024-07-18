@@ -164,7 +164,7 @@ class npc_cursed_mogu_sculpture : public CreatureScript
             InstanceScript* instance;
             EventMap events;
             bool activationDone;
-            uint64 playerActivate;
+            ObjectGuid playerActivate;
 
             void InitializeAI() override
             {
@@ -182,7 +182,7 @@ class npc_cursed_mogu_sculpture : public CreatureScript
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_PASSIVE);
-                playerActivate = 0;
+                playerActivate = ObjectGuid::Empty;
                 activationDone = false;
             }
 
@@ -191,7 +191,7 @@ class npc_cursed_mogu_sculpture : public CreatureScript
                 events.Reset();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_PASSIVE);
-                playerActivate = 0;
+                playerActivate = ObjectGuid::Empty;
                 activationDone = false;
             }
 
@@ -248,7 +248,7 @@ class npc_cursed_mogu_sculpture : public CreatureScript
                 {
                     if (Player* itr = me->FindNearestPlayer(15.0f))
                     {
-                        if (Creature* ghostEssence = instance->instance->GetCreature(instance->GetData64(NPC_GHOST_ESSENCE)))
+                        if (Creature* ghostEssence = instance->instance->GetCreature(instance->GetGuidData(NPC_GHOST_ESSENCE)))
                         {
                             if (ghostEssence->AI()->GetData(TYPE_GHOST_ESSENCE_STATE))
                             {
@@ -512,7 +512,7 @@ class npc_mogu_ghost_essence : public CreatureScript
                         lastMoguAround = true;
                         break;
                     case 1:
-                        if (Unit* Feng = ObjectAccessor::GetUnit(*me, instance->GetData64(NPC_FENG)))
+                        if (Unit* Feng = ObjectAccessor::GetUnit(*me, instance->GetGuidData(NPC_FENG)))
                             Feng->ToCreature()->AI()->DoAction(ACTION_CURSED_MOGU_ATTACK_PLAYER);
 
                         instance->SetData(DATA_FENG, SPECIAL);
@@ -759,7 +759,7 @@ class npc_zandalari_pterror_wing : public CreatureScript
 
             InstanceScript* instance;
             EventMap events;
-            uint64 riderGUID;
+            ObjectGuid riderGUID;
             bool intro;
 
             void InitializeAI() override
@@ -840,7 +840,7 @@ class npc_zandalari_terror_rider : public CreatureScript
             InstanceScript* instance;
             EventMap events, terrorwingEvents;
             bool InTerrorWing;
-            uint64 TerrorWingGUID;
+            ObjectGuid TerrorWingGUID;
 
             void InitializeAI() override
             {

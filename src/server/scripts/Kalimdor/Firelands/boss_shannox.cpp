@@ -106,11 +106,11 @@ enum Other
 
 enum AreaIds
 {
-    AREA_1          = 5764, // Логово Бет'тилак
-    AREA_2          = 5821, // Порочный путь
-    AREA_3          = 5766, // Каменный Венец
-    AREA_4          = 5791, // Гряда Древнего Пламени
-    AREA_5          = 5765, // Огненный портал
+    AREA_1          = 5764, // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ'пїЅпїЅпїЅпїЅпїЅ
+    AREA_2          = 5821, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    AREA_3          = 5766, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+    AREA_4          = 5791, // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    AREA_5          = 5765, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 };
 
 const uint32 CriteriaWorldStates[5]
@@ -323,11 +323,11 @@ class boss_shannox : public CreatureScript
                 {
                     bFrenzy = true;
 
-                    if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
+                    if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RIPLIMB)))
                         if (pRiplimb->IsAlive())
                             pRiplimb->CastSpell(pRiplimb, SPELL_FRENZIED_DEVOTION, true);
 
-                    if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
+                    if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RAGEFACE)))
                         if (pRageface->IsAlive())
                             pRageface->CastSpell(pRageface, SPELL_FRENZIED_DEVOTION, true);
                 }
@@ -342,22 +342,22 @@ class boss_shannox : public CreatureScript
                         case EVENT_CHECK_COMBAT:
                             if (me->IsInCombat())
                             {
-                                if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
+                                if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RIPLIMB)))
                                     if (!pRiplimb->IsInCombat() && !pRiplimb->IsInEvadeMode())
                                         if (pRiplimb->IsAlive())
                                             DoZoneInCombat(pRiplimb);
 
-                                if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
+                                if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RAGEFACE)))
                                     if (!pRageface->IsInCombat() && !pRageface->IsInEvadeMode())
                                         if (pRageface->IsAlive())
                                             DoZoneInCombat(pRageface);
                             }
                             events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
                         case EVENT_SEPARATION_ANXIETY:
-                            if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
+                            if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RIPLIMB)))
                                 if (pRiplimb->IsAlive() && !me->IsWithinDist(pRiplimb, 80.0f) && !me->HasAura(SPELL_SEPARATION_ANXIETY))
                                     DoCast(me, SPELL_SEPARATION_ANXIETY, true);
-                            if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
+                            if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RAGEFACE)))
                                 if (pRageface->IsAlive() && !me->IsWithinDist(pRageface, 80.0f) && !me->HasAura(SPELL_SEPARATION_ANXIETY))
                                     DoCast(me, SPELL_SEPARATION_ANXIETY, true);
                             events.ScheduleEvent(EVENT_SEPARATION_ANXIETY, 2000);
@@ -562,12 +562,12 @@ class npc_shannox_riplimb : public CreatureScript
                         case EVENT_CHECK_COMBAT:
                             if (me->IsInCombat())
                             {
-                                if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
+                                if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RAGEFACE)))
                                     if (!pRageface->IsInCombat() && !pRageface->IsInEvadeMode())
                                         if (pRageface->IsAlive())
                                             DoZoneInCombat(pRageface);
 
-                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SHANNOX)))
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SHANNOX)))
                                     if (!pShannox->IsInCombat() && !pShannox->IsInEvadeMode())
                                         if (pShannox->IsAlive())
                                             DoZoneInCombat(pShannox);
@@ -581,7 +581,7 @@ class npc_shannox_riplimb : public CreatureScript
                             break;
                         case EVENT_FETCH_SPEAR:
                             if (instance)
-                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SHANNOX)))
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SHANNOX)))
                                 {
                                     bFetch = true;
                                     me->GetMotionMaster()->MovementExpired(false);
@@ -599,7 +599,7 @@ class npc_shannox_riplimb : public CreatureScript
                             me->SetHealth(me->GetMaxHealth());
                             me->GetMotionMaster()->MoveChase(me->GetVictim());
                             if (instance)
-                                if (Unit* pShannox = ObjectAccessor::GetUnit(*me, instance->GetData64(DATA_SHANNOX)))
+                                if (Unit* pShannox = ObjectAccessor::GetUnit(*me, instance->GetGuidData(DATA_SHANNOX)))
                                     pShannox->GetAI()->DoAction(ACTION_RESURRECT);
                             break;
                     }
@@ -712,12 +712,12 @@ class npc_shannox_rageface : public CreatureScript
                         case EVENT_CHECK_COMBAT:
                             if (me->IsInCombat())
                             {
-                                if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
+                                if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RIPLIMB)))
                                     if (!pRiplimb->IsInCombat() && !pRiplimb->IsInEvadeMode())
                                         if (pRiplimb->IsAlive())
                                             DoZoneInCombat(pRiplimb);
 
-                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SHANNOX)))
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SHANNOX)))
                                     if (!pShannox->IsInCombat() && !pShannox->IsInEvadeMode())
                                         if (pShannox->IsAlive())
                                             DoZoneInCombat(pShannox);
@@ -731,7 +731,7 @@ class npc_shannox_rageface : public CreatureScript
                             break;
                         case EVENT_FACE_RAGE:
                             if (instance)
-                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SHANNOX)))
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SHANNOX)))
                                     pShannox->AI()->Talk(SAY_DOG);
                             DoCastVictim(SPELL_FACE_RAGE);
                             break;
@@ -739,7 +739,7 @@ class npc_shannox_rageface : public CreatureScript
                             if (instance && !(me->GetVictim() && me->GetVictim()->HasAura(SPELL_RAGE)) && !me->HasAura(SPELL_FACE_RAGE_DUMMY))
                             {
                                 DoResetThreat();
-                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SHANNOX)))
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SHANNOX)))
                                 {
                                     if (Unit* target = pShannox->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                     {
@@ -815,7 +815,7 @@ class npc_shannox_spear_of_shannox : public CreatureScript
                     DoCast(me, SPELL_MAGMA_FLARE, true);
                     DoCast(me, SPELL_SPEAR_VISUAL, true);
 
-                    if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SHANNOX)))
+                    if (Creature* pShannox = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SHANNOX)))
                     {
                         // There will be a spiral, 3 "circles", 20 points per circle
                         Position pos;
@@ -981,12 +981,12 @@ class npc_shannox_crystal_prison : public CreatureScript
         {
             npc_shannox_crystal_prisonAI(Creature* creature) : ScriptedAI(creature)
             {
-                trappedUnit = 0;
+                trappedUnit = ObjectGuid::Empty;
                 bDog = false;
                 SetCombatMovement(false);
             }
 
-            uint64 trappedUnit;
+            ObjectGuid trappedUnit;
             uint32 existenceCheckTimer;
             bool bDog;
             uint32 dogTimer;
@@ -996,7 +996,7 @@ class npc_shannox_crystal_prison : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void SetGUID(uint64 guid, int32 type) override
+            void SetGUID(ObjectGuid guid, int32 type) override
             {
                 trappedUnit = guid;
                 existenceCheckTimer = 1000;
@@ -1015,7 +1015,7 @@ class npc_shannox_crystal_prison : public CreatureScript
                 bDog = false;
                 if (Unit* unit = ObjectAccessor::GetUnit(*me, trappedUnit))
                 {
-                    trappedUnit = 0;
+                    trappedUnit = ObjectGuid::Empty;
                     unit->RemoveAurasDueToSpell(SPELL_CRYSTAL_PRISON_TRAP);
                 }
                 me->DespawnOrUnsummon(800);

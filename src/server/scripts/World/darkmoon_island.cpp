@@ -50,8 +50,8 @@ class npc_darkmoon_deathmatch_announcer : public CreatureScript
         {
             npc_darkmoon_deathmatch_announcerAI(Creature* creature) : ScriptedAI(creature)
             {
-                chestGuid = 0;
-                winnerGuid = 0;
+                chestGuid = ObjectGuid::Empty;
+                winnerGuid = ObjectGuid::Empty;
                 chestNeedsRespawn = false;
             }
 
@@ -81,13 +81,13 @@ class npc_darkmoon_deathmatch_announcer : public CreatureScript
                         chest->Respawn();
                     else
                     {
-                        chestGuid = 0;
+                        chestGuid = ObjectGuid::Empty;
                         chestNeedsRespawn = true;
                     }
                 }
             }
 
-            void SetWinner(uint64 winnerGuid)
+            void SetWinner(ObjectGuid winnerGuid)
             {
                 if (Player* player = ObjectAccessor::GetPlayer(*me, winnerGuid))
                     Talk(SAY_END, player);
@@ -95,8 +95,8 @@ class npc_darkmoon_deathmatch_announcer : public CreatureScript
             }
 
         private:
-            uint64 chestGuid;
-            uint64 winnerGuid;
+            ObjectGuid chestGuid;
+            ObjectGuid winnerGuid;
             bool chestNeedsRespawn;
         };
         
@@ -182,7 +182,7 @@ class go_darkmoon_treasure_chest : public GameObjectScript
     public:
         go_darkmoon_treasure_chest() : GameObjectScript("go_darkmoon_treasure_chest")
         {
-            lastLooter = 0;
+            lastLooter = ObjectGuid::Empty;
         }
 
         void OnLootStateChanged(GameObject* go, uint32 state, Unit* unit) override
@@ -197,7 +197,7 @@ class go_darkmoon_treasure_chest : public GameObjectScript
         }
 
     private:
-        uint64 lastLooter;
+        ObjectGuid lastLooter;
 };
 
 class spell_darkmoon_deathmatch : public SpellScriptLoader
@@ -254,7 +254,7 @@ class transport_merry_go_round : public TransportScript
             {
                 Map* map = transport->GetMap();
                 Creature* creature = new Creature();
-                if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, PHASEMASK_NORMAL, passenger.first, 0, 0, passenger.second.GetPositionX(), passenger.second.GetPositionY(), passenger.second.GetPositionZ(), passenger.second.GetOrientation()))
+                if (!creature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL, passenger.first, 0, 0, passenger.second.GetPositionX(), passenger.second.GetPositionY(), passenger.second.GetPositionZ(), passenger.second.GetOrientation()))
                 {
                     delete creature;
                     return;

@@ -50,7 +50,7 @@ class WardenWin : public Warden
         void Disable() override;
 
         bool GetEndSceneAddress(int32& addr) override;
-        void DoCustomMemCheck(uint32 addr, uint32 len, uint64 guid = 0);
+        void DoCustomMemCheck(uint32 addr, uint32 len, ObjectGuid guid = ObjectGuid::Empty);
         void HandleEndSceneResult(ByteBuffer& buff, WardenCheck* check);
         void ContinueCheck();
 

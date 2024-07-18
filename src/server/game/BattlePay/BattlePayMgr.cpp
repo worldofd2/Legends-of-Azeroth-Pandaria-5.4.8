@@ -514,7 +514,7 @@ bool BattlePayMgr::HasPointsBalance(WorldSession* session, uint64 points)
 void BattlePayMgr::RegisterPurchase(PurchaseInfo* purchase, uint32 item, uint64 price)
 {
   // Register Purchase
-    LoginDatabase.PExecute("INSERT INTO battlepay_log (accountId, characterGuid, realm, item, price) VALUES (%u, %u, %u, %u, %u);", purchase->GetSession()->GetAccountId(), GUID_LOPART(uint64(purchase->SelectedPlayer)), realm.Id.Realm, item, price);
+    LoginDatabase.PExecute("INSERT INTO battlepay_log (accountId, characterGuid, realm, item, price) VALUES (%u, %u, %u, %u, %u);", purchase->GetSession()->GetAccountId(), purchase->SelectedPlayer.GetCounter(), realm.Id.Realm, item, price);
 }
 
 void BattlePayMgr::Update(uint32 diff)
@@ -732,11 +732,11 @@ void BattlePayMgr::SendBattlePayProductList(WorldSession* session)
                     data << uint32(0);
                 if (unkBit4)
                     data << uint32(0);
-                data.WriteString("");
+                data.WriteString(std::string());
                 if (unkBit1)
                     data << uint32(0);
-                data.WriteString("");
-                data.WriteString("");
+                data.WriteString(std::string());
+                data.WriteString(std::string());
             }
             data << uint32(item.ItemId);
             data << uint32(item.Count);
@@ -748,7 +748,7 @@ void BattlePayMgr::SendBattlePayProductList(WorldSession* session)
                 data << uint32(product->DisplayId);
             if (product->Icon)
                 data << uint32(product->Icon);
-            data.WriteString("");
+            data.WriteString(std::string());
             data.WriteString(productTitle);
             if (unkBit5)
                 data << uint32(0);
@@ -783,7 +783,7 @@ void BattlePayMgr::SendBattlePayProductList(WorldSession* session)
         {
             if (unkBit6)
                 data << uint32(0);
-            data.WriteString("");
+            data.WriteString(std::string());
             if (unkBit7)
                 data << uint32(unkBit7);
             if (entry->Icon)
@@ -810,8 +810,8 @@ void BattlePayMgr::SendBattlePayProductList(WorldSession* session)
 
 void BattlePayMgr::SendBattlePayDistributionUpdate(WorldSession* session, uint32 productId, uint8 status)
 {
-    ObjectGuid guid = session->GetPlayer() ? session->GetPlayer()->GetGUID() : MAKE_NEW_GUID(session->GetAccountId(), 0, HIGHGUID_WOW_ACCOUNT);
-    ObjectGuid guid2 = 0;
+    ObjectGuid guid = session->GetPlayer() ? session->GetPlayer()->GetGUID() : ObjectGuid(HighGuid::WowAccount, session->GetAccountId());
+    ObjectGuid guid2 = ObjectGuid::Empty;
 
     BattlePayProduct* product = GetProductId(productId);
     bool HasBattlePayProduct = product;
@@ -827,12 +827,16 @@ void BattlePayMgr::SendBattlePayDistributionUpdate(WorldSession* session, uint32
         }
 
     WorldPacket data(SMSG_BATTLE_PAY_DISTRIBUTION_UPDATE);
-    data.WriteGuidMask(guid, 5, 0);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[0]);
     data.WriteBit(HasBattlePayProduct);
-    data.WriteGuidMask(guid, 1);
-    data.WriteGuidMask(guid2, 4, 7, 0);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid2[4]);
+    data.WriteBit(guid2[7]);
+    data.WriteBit(guid2[0]);
     data.WriteBit(0); // Revoked
-    data.WriteGuidMask(guid2, 1, 2);
+    data.WriteBit(guid2[1]);
+    data.WriteBit(guid2[2]);
     if (HasBattlePayProduct)
     {
         data.WriteBits(1, 2);
@@ -850,13 +854,14 @@ void BattlePayMgr::SendBattlePayDistributionUpdate(WorldSession* session, uint32
         }
     }
 
-    data.WriteGuidMask(guid, 7);
-    data.WriteGuidMask(guid2, 6);
-    data.WriteGuidMask(guid, 2);
-    data.WriteGuidMask(guid2, 5);
-    data.WriteGuidMask(guid, 3, 6);
-    data.WriteGuidMask(guid2, 3);
-    data.WriteGuidMask(guid, 4);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid2[6]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid2[5]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid2[3]);
+    data.WriteBit(guid[4]);
 
     data.FlushBits();
 
@@ -874,18 +879,27 @@ void BattlePayMgr::SendBattlePayDistributionUpdate(WorldSession* session, uint32
     }
 
     data << int32(product->Id);
-    data.WriteGuidBytes(guid2, 4);
+    data.WriteByteSeq(guid2[4]);
     data << int64(0);
-    data.WriteGuidBytes(guid2, 1, 5);
-    data.WriteGuidBytes(guid, 2, 4, 1, 0);
+    data.WriteByteSeq(guid2[1]);
+    data.WriteByteSeq(guid2[5]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
     data << int32(0);
-    data.WriteGuidBytes(guid, 7);
-    data.WriteGuidBytes(guid2, 0, 7);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid2[0]);
+    data.WriteByteSeq(guid2[7]);
     data << int32(0);
     data << int32(status);
-    data.WriteGuidBytes(guid2, 6);
-    data.WriteGuidBytes(guid, 5, 6, 3);
-    data.WriteGuidBytes(guid2, 3, 2);
+    data.WriteByteSeq(guid2[6]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid2[3]);
+    data.WriteByteSeq(guid2[2]);
+
 
     session->SendPacket(&data);
 }
@@ -1016,8 +1030,8 @@ void BattlePayMgr::SendBattlePayPurchaseUpdate(PurchaseInfo* purchase)
                 stmt->setUInt8(1, MAIL_NORMAL);
                 stmt->setInt8(2, MAIL_STATIONERY_DEFAULT);
                 stmt->setUInt16(3, 0);
-                stmt->setUInt32(4, GUID_LOPART(uint64(purchase->SelectedPlayer)));
-                stmt->setUInt32(5, GUID_LOPART(uint64(purchase->SelectedPlayer)));
+                stmt->setUInt32(4, purchase->SelectedPlayer.GetCounter());
+                stmt->setUInt32(5, purchase->SelectedPlayer.GetCounter());
                 stmt->setString(6, productTitle);
                 stmt->setString(7, productDescription);
                 stmt->setBool(8, true);
@@ -1034,7 +1048,7 @@ void BattlePayMgr::SendBattlePayPurchaseUpdate(PurchaseInfo* purchase)
 
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_MAIL_ITEM);
                     stmt->setUInt32(0, mailId);
-                    stmt->setUInt32(1, item->GetGUIDLow());
+                    stmt->setUInt32(1, item->GetGUID().GetCounter());
                     stmt->setUInt32(2, purchase->SelectedPlayer);
                     trans->Append(stmt);
                 }

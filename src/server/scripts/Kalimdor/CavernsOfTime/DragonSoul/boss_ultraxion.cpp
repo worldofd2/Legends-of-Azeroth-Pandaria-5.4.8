@@ -325,16 +325,16 @@ class boss_ultraxion: public CreatureScript
                 switch (GetDifficulty())
                 {
                     case RAID_DIFFICULTY_10MAN_NORMAL:
-                        instance->DoRespawnGameObject(instance->GetData64(DATA_LESSER_CACHE_10N), DAY);
+                        instance->DoRespawnGameObject(instance->GetGuidData(DATA_LESSER_CACHE_10N), DAY);
                         break;
                     case RAID_DIFFICULTY_25MAN_NORMAL:
-                        instance->DoRespawnGameObject(instance->GetData64(DATA_LESSER_CACHE_25N), DAY);
+                        instance->DoRespawnGameObject(instance->GetGuidData(DATA_LESSER_CACHE_25N), DAY);
                         break;
                     case RAID_DIFFICULTY_10MAN_HEROIC:
-                        instance->DoRespawnGameObject(instance->GetData64(DATA_LESSER_CACHE_10H), DAY);
+                        instance->DoRespawnGameObject(instance->GetGuidData(DATA_LESSER_CACHE_10H), DAY);
                         break;
                     case RAID_DIFFICULTY_25MAN_HEROIC:
-                        instance->DoRespawnGameObject(instance->GetData64(DATA_LESSER_CACHE_25H), DAY);
+                        instance->DoRespawnGameObject(instance->GetGuidData(DATA_LESSER_CACHE_25H), DAY);
                         break;
                 }
 

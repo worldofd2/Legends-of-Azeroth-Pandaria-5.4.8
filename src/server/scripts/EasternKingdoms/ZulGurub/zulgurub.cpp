@@ -167,7 +167,7 @@ class npc_cache_of_madness_artifact : public CreatureScript
                     default:
                         return true;
                 }
-                uint64 guid = instance->GetData64(dataId);
+                ObjectGuid guid = instance->GetGuidData(dataId);
                 EncounterState state = instance->GetBossState(DATA_CACHE_OF_MADNESS_BOSS);
                 if (creature->GetGUID() == guid && (state == NOT_STARTED || state == TO_BE_DECIDED))
                 {

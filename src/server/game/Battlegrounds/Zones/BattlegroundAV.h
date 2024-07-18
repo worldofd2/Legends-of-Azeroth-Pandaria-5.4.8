@@ -1550,7 +1550,7 @@ class BattlegroundAV : public Battleground
         void StartingEventCloseDoors() override;
         void StartingEventOpenDoors() override;
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
+        void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;
         void HandleAreaTrigger(Player* player, uint32 trigger, bool entered) override;
         bool SetupBattleground() override;
         void ResetBGSubclass() override;

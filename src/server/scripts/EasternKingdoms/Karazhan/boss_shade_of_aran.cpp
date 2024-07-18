@@ -100,7 +100,7 @@ class boss_shade_of_aran : public CreatureScript
 
             uint32 FlameWreathTimer;
             uint32 FlameWreathCheckTime;
-            uint64 FlameWreathTarget[3];
+            ObjectGuid FlameWreathTarget[3];
             float FWTargPosX[3];
             float FWTargPosY[3];
 
@@ -143,7 +143,7 @@ class boss_shade_of_aran : public CreatureScript
                 {
                     // not in progress
                     instance->SetData(TYPE_ARAN, NOT_STARTED);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_LIBRARY_DOOR), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_LIBRARY_DOOR), true);
                 }
             }
 
@@ -159,7 +159,7 @@ class boss_shade_of_aran : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(TYPE_ARAN, DONE);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_LIBRARY_DOOR), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_LIBRARY_DOOR), true);
                 }
             }
 
@@ -170,7 +170,7 @@ class boss_shade_of_aran : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(TYPE_ARAN, IN_PROGRESS);
-                    instance->HandleGameObject(instance->GetData64(DATA_GO_LIBRARY_DOOR), false);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GO_LIBRARY_DOOR), false);
                 }
             }
 
@@ -217,7 +217,7 @@ class boss_shade_of_aran : public CreatureScript
                     {
                         if (instance)
                         {
-                            instance->HandleGameObject(instance->GetData64(DATA_GO_LIBRARY_DOOR), false);
+                            instance->HandleGameObject(instance->GetGuidData(DATA_GO_LIBRARY_DOOR), false);
                             CloseDoorTimer = 0;
                         }
                     } else CloseDoorTimer -= diff;
@@ -384,9 +384,9 @@ class boss_shade_of_aran : public CreatureScript
                             FlameWreathTimer = 20000;
                             FlameWreathCheckTime = 500;
 
-                            FlameWreathTarget[0] = 0;
-                            FlameWreathTarget[1] = 0;
-                            FlameWreathTarget[2] = 0;
+                            FlameWreathTarget[0] = ObjectGuid::Empty;
+                            FlameWreathTarget[1] = ObjectGuid::Empty;
+                            FlameWreathTarget[2] = ObjectGuid::Empty;
 
                             FlameWreathEffect();
                             break;
@@ -456,7 +456,7 @@ class boss_shade_of_aran : public CreatureScript
                             {
                                 unit->CastSpell(unit, 20476, true, 0, 0, me->GetGUID());
                                 unit->CastSpell(unit, 11027, true);
-                                FlameWreathTarget[i] = 0;
+                                FlameWreathTarget[i] = ObjectGuid::Empty;
                             }
                         }
                         FlameWreathCheckTime = 500;

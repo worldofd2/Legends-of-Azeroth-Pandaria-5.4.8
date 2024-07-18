@@ -95,7 +95,7 @@ void TotemAI::UpdateAI(uint32 diff)
         me->CastSpell(victim, me->ToTotem()->GetSpell(), false);
     }
     else
-        m_victimGuid = 0;
+        m_victimGuid.Clear();
 }
 
 void TotemAI::AttackStart(Unit* victim)

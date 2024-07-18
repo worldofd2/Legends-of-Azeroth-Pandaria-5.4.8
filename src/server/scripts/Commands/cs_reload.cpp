@@ -1296,14 +1296,17 @@ public:
         }
 
         uint32 count = 0;
-        for (auto&& go : sObjectAccessor->GetGameObjects())
+        sMapMgr->DoForAllMaps([&count,entry](Map* map)
         {
-            if (go.second->GetEntry() == entry)
+            for (auto go : map->GetGameObjectBySpawnIdStore())
             {
-                go.second->UpdateCollision();
-                ++count;
+                if (go.second->GetEntry() == entry)
+                {
+                    go.second->UpdateCollision();
+                    ++count;
+                }
             }
-        }
+        });
 
         handler->PSendSysMessage("Updated collision for %u spawned GameObjects", count);
         return true;

@@ -68,14 +68,14 @@ public:
         npc_apprentice_mirvedaAI(Creature* creature) : ScriptedAI(creature), Summons(me) { }
 
         uint32 KillCount;
-        uint64 PlayerGUID;
+        ObjectGuid PlayerGUID;
         bool Summon;
         SummonList Summons;
 
         void Reset() override
         {
             KillCount = 0;
-            PlayerGUID = 0;
+            PlayerGUID = ObjectGuid::Empty;
             Summons.DespawnAll();
             Summon = false;
         }
@@ -97,14 +97,14 @@ public:
         void JustDied(Unit* /*killer*/) override
         {
             if (PlayerGUID)
-                if (Player* player = ObjectAccessor::GetPlayer(*me, PlayerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(PlayerGUID))
                     player->FailQuest(QUEST_UNEXPECTED_RESULT);
         }
 
         void UpdateAI(uint32 /*diff*/) override
         {
             if (KillCount >= 3 && PlayerGUID)
-                if (Player* player = ObjectAccessor::GetPlayer(*me, PlayerGUID))
+                if (Player* player = ObjectAccessor::FindPlayer(PlayerGUID))
                     if (player->GetQuestStatus(QUEST_UNEXPECTED_RESULT) == QUEST_STATUS_INCOMPLETE)
                     {
                         player->CompleteQuest(QUEST_UNEXPECTED_RESULT);
@@ -176,14 +176,14 @@ public:
         uint32 WaveTimer;
         bool Completed;
         bool Progress;
-        uint64 PlayerGUID;
+        ObjectGuid PlayerGUID;
 
         void Reset() override
         {
             EndTimer = 0;
             Completed = false;
             Progress = false;
-            PlayerGUID = 0;
+            PlayerGUID = ObjectGuid::Empty;
             WaveTimer = 0;
         }
 

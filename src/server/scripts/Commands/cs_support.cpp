@@ -136,7 +136,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -161,10 +161,10 @@ public:
                     if (!player->HasSpell(spell->Id))
                     {
                         player->LearnSpell(spell->Id, false);
-                        handler->PSendSysMessage("Spell %u added to player %s (guid: %u).", spell->Id, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Spell %u added to player %s (guid: %u).", spell->Id, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has spell %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has spell %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -186,21 +186,21 @@ public:
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_SPELL);
-                    stmt->setUInt32(0, GUID_LOPART(guid));
+                    stmt->setUInt32(0, guid.GetCounter());
                     stmt->setUInt32(1, spell->Id);
                     if (!CharacterDatabase.Query(stmt))
                     {
                         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SPELL);
-                        stmt->setUInt32(0, GUID_LOPART(guid));
+                        stmt->setUInt32(0, guid.GetCounter());
                         stmt->setUInt32(1, spell->Id);
                         stmt->setUInt32(2, 1);
                         stmt->setUInt32(3, 0);
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Spell %u added to player %s (guid: %u).", spell->Id, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Spell %u added to player %s (guid: %u).", spell->Id, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) already has spell %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid %u) already has spell %u.", name.c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -220,7 +220,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -243,9 +243,9 @@ public:
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
                     if (player->HasSpell(spell->Id))
-                        handler->PSendSysMessage("Player %s (guid: %u) has spell %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) has spell %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u)  hasn't spell %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u)  hasn't spell %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -265,12 +265,12 @@ public:
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_SPELL);
-                    stmt->setUInt32(0, GUID_LOPART(guid));
+                    stmt->setUInt32(0, guid.GetCounter());
                     stmt->setUInt32(1, spell->Id);
                     if (CharacterDatabase.Query(stmt))
-                        handler->PSendSysMessage("Player %s (guid: %u) has spell %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) has spell %u.", name.c_str(), guid.GetCounter(), spell->Id);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't spell %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't spell %u.", name.c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -289,7 +289,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -314,10 +314,10 @@ public:
                     if (player->HasSpell(spell->Id))
                     {
                         player->RemoveSpell(spell->Id, false);
-                        handler->PSendSysMessage("Spell %u removed from player %s (guid: %u).", spell->Id, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Spell %u removed from player %s (guid: %u).", spell->Id, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) did not know spell %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) did not know spell %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -339,19 +339,19 @@ public:
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_SPELL);
-                    stmt->setUInt32(0, GUID_LOPART(guid));
+                    stmt->setUInt32(0, guid.GetCounter());
                     stmt->setUInt32(1, spell->Id);
                     if (CharacterDatabase.Query(stmt))
                     {
                         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
                         stmt->setUInt32(0, spell->Id);
-                        stmt->setUInt32(1, GUID_LOPART(guid));
+                        stmt->setUInt32(1, guid.GetCounter());
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Spell %u added removed from player %s (guid: %u).", spell->Id, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Spell %u added removed from player %s (guid: %u).", spell->Id, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) did not know spell %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) did not know spell %u.", name.c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -373,7 +373,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -407,10 +407,10 @@ public:
                     if (!player->HasSkill(skill->id))
                     {
                         player->SetSkill(skill->id, player->GetSkillStep(skill->id), skillValue, skillValue);
-                        handler->PSendSysMessage("Skill %u (value: %u) added to player %s (guid: %u).", skill->id, skillValue, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Skill %u (value: %u) added to player %s (guid: %u).", skill->id, skillValue, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has skill %u.", handler->GetNameLink(player).c_str(),GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has skill %u.", handler->GetNameLink(player).c_str(),guid.GetCounter(), skill->id);
                 }
                 else
                     handler->PSendSysMessage("Error. Skill %u not found.", skillId);
@@ -441,21 +441,21 @@ public:
                 if (auto skill = sSkillLineStore.LookupEntry(skillId))
                 {
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_SKILL_BOOST);
-                    stmt->setUInt32(0, GUID_LOPART(guid));
+                    stmt->setUInt32(0, guid.GetCounter());
                     stmt->setUInt32(1, skill->id);
                     if (!CharacterDatabase.Query(stmt))
                     {
                         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SKILLS);
-                        stmt->setUInt32(0, GUID_LOPART(guid));
+                        stmt->setUInt32(0, guid.GetCounter());
                         stmt->setUInt32(1, skill->id);
                         stmt->setUInt32(2, skillValue);
                         stmt->setUInt32(3, skillValue);
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Skill %u (value: %u) added to player %s (guid: %u).", skill->id, skillValue, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Skill %u (value: %u) added to player %s (guid: %u).", skill->id, skillValue, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has skill %u.", name.c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has skill %u.", name.c_str(), guid.GetCounter(), skill->id);
                 }
                 else
                     handler->PSendSysMessage("Error. Skill %u not found.", skillId);
@@ -475,7 +475,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -491,9 +491,9 @@ public:
                 if (auto skill = sSkillLineStore.LookupEntry(atoi(skillId)))
                 {
                     if (player->HasSkill(skill->id))
-                        handler->PSendSysMessage("Player %s (guid: %u) has skill %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid: %u) has skill %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), skill->id);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't skill %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't skill %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), skill->id);
                 }
                 else
                     handler->PSendSysMessage("Error. Skill %u not found.", atoi(skillId));
@@ -506,12 +506,12 @@ public:
                 if (auto skill = sSkillLineStore.LookupEntry(atoi(skillId)))
                 {
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_SKILL_BOOST);
-                    stmt->setUInt32(0, GUID_LOPART(guid));
+                    stmt->setUInt32(0, guid.GetCounter());
                     stmt->setUInt32(1, skill->id);
                     if (CharacterDatabase.Query(stmt))
-                        handler->PSendSysMessage("Player %s (guid: %u) has skill %u.", name.c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid: %u) has skill %u.", name.c_str(), guid.GetCounter(), skill->id);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't skill %u.", name.c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't skill %u.", name.c_str(), guid.GetCounter(), skill->id);
                 }
                 else
                     handler->PSendSysMessage("Error. Skill %u not found.", atoi(skillId));
@@ -530,7 +530,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -548,10 +548,10 @@ public:
                     if (player->HasSkill(skill->id))
                     {
                         player->SetSkill(skill->id, 0, 0, 0);
-                        handler->PSendSysMessage("Skill %u removed from player %s (guid: %u).", skill->id, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Skill %u removed from player %s (guid: %u).", skill->id, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) did not has skill %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid %u) did not has skill %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), skill->id);
                 }
                 else
                     handler->PSendSysMessage("Error. Skill %u not found.", atoi(skillId));
@@ -566,19 +566,19 @@ public:
                 if (auto skill = sSkillLineStore.LookupEntry(atoi(skillId)))
                 {
                     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_SKILL_BOOST);
-                    stmt->setUInt32(0, GUID_LOPART(guid));
+                    stmt->setUInt32(0, guid.GetCounter());
                     stmt->setUInt32(1, skill->id);
                     if (CharacterDatabase.Query(stmt))
                     {
                         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SKILL_BY_SKILL);
-                        stmt->setUInt32(0, GUID_LOPART(guid));
+                        stmt->setUInt32(0, guid.GetCounter());
                         stmt->setUInt32(1, skill->id);
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Skill %u added removed from player %s (guid: %u).", skill->id, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Skill %u added removed from player %s (guid: %u).", skill->id, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) did not know skill %u.", name.c_str(), GUID_LOPART(guid), skill->id);
+                        handler->PSendSysMessage("Player %s (guid %u) did not know skill %u.", name.c_str(), guid.GetCounter(), skill->id);
                 }
                 else
                     handler->PSendSysMessage("Error. Skill %u not found.", atoi(skillId));
@@ -600,7 +600,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -632,7 +632,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -649,22 +649,22 @@ public:
                 {
                     // check bank and inventory
                     if (uint32 count = player->GetItemCount(item->ItemId, true))
-                        handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, count: %u) in inventory or bank.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, count);
+                        handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, count: %u) in inventory or bank.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, count);
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) hasn't item %s (%u) in inventory.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId);
+                        handler->PSendSysMessage("Player %s (guid %u) hasn't item %s (%u) in inventory.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId);
                     // check mail
                     for (auto&& mail : player->GetMail())
                     {
                         for (uint8 i = 0; i < mail->items.size(); i++)
                         {
                             if (item->ItemId == mail->items[i].item_template)
-                                handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, guid: %u) in mail.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, mail->items[i].item_guid);
+                                handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, guid: %u) in mail.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, mail->items[i].item_guid);
                         }
                     }
                     // check void storage
                     uint8 slot = 0;
                     if (player->GetVoidStorageItem(item->ItemId, slot))
-                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, slot);
+                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, slot);
                 }
                 else
                     handler->PSendSysMessage("Error. Item %u not found.", atoi(itemId));
@@ -677,13 +677,13 @@ public:
                 if (auto item = sObjectMgr->GetItemTemplate(atoi(itemId)))
                 {
                     // check bank and inventory
-                    QueryResult result = CharacterDatabase.PQuery("SELECT sum(count) FROM item_instance WHERE itemEntry = %u AND owner_guid = %u", item->ItemId, GUID_LOPART(guid));
+                    QueryResult result = CharacterDatabase.PQuery("SELECT sum(count) FROM item_instance WHERE itemEntry = %u AND owner_guid = %u", item->ItemId, guid.GetCounter());
                     if (result && (*result)[0].GetUInt32())
-                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, count: %u) in inventory or bank.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, (*result)[0].GetUInt32());
+                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, count: %u) in inventory or bank.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, (*result)[0].GetUInt32());
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u) in inventory.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u) in inventory.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId);
                     // check mail
-                    if (QueryResult resultMail = CharacterDatabase.PQuery("SELECT item_guid FROM mail_items WHERE receiver = %u", GUID_LOPART(guid)))
+                    if (QueryResult resultMail = CharacterDatabase.PQuery("SELECT item_guid FROM mail_items WHERE receiver = %u", guid.GetCounter()))
                     {
                         do
                         {
@@ -691,12 +691,12 @@ public:
                             uint32 itemGuid = fields[0].GetUInt32();
                             if (QueryResult resultItem = CharacterDatabase.PQuery("SELECT itemEntry, count FROM item_instance WHERE guid = %u", itemGuid))
                                 if ((*resultItem)[0].GetUInt32() == item->ItemId)
-                                    handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, guid: %u, count %u) in mail.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, itemGuid, (*resultItem)[1].GetUInt32());
+                                    handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, guid: %u, count %u) in mail.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, itemGuid, (*resultItem)[1].GetUInt32());
                         } while (resultMail->NextRow());
                     }
                     // check void storage
-                    if (QueryResult resultVoid = CharacterDatabase.PQuery("SELECT slot FROM character_void_storage WHERE itemEntry = %u AND playerGuid = %u", GUID_LOPART(guid)))
-                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, (*resultVoid)[0].GetUInt32());
+                    if (QueryResult resultVoid = CharacterDatabase.PQuery("SELECT slot FROM character_void_storage WHERE itemEntry = %u AND playerGuid = %u", guid.GetCounter()))
+                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, (*resultVoid)[0].GetUInt32());
                 }
                 else
                     handler->PSendSysMessage("Error. Item %u not found.", item->ItemId);
@@ -730,14 +730,14 @@ public:
             return false;
         }
 
-        std::vector<uint32> playersList;
+        std::vector<ObjectGuid> playersList;
         if (QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE account = %u", accountId))
         {
             do
             {
                 Field* fields = result->Fetch();
                 uint32 guidLow = fields[0].GetUInt32();
-                playersList.push_back(guidLow);
+                playersList.emplace_back(HighGuid::Player, guidLow);
             } while (result->NextRow());
         }
         else
@@ -760,22 +760,22 @@ public:
                     {
                         // check bank and inventory
                         if (uint32 count = player->GetItemCount(item->ItemId, true))
-                            handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, count: %u) in inventory or bank.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, count);
+                            handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, count: %u) in inventory or bank.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, count);
                         else
-                            handler->PSendSysMessage("Player %s (guid %u) hasn't item %s (%u) in inventory.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId);
+                            handler->PSendSysMessage("Player %s (guid %u) hasn't item %s (%u) in inventory.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId);
                         // check mail
                         for (auto&& mail : player->GetMail())
                         {
                             for (uint8 i = 0; i < mail->items.size(); i++)
                             {
                                 if (item->ItemId == mail->items[i].item_template)
-                                    handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, guid: %u) in mail.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, mail->items[i].item_guid);
+                                    handler->PSendSysMessage("Player %s (guid %u) has item %s (%u, guid: %u) in mail.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, mail->items[i].item_guid);
                             }
                         }
                         // check void storage
                         uint8 slot = 0;
                         if (player->GetVoidStorageItem(item->ItemId, slot))
-                            handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, slot);
+                            handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, slot);
                     }
                     else
                         handler->PSendSysMessage("Error. Item %u not found.", atoi(itemId));
@@ -788,13 +788,13 @@ public:
                     if (auto item = sObjectMgr->GetItemTemplate(atoi(itemId)))
                     {
                         // check bank and inventory
-                        QueryResult result = CharacterDatabase.PQuery("SELECT sum(count) FROM item_instance WHERE itemEntry = %u AND owner_guid = %u", item->ItemId, GUID_LOPART(guid));
+                        QueryResult result = CharacterDatabase.PQuery("SELECT sum(count) FROM item_instance WHERE itemEntry = %u AND owner_guid = %u", item->ItemId, guid.GetCounter());
                         if (result && (*result)[0].GetUInt32())
-                            handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, count: %u) in inventory or bank.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, (*result)[0].GetUInt32());
+                            handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, count: %u) in inventory or bank.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, (*result)[0].GetUInt32());
                         else
-                            handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u) in inventory.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId);
+                            handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u) in inventory.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId);
                         // check mail
-                        if (QueryResult resultMail = CharacterDatabase.PQuery("SELECT item_guid FROM mail_items WHERE receiver = %u", GUID_LOPART(guid)))
+                        if (QueryResult resultMail = CharacterDatabase.PQuery("SELECT item_guid FROM mail_items WHERE receiver = %u", guid.GetCounter()))
                         {
                             do
                             {
@@ -802,12 +802,12 @@ public:
                                 uint32 itemGuid = fields[0].GetUInt32();
                                 if (QueryResult resultItem = CharacterDatabase.PQuery("SELECT itemEntry, count FROM item_instance WHERE guid = %u", itemGuid))
                                     if ((*resultItem)[0].GetUInt32() == item->ItemId)
-                                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, guid: %u, count %u) in mail.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, itemGuid, (*resultItem)[1].GetUInt32());
+                                        handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, guid: %u, count %u) in mail.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, itemGuid, (*resultItem)[1].GetUInt32());
                             } while (resultMail->NextRow());
                         }
                         // check void storage
-                        if (QueryResult resultVoid = CharacterDatabase.PQuery("SELECT slot FROM character_void_storage WHERE itemEntry = %u AND playerGuid = %u", GUID_LOPART(guid)))
-                            handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId, (*resultVoid)[0].GetUInt32());
+                        if (QueryResult resultVoid = CharacterDatabase.PQuery("SELECT slot FROM character_void_storage WHERE itemEntry = %u AND playerGuid = %u", guid.GetCounter()))
+                            handler->PSendSysMessage("Player %s (guid: %u) has item %s (%u, slot: %u) in void storage.", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId, (*resultVoid)[0].GetUInt32());
                     }
                     else
                         handler->PSendSysMessage("Error. Item %u not found.", item->ItemId);
@@ -827,7 +827,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -846,10 +846,10 @@ public:
                     if (uint32 count = player->GetItemCount(item->ItemId, true))
                     {
                         player->DestroyItemCount(item->ItemId, count, true, false);
-                        handler->PSendSysMessage("Item %s (%u, count %u) removed from player %s (guid: %u), source - inventory.", item->Name1.c_str(), item->ItemId, count, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Item %s (%u, count %u) removed from player %s (guid: %u), source - inventory.", item->Name1.c_str(), item->ItemId, count, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u) in inventory.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u) in inventory.", handler->GetNameLink(player).c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId);
                     // check mail
                     for (auto&& mail : player->GetMail())
                     {
@@ -858,7 +858,7 @@ public:
                             if (item->ItemId == mail->items[i].item_template)
                             {
                                 mail->RemoveItem(mail->items[i].item_guid);
-                                handler->PSendSysMessage("Item %u (guid %u) removed from player %s (guid: %u), source - mail.", item->ItemId, mail->items[i].item_guid, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                                handler->PSendSysMessage("Item %u (guid %u) removed from player %s (guid: %u), source - mail.", item->ItemId, mail->items[i].item_guid, handler->GetNameLink(player).c_str(), guid.GetCounter());
                             }
                         }
                     }
@@ -867,7 +867,7 @@ public:
                     if (player->GetVoidStorageItem(item->ItemId, slot))
                     {
                         player->DeleteVoidStorageItem(slot);
-                        handler->PSendSysMessage("Item %s (%u, slot %u) removed from player %s (guid: %u), source - void storage.", item->Name1.c_str(), item->ItemId, slot, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Item %s (%u, slot %u) removed from player %s (guid: %u), source - void storage.", item->Name1.c_str(), item->ItemId, slot, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                 }
                 else
@@ -882,15 +882,15 @@ public:
                 if (auto item = sObjectMgr->GetItemTemplate(atoi(itemId)))
                 {
                     // check bank and inventory
-                    if (QueryResult result = CharacterDatabase.PQuery("SELECT guid, sum(count) FROM item_instance WHERE itemEntry = %u AND owner_guid = %u", item->ItemId, GUID_LOPART(guid)))
+                    if (QueryResult result = CharacterDatabase.PQuery("SELECT guid, sum(count) FROM item_instance WHERE itemEntry = %u AND owner_guid = %u", item->ItemId, guid.GetCounter()))
                     {
                         CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = %u", (*result)[0].GetUInt32());
-                        handler->PSendSysMessage("Item %d (%s, count %u) removed from player %s (guid: %u), source - inventory.", item->ItemId, item->Name1.c_str(), (*result)[1].GetUInt32(), name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Item %d (%s, count %u) removed from player %s (guid: %u), source - inventory.", item->ItemId, item->Name1.c_str(), (*result)[1].GetUInt32(), name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u).", name.c_str(), GUID_LOPART(guid), item->Name1.c_str(), item->ItemId);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't item %s (%u).", name.c_str(), guid.GetCounter(), item->Name1.c_str(), item->ItemId);
                     // check mail
-                    if (QueryResult resultMail = CharacterDatabase.PQuery("SELECT item_guid FROM mail_items WHERE receiver = %u", GUID_LOPART(guid)))
+                    if (QueryResult resultMail = CharacterDatabase.PQuery("SELECT item_guid FROM mail_items WHERE receiver = %u", guid.GetCounter()))
                     {
                         do
                         {
@@ -900,18 +900,18 @@ public:
                             {
                                 if ((*resultItem)[0].GetUInt32() == item->ItemId)
                                 {
-                                    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = %u AND receiver = %u", itemGuid, GUID_LOPART(guid));
+                                    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = %u AND receiver = %u", itemGuid, guid.GetCounter());
                                     CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = %u", itemGuid);
-                                    handler->PSendSysMessage("Item %s (%u, guid %u) removed from player %s (guid: %u), source - mail.", item->Name1.c_str(), item->ItemId, itemGuid, name.c_str(), GUID_LOPART(guid));
+                                    handler->PSendSysMessage("Item %s (%u, guid %u) removed from player %s (guid: %u), source - mail.", item->Name1.c_str(), item->ItemId, itemGuid, name.c_str(), guid.GetCounter());
                                 }
                             }
                         } while (resultMail->NextRow());
                     }
                     // check void storage
-                    if (QueryResult resultVoid = CharacterDatabase.PQuery("SELECT slot FROM character_void_storage WHERE itemEntry = %u AND playerGuid = %u", GUID_LOPART(guid)))
+                    if (QueryResult resultVoid = CharacterDatabase.PQuery("SELECT slot FROM character_void_storage WHERE itemEntry = %u AND playerGuid = %u", guid.GetCounter()))
                     {
-                        CharacterDatabase.PExecute("DELETE FROM character_void_storage WHERE itemEntry = %u AND guid = %u AND slot = %u", item->ItemId, GUID_LOPART(guid), (*resultVoid)[0].GetUInt32());
-                        handler->PSendSysMessage("Item %s, (%u, slot %u) removed from player %s (guid: %u), source - void storage.", item->Name1.c_str(), item->ItemId, (*resultVoid)[0].GetUInt32(), name.c_str(), GUID_LOPART(guid));
+                        CharacterDatabase.PExecute("DELETE FROM character_void_storage WHERE itemEntry = %u AND guid = %u AND slot = %u", item->ItemId, guid.GetCounter(), (*resultVoid)[0].GetUInt32());
+                        handler->PSendSysMessage("Item %s, (%u, slot %u) removed from player %s (guid: %u), source - void storage.", item->Name1.c_str(), item->ItemId, (*resultVoid)[0].GetUInt32(), name.c_str(), guid.GetCounter());
                     }
                 }
                 else
@@ -923,7 +923,7 @@ public:
     // items support end
 
     // titles support
-    static bool HasTitle(uint32 guid, const CharTitlesEntry* title)
+    static bool HasTitle(ObjectGuid guid, const CharTitlesEntry* title)
     {
         if (title->bit_index > MAX_TITLE_INDEX)
             return false;
@@ -931,7 +931,7 @@ public:
         uint32 fieldIndexOffset = title->bit_index / 32;
         uint32 flag = 1 << (title->bit_index % 32);
 
-        if (QueryResult result = CharacterDatabase.PQuery("SELECT knownTitles FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+        if (QueryResult result = CharacterDatabase.PQuery("SELECT knownTitles FROM characters WHERE guid = %u", guid.GetCounter()))
         {
             Tokenizer tok{ (*result)[0].GetString(), ' ' };
             if (tok.size() != 8)
@@ -941,12 +941,12 @@ public:
         }
         return false;
     }
-    static bool SetTitle(uint32 guid, std::string name, const CharTitlesEntry* title, ChatHandler* handler, bool lost)
+    static bool SetTitle(ObjectGuid guid, std::string name, const CharTitlesEntry* title, ChatHandler* handler, bool lost)
     {
         uint32 fieldIndexOffset = title->bit_index / 32;
         uint32 flag = 1 << (title->bit_index % 32);
 
-        if (QueryResult result = CharacterDatabase.PQuery("SELECT knownTitles FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+        if (QueryResult result = CharacterDatabase.PQuery("SELECT knownTitles FROM characters WHERE guid = %u", guid.GetCounter()))
         {
             Tokenizer tok{ (*result)[0].GetString(), ' ' };
             if (tok.size() != 8)
@@ -970,7 +970,7 @@ public:
                 else
                     titles += "\"";
             }
-            CharacterDatabase.PExecute("UPDATE characters SET knownTitles = %s, chosenTitle = 0 WHERE guid = %u", titles.c_str(), GUID_LOPART(guid));
+            CharacterDatabase.PExecute("UPDATE characters SET knownTitles = %s, chosenTitle = 0 WHERE guid = %u", titles.c_str(), guid.GetCounter());
             return true;
         }
         return false;
@@ -986,7 +986,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1004,10 +1004,10 @@ public:
                     if (!player->HasTitle(title))
                     {
                         player->SetTitle(title, false);
-                        handler->PSendSysMessage("Title %u added to player %s (guid: %u).", title->ID, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Title %u added to player %s (guid: %u).", title->ID, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) already has title %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid %u) already has title %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), title->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Title %u not found.", title->ID);
@@ -1020,15 +1020,15 @@ public:
             {
                 if (auto title = sCharTitlesStore.LookupEntry(atoi(titleId)))
                 {
-                    if (!HasTitle(GUID_LOPART(guid), title))
+                    if (!HasTitle(guid, title))
                     {
-                        if (SetTitle(GUID_LOPART(guid), name, title, handler, false))
-                            handler->PSendSysMessage("Title %u added to player %s (guid: %u).", title->ID, name.c_str(), GUID_LOPART(guid));
+                        if (SetTitle(guid, name, title, handler, false))
+                            handler->PSendSysMessage("Title %u added to player %s (guid: %u).", title->ID, name.c_str(), guid.GetCounter());
                         else
                             handler->SendSysMessage("Unknown error.");
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) already has title %u.", name.c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid %u) already has title %u.", name.c_str(), guid.GetCounter(), title->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Title %u not found.", title->ID);
@@ -1047,7 +1047,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1063,9 +1063,9 @@ public:
                 if (auto title = sCharTitlesStore.LookupEntry(atoi(titleId)))
                 {
                     if (player->HasTitle(title))
-                        handler->PSendSysMessage("Player %s (guid: %u) has title %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) has title %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), title->ID);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn;t title %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn;t title %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), title->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Title %u not found.", title->ID);
@@ -1079,9 +1079,9 @@ public:
                 if (auto title = sCharTitlesStore.LookupEntry(atoi(titleId)))
                 {
                     if (HasTitle(guid, title))
-                        handler->PSendSysMessage("Player %s (guid: %u) has title %u.", name.c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) has title %u.", name.c_str(), guid.GetCounter(), title->ID);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn;t title %u.", name.c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn;t title %u.", name.c_str(), guid.GetCounter(), title->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Title %u not found.", title->ID);
@@ -1100,7 +1100,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1118,10 +1118,10 @@ public:
                     if (player->HasTitle(title))
                     {
                         player->SetTitle(title, true);
-                        handler->PSendSysMessage("Title %u removed from player %s (guid: %u).", title->ID, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Title %u removed from player %s (guid: %u).", title->ID, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't title %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't title %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), title->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Title %u not found.", title->ID);
@@ -1134,15 +1134,15 @@ public:
             {
                 if (auto title = sCharTitlesStore.LookupEntry(atoi(titleId)))
                 {
-                    if (HasTitle(GUID_LOPART(guid), title))
+                    if (HasTitle(guid, title))
                     {
-                        if (SetTitle(GUID_LOPART(guid), name, title, handler, true))
-                            handler->PSendSysMessage("Title %u removed from player %s (guid: %u).", title->ID, name.c_str(), GUID_LOPART(guid));
+                        if (SetTitle(guid, name, title, handler, true))
+                            handler->PSendSysMessage("Title %u removed from player %s (guid: %u).", title->ID, name.c_str(), guid.GetCounter());
                         else
                             handler->SendSysMessage("Unknown error.");
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) hasn't title %u.", name.c_str(), GUID_LOPART(guid), title->ID);
+                        handler->PSendSysMessage("Player %s (guid %u) hasn't title %u.", name.c_str(), guid.GetCounter(), title->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Title %u not found.", title->ID);
@@ -1163,7 +1163,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1181,10 +1181,10 @@ public:
                     if (!player->HasAchieved(ach->ID), true)
                     {
                         player->GetAchievementMgr().CompletedAchievement(ach, player);
-                        handler->PSendSysMessage("Achievement %u added to player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Achievement %u added to player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1198,18 +1198,18 @@ public:
             {
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
-                    if (!CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", GUID_LOPART(guid), ach->ID))
+                    if (!CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", guid.GetCounter(), ach->ID))
                     {
                         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_ACHIEVEMENT);
-                        stmt->setUInt32(0, GUID_LOPART(guid));
+                        stmt->setUInt32(0, guid.GetCounter());
                         stmt->setUInt32(1, ach->ID);
                         stmt->setUInt32(2, time(nullptr));
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Achievement %u added to player %s (guid: %u).", ach->ID, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Achievement %u added to player %s (guid: %u).", ach->ID, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u.", name.c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u.", name.c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1229,7 +1229,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1245,9 +1245,9 @@ public:
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
                     if (player->HasAchieved(ach->ID, true))
-                        handler->PSendSysMessage("Player %s (guid: %lu) has achievement %u.", handler->GetNameLink(player).c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) has achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %lu) hasn't achievement %u.", handler->GetNameLink(player).c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1259,10 +1259,10 @@ public:
             {
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
-                    if (CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", GUID_LOPART(guid), ach->ID))
-                        handler->PSendSysMessage("Player %s (guid: %lu) has achievement %u.", name.c_str(), guid, ach->ID);
+                    if (CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", guid.GetCounter(), ach->ID))
+                        handler->PSendSysMessage("Player %s (guid: %u) has achievement %u.", name.c_str(), guid.GetCounter(), ach->ID);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %lu) hasn't achievement %u.", name.c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't achievement %u.", name.c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1281,7 +1281,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1299,10 +1299,10 @@ public:
                     if (player->HasAchieved(ach->ID, true))
                     {
                         player->GetAchievementMgr().RemoveAchievement(ach);
-                        handler->PSendSysMessage("Achievement %u removed from player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Achievement %u removed from player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1316,17 +1316,17 @@ public:
             {
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
-                    if (CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", GUID_LOPART(guid), ach->ID))
+                    if (CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", guid.GetCounter(), ach->ID))
                     {
                         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENT_BY_ACHIEVEMENT);
                         stmt->setUInt32(0, ach->ID);
-                        stmt->setUInt32(1, GUID_LOPART(guid));
+                        stmt->setUInt32(1, guid.GetCounter());
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Achievement %u added removed from player %s (guid: %u).", ach->ID, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Achievement %u added removed from player %s (guid: %u).", ach->ID, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", name.c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", name.c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1346,7 +1346,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1364,10 +1364,10 @@ public:
                     if (!player->HasAchieved(ach->ID), false)
                     {
                         player->CompletedAchievement(ach);
-                        handler->PSendSysMessage("Account achievement %u added to player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Account achievement %u added to player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u on account.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u on account.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1389,13 +1389,13 @@ public:
                         stmt->setUInt32(0, account);
                         stmt->setUInt32(1, ach->ID);
                         stmt->setUInt32(2, time(nullptr));
-                        stmt->setUInt32(3, GUID_LOPART(guid));
+                        stmt->setUInt32(3, guid.GetCounter());
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Account achievement %u added to player %s (guid: %u).", ach->ID, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Account achievement %u added to player %s (guid: %u).", ach->ID, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u on account.", name.c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) already has achievement %u on account.", name.c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1415,7 +1415,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1431,9 +1431,9 @@ public:
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
                     if (player->HasAchieved(ach->ID, false))
-                        handler->PSendSysMessage("Player %s (guid: %lu) has achievement %u.", handler->GetNameLink(player).c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) has achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %lu) hasn't achievement %u.", handler->GetNameLink(player).c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1448,9 +1448,9 @@ public:
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
                     if (CharacterDatabase.PQuery("SELECT * FROM account_achievement WHERE account = %u AND achievement = %u", account, ach->ID))
-                        handler->PSendSysMessage("Player %s (guid: %lu) has achievement %u on account.", name.c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) has achievement %u on account.", name.c_str(), guid.GetCounter(), ach->ID);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %lu) hasn't achievement %u on account.", name.c_str(), guid, ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't achievement %u on account.", name.c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1469,7 +1469,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1487,10 +1487,10 @@ public:
                     if (player->HasAchieved(ach->ID, true))
                     {
                         player->GetAchievementMgr().RemoveAchievement(ach);
-                        handler->PSendSysMessage("Achievement %u removed from player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Achievement %u removed from player %s (guid: %u).", ach->ID, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1504,17 +1504,17 @@ public:
             {
                 if (auto ach = sAchievementStore.LookupEntry(atoi(achievId)))
                 {
-                    if (CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", GUID_LOPART(guid), ach->ID))
+                    if (CharacterDatabase.PQuery("SELECT * FROM character_achievement WHERE guid = %u AND achievement = %u", guid.GetCounter(), ach->ID))
                     {
                         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENT_BY_ACHIEVEMENT);
                         stmt->setUInt32(0, ach->ID);
-                        stmt->setUInt32(1, GUID_LOPART(guid));
+                        stmt->setUInt32(1, guid.GetCounter());
                         trans->Append(stmt);
 
-                        handler->PSendSysMessage("Achievement %u added removed from player %s (guid: %u).", ach->ID, name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Achievement %u added removed from player %s (guid: %u).", ach->ID, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", name.c_str(), GUID_LOPART(guid), ach->ID);
+                        handler->PSendSysMessage("Player %s (guid: %u) did not know achievement %u.", name.c_str(), guid.GetCounter(), ach->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Achievement %u not found.", atoi(achievId));
@@ -1542,7 +1542,7 @@ public:
         }
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[1], &player, &guid, &name))
             return false;
@@ -1686,7 +1686,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1709,9 +1709,9 @@ public:
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
                     if (player->HasAura(spell->Id))
-                        handler->PSendSysMessage("Player %s (guid: %u) has aura %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) has aura %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't aura %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't aura %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -1730,10 +1730,10 @@ public:
 
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
-                    if (CharacterDatabase.PQuery("SELECT * FROM character_aura WHERE spell = %u AND guid = %u", spell->Id, GUID_LOPART(guid)))
-                        handler->PSendSysMessage("Player %s (guid: %u) has spell %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                    if (CharacterDatabase.PQuery("SELECT * FROM character_aura WHERE spell = %u AND guid = %u", spell->Id, guid.GetCounter()))
+                        handler->PSendSysMessage("Player %s (guid: %u) has spell %u.", name.c_str(), guid.GetCounter(), spell->Id);
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't spell %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't spell %u.", name.c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -1752,7 +1752,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1760,7 +1760,7 @@ public:
         if (player)
         {
             Unit::AuraApplicationMap const& auras = player->GetAppliedAuras();
-            handler->PSendSysMessage("Player's %s (guid: %u) auras:", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player's %s (guid: %u) auras:", name.c_str(), guid.GetCounter());
             for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
             {
                 AuraApplication const* aurApp = itr->second;
@@ -1774,9 +1774,9 @@ public:
         }
         else
         {
-            if (QueryResult result = CharacterDatabase.PQuery("SELECT spell, slot FROM character_aura WHERE guid = %u",GUID_LOPART(guid)))
+            if (QueryResult result = CharacterDatabase.PQuery("SELECT spell, slot FROM character_aura WHERE guid = %u",guid.GetCounter()))
             {
-                handler->PSendSysMessage("Player's %s (guid: %u) auras:", name.c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player's %s (guid: %u) auras:", name.c_str(), guid.GetCounter());
                 do
                 {
                     Field* fields = result->Fetch();
@@ -1804,7 +1804,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1829,10 +1829,10 @@ public:
                     if (player->HasAura(spell->Id))
                     {
                         player->RemoveAura(spell->Id);
-                        handler->PSendSysMessage("Aura %u removed from player %s (guid: %u).", spell->Id, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Aura %u removed from player %s (guid: %u).", spell->Id, handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't aura %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't aura %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -1851,14 +1851,14 @@ public:
 
                 if (auto spell = sSpellMgr->GetSpellInfo(spellId))
                 {
-                    if (QueryResult result = CharacterDatabase.PQuery("SELECT slot FROM character_aura WHERE spell = %u AND guid = %u", spell->Id, GUID_LOPART(guid)))
+                    if (QueryResult result = CharacterDatabase.PQuery("SELECT slot FROM character_aura WHERE spell = %u AND guid = %u", spell->Id, guid.GetCounter()))
                     {
-                        CharacterDatabase.PExecute("DELETE FROM character_aura WHERE spell = %u AND guid = %u", spell->Id, GUID_LOPART(guid));
-                        CharacterDatabase.PExecute("DELETE FROM character_aura_effect WHERE slot = %u AND guid = %u", (*result)[0].GetUInt32(), GUID_LOPART(guid));
-                        handler->PSendSysMessage("Aura %u removed from player %s (guid: %u).", spell->Id, name.c_str(), GUID_LOPART(guid));
+                        CharacterDatabase.PExecute("DELETE FROM character_aura WHERE spell = %u AND guid = %u", spell->Id, guid.GetCounter());
+                        CharacterDatabase.PExecute("DELETE FROM character_aura_effect WHERE slot = %u AND guid = %u", (*result)[0].GetUInt32(), guid.GetCounter());
+                        handler->PSendSysMessage("Aura %u removed from player %s (guid: %u).", spell->Id, name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't aura %u.", name.c_str(), GUID_LOPART(guid), spell->Id);
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't aura %u.", name.c_str(), guid.GetCounter(), spell->Id);
                 }
                 else
                     handler->PSendSysMessage("Error. Spell %u not found.", spellId);
@@ -1940,19 +1940,19 @@ public:
         player->RemoveRewardedQuest(quest->GetQuestId());
 
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED_BY_QUEST);
-        stmt->setUInt32(0, player->GetGUIDLow());
+        stmt->setUInt32(0, player->GetGUID().GetCounter());
         stmt->setUInt32(1, quest->GetQuestId());
         CharacterDatabase.Execute(stmt);
     }
-    static bool HasQuestRewardedInDb(uint32 guid, uint32 questId)
+    static bool HasQuestRewardedInDb(ObjectGuid guid, uint32 questId)
     {
-        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_rewarded WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_rewarded WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
             return true;
-        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_daily WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_daily WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
             return true;
-        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_monthly WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_monthly WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
             return true;
-        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_weekly WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+        if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_weekly WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
             return true;
         return false;
     }
@@ -1967,7 +1967,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -1992,12 +1992,12 @@ public:
                     if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_NONE)
                     {
                         if (AddQuest(player, quest, handler))
-                            handler->PSendSysMessage("Quest %u added to player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                            handler->PSendSysMessage("Quest %u added to player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                         else
                             handler->PSendSysMessage("Error. Cant't add quest %u.", quest->GetQuestId());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already has or done quest %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid: %u) already has or done quest %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2019,11 +2019,11 @@ public:
                 {
                     if (!HasQuestRewardedInDb(guid, quest->GetQuestId()))
                     {
-                        CharacterDatabase.PQuery("INSERT INTO character_queststatus (guid, quest, status, explored, timer) VALUES (%u, %u, 3, 0, %u)", GUID_LOPART(guid), quest->GetQuestId(), time(nullptr));
-                        handler->PSendSysMessage("Quest %u added to player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
+                        CharacterDatabase.PQuery("INSERT INTO character_queststatus (guid, quest, status, explored, timer) VALUES (%u, %u, 3, 0, %u)", guid.GetCounter(), quest->GetQuestId(), time(nullptr));
+                        handler->PSendSysMessage("Quest %u added to player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) already has or done quest %u.", name.c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid %u) already has or done quest %u.", name.c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2042,7 +2042,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2067,10 +2067,10 @@ public:
                     if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
                     {
                         CompleteQuest(player, quest);
-                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't quest or already done %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't quest or already done %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2090,9 +2090,9 @@ public:
 
                 if (auto quest = sObjectMgr->GetQuestTemplate(questId))
                 {
-                    if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+                    if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
                     {
-                        CharacterDatabase.PQuery("UPDATE character_queststatus SET status = 1 WHERE guid = %u AND quest = %u", GUID_LOPART(guid), quest->GetQuestId());
+                        CharacterDatabase.PQuery("UPDATE character_queststatus SET status = 1 WHERE guid = %u AND quest = %u", guid.GetCounter(), quest->GetQuestId());
                         std::string items;
                         for (auto const& obj : quest->Objectives)
                         {
@@ -2106,16 +2106,16 @@ public:
                             if (obj.Type == QUEST_OBJECTIVE_MONEY) // haha
                                 continue;
 
-                            CharacterDatabase.PQuery("INSERT INTO character_queststatus_objective (guid, objectiveId, amount) VALUES (%u, %u, %u)", GUID_LOPART(guid), obj.ID, obj.Amount);
+                            CharacterDatabase.PQuery("INSERT INTO character_queststatus_objective (guid, objectiveId, amount) VALUES (%u, %u, %u)", guid.GetCounter(), obj.ID, obj.Amount);
                         }
                         items.erase(items.end() - 1); // remove last ","
                         std::string text = " \"Support\" \"Items for quest" + std::to_string(quest->GetQuestId()) + ".\" ";
                         std::string command = ".send items " + name + text + items;
                         handler->ParseCommands(command.c_str());
-                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) hasn't quest or already done %u.", name.c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid %u) hasn't quest or already done %u.", name.c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2134,7 +2134,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2159,12 +2159,12 @@ public:
                     if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_NONE)
                     {
                         if (RewardQuest(player, quest, handler))
-                            handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                            handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                         else
                             handler->PSendSysMessage("Cant't reward quest %u.", quest->GetQuestId());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) already done quest %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid: %u) already done quest %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2186,7 +2186,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2209,19 +2209,19 @@ public:
                 if (auto quest = sObjectMgr->GetQuestTemplate(questId))
                 {
                     if (player->IsMonthlyQuestDone(quest->GetQuestId()))
-                        handler->PSendSysMessage("Monthly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Monthly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     else if (player->IsWeeklyQuestDone(quest->GetQuestId()))
-                        handler->PSendSysMessage("Weekly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Weekly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     else if (player->IsDailyQuestDone(quest->GetQuestId()))
-                        handler->PSendSysMessage("Daily quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Daily quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     else if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_REWARDED)
-                        handler->PSendSysMessage("Quest %u rewarded by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Quest %u rewarded by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     else if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_COMPLETE)
-                        handler->PSendSysMessage("Quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Quest %u completed by player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     else if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
-                        handler->PSendSysMessage("Player %s (guid: %u) has quest %u, did not complete it.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid: %u) has quest %u, did not complete it.", handler->GetNameLink(player).c_str(), guid.GetCounter(), quest->GetQuestId());
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't quest %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't quest %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2240,23 +2240,23 @@ public:
 
                 if (auto quest = sObjectMgr->GetQuestTemplate(questId))
                 {
-                    if (CharacterDatabase.PQuery("SELECT status FROM character_queststatus_monthly WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
-                        handler->PSendSysMessage("Monthly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
-                    else if (CharacterDatabase.PQuery("SELECT status FROM character_queststatus_weekly WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
-                        handler->PSendSysMessage("Weekly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
-                    else if (CharacterDatabase.PQuery("SELECT status FROM character_queststatus_daily WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
-                        handler->PSendSysMessage("Daily quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
-                    else if (QueryResult result = CharacterDatabase.PQuery("SELECT status FROM character_queststatus WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+                    if (CharacterDatabase.PQuery("SELECT status FROM character_queststatus_monthly WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
+                        handler->PSendSysMessage("Monthly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
+                    else if (CharacterDatabase.PQuery("SELECT status FROM character_queststatus_weekly WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
+                        handler->PSendSysMessage("Weekly quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
+                    else if (CharacterDatabase.PQuery("SELECT status FROM character_queststatus_daily WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
+                        handler->PSendSysMessage("Daily quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
+                    else if (QueryResult result = CharacterDatabase.PQuery("SELECT status FROM character_queststatus WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
                     {
                         if ((*result)[0].GetUInt32() == QUEST_STATUS_REWARDED)
-                            handler->PSendSysMessage("Quest %u rewarded for player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
+                            handler->PSendSysMessage("Quest %u rewarded for player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
                         else if ((*result)[0].GetUInt32() == QUEST_STATUS_REWARDED)
-                            handler->PSendSysMessage("Quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
+                            handler->PSendSysMessage("Quest %u completed by player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
                         else if ((*result)[0].GetUInt32() == QUEST_STATUS_REWARDED)
-                            handler->PSendSysMessage("Player %s (guid: %u) has quest %u, did not complete it.", name.c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                            handler->PSendSysMessage("Player %s (guid: %u) has quest %u, did not complete it.", name.c_str(), guid.GetCounter(), quest->GetQuestId());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) hasn't quest %u.", name.c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid %u) hasn't quest %u.", name.c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2275,7 +2275,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2300,10 +2300,10 @@ public:
                     if (player->GetQuestStatus(quest->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
                     {
                         RemoveQuest(player, quest);
-                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), handler->GetNameLink(player).c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid: %u) hasn't quest as done %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid: %u) hasn't quest as done %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2326,19 +2326,19 @@ public:
                     if (quest->IsRepeatable())
                     {
                         if (quest->IsMonthly())
-                            CharacterDatabase.PExecute("DELETE FROM character_queststatus_monthly WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId);
+                            CharacterDatabase.PExecute("DELETE FROM character_queststatus_monthly WHERE guid = %u AND quest = %u", guid.GetCounter(), questId);
                         if (quest->IsWeekly())
-                            CharacterDatabase.PExecute("DELETE FROM character_queststatus_weekly WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId);
+                            CharacterDatabase.PExecute("DELETE FROM character_queststatus_weekly WHERE guid = %u AND quest = %u", guid.GetCounter(), questId);
                         if (quest->IsDaily())
-                            CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId);
+                            CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = %u AND quest = %u", guid.GetCounter(), questId);
                     }
-                    else if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_rewarded WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId))
+                    else if (CharacterDatabase.PQuery("SELECT * FROM character_queststatus_rewarded WHERE guid = %u AND quest = %u", guid.GetCounter(), questId))
                     {
-                        CharacterDatabase.PExecute("DELETE FROM character_queststatus_rewarded WHERE guid = %u AND quest = %u", GUID_LOPART(guid), questId);
-                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), name.c_str(), GUID_LOPART(guid));
+                        CharacterDatabase.PExecute("DELETE FROM character_queststatus_rewarded WHERE guid = %u AND quest = %u", guid.GetCounter(), questId);
+                        handler->PSendSysMessage("Quest %u completed for player %s (guid: %u).", quest->GetQuestId(), name.c_str(), guid.GetCounter());
                     }
                     else
-                        handler->PSendSysMessage("Player %s (guid %u) hasn't quest or already done %u.", name.c_str(), GUID_LOPART(guid), quest->GetQuestId());
+                        handler->PSendSysMessage("Player %s (guid %u) hasn't quest or already done %u.", name.c_str(), guid.GetCounter(), quest->GetQuestId());
                 }
                 else
                     handler->PSendSysMessage("Error. Quest %u not found.", questId);
@@ -2375,7 +2375,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2383,8 +2383,8 @@ public:
         if (player)
             player->SaveToDB();
 
-        handler->PSendSysMessage("Player's %s (guid %u) active quest list:", name.c_str(), GUID_LOPART(guid));
-        if (QueryResult result = CharacterDatabase.PQuery("SELECT quest, status FROM character_queststatus WHERE guid = %u", GUID_LOPART(guid)))
+        handler->PSendSysMessage("Player's %s (guid %u) active quest list:", name.c_str(), guid.GetCounter());
+        if (QueryResult result = CharacterDatabase.PQuery("SELECT quest, status FROM character_queststatus WHERE guid = %u", guid.GetCounter()))
         {
             uint32 questId = (*result)[0].GetUInt32();
             uint32 status = (*result)[1].GetUInt32();
@@ -2394,7 +2394,7 @@ public:
                 handler->PSendSysMessage("Error. Quest %u not found.", questId);
         }
         else
-            handler->PSendSysMessage("Player %s (guid %u) hasn't any quest.", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player %s (guid %u) hasn't any quest.", name.c_str(), guid.GetCounter());
 
         return true;
     }
@@ -2409,7 +2409,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2417,8 +2417,8 @@ public:
         if (player)
             player->SaveToDB();
 
-        handler->PSendSysMessage("Player's %s (guid %u) rewarded quest list:", name.c_str(), GUID_LOPART(guid));
-        if (QueryResult result = CharacterDatabase.PQuery("SELECT quest FROM character_queststatus_rewarded WHERE guid = %u", GUID_LOPART(guid)))
+        handler->PSendSysMessage("Player's %s (guid %u) rewarded quest list:", name.c_str(), guid.GetCounter());
+        if (QueryResult result = CharacterDatabase.PQuery("SELECT quest FROM character_queststatus_rewarded WHERE guid = %u", guid.GetCounter()))
         {
             uint32 questId = (*result)[0].GetUInt32();
             if (auto quest = sObjectMgr->GetQuestTemplate(questId))
@@ -2427,7 +2427,7 @@ public:
                 handler->PSendSysMessage("Error. Quest %u not found.", questId);
         }
         else
-            handler->PSendSysMessage("Player %s (guid %u) hasn't any quest.", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player %s (guid %u) hasn't any quest.", name.c_str(), guid.GetCounter());
 
         return true;
     }
@@ -2443,7 +2443,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2451,13 +2451,13 @@ public:
         if (player)
         {
             if (player->GetSession()->HasBoost())
-                handler->PSendSysMessage("Player %s (guid: %u) has active boost.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player %s (guid: %u) has active boost.", handler->GetNameLink(player).c_str(), guid.GetCounter());
         }
         else
         {
-            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = %u", guid.GetCounter()))
                 if (QueryResult boostResult = LoginDatabase.PQuery("SELECT * FROM account_boost WHERE id = %u", (*charResult)[0].GetUInt32()))
-                    handler->PSendSysMessage("Player %s (guid: %u) has active boost.", name.c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Player %s (guid: %u) has active boost.", name.c_str(), guid.GetCounter());
         }
         return true;
     }
@@ -2472,14 +2472,14 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
 
         if (player)
         {
-            handler->PSendSysMessage("Player's %s (guid: %u) active services:", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player's %s (guid: %u) active services:", handler->GetNameLink(player).c_str(), guid.GetCounter());
             if (!player->HasAtLoginFlag(AT_LOGIN_RENAME) && !player->HasAtLoginFlag(AT_LOGIN_CUSTOMIZE) && !player->HasAtLoginFlag(AT_LOGIN_CHANGE_RACE) && !player->HasAtLoginFlag(AT_LOGIN_CHANGE_FACTION))
                 handler->PSendSysMessage("- no active services");
             else
@@ -2499,12 +2499,12 @@ public:
         else
         {
             bool activeBoost = false;
-            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = %u", guid.GetCounter()))
                 if (QueryResult boostResult = LoginDatabase.PQuery("SELECT * FROM account_boost WHERE id = %u", (*charResult)[0].GetUInt32()))
                     activeBoost = true;
 
             uint32 atLoginFlags = 0;
-            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT at_login FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT at_login FROM characters WHERE guid = %u", guid.GetCounter()))
                 atLoginFlags = (*charResult)[0].GetUInt32();
 
             if (!atLoginFlags)
@@ -2536,12 +2536,12 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
 
-        if (QueryResult charResult = CharacterDatabase.PQuery("SELECT type, old_data, new_data, execute_date FROM executed_services WHERE guid = %u", GUID_LOPART(guid)))
+        if (QueryResult charResult = CharacterDatabase.PQuery("SELECT type, old_data, new_data, execute_date FROM executed_services WHERE guid = %u", guid.GetCounter()))
         {
             do
             {
@@ -2551,12 +2551,12 @@ public:
                 std::string newData = fields[2].GetString();
                 std::string data = fields[3].GetString();
 
-                handler->PSendSysMessage("Service %s executed for player %s (%u) at %s:", type.c_str(), name.c_str(), GUID_LOPART(guid), data.c_str());
+                handler->PSendSysMessage("Service %s executed for player %s (%u) at %s:", type.c_str(), name.c_str(), guid.GetCounter(), data.c_str());
                 handler->PSendSysMessage("Old data: '%s', New data: '%s'.", oldData.c_str(), newData.c_str());
             } while (charResult->NextRow());
         }
         else
-            handler->PSendSysMessage("Player %s (guid: %u) has no executed services.", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player %s (guid: %u) has no executed services.", name.c_str(), guid.GetCounter());
 
         return true;
     }
@@ -2571,7 +2571,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2580,7 +2580,7 @@ public:
         {
             if (!player->GetMail().empty())
             {
-                handler->PSendSysMessage("Player's %s (guid: %u) mail:", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player's %s (guid: %u) mail:", handler->GetNameLink(player).c_str(), guid.GetCounter());
                 for (auto&& mail : player->GetMail())
                 {
                     handler->PSendSysMessage("Mail recived by player %u with subject %s (money %lu)", mail->sender, mail->subject.c_str(), mail->money);
@@ -2594,13 +2594,13 @@ public:
                 }
             }
             else
-                handler->PSendSysMessage("Player %s (guid: %u) has no mail.", name.c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player %s (guid: %u) has no mail.", name.c_str(), guid.GetCounter());
         }
         else
         {
-            if (QueryResult mailResult = CharacterDatabase.PQuery("SELECT id, sender, subject, has_items, money FROM mail WHERE receiver = %u", GUID_LOPART(guid)))
+            if (QueryResult mailResult = CharacterDatabase.PQuery("SELECT id, sender, subject, has_items, money FROM mail WHERE receiver = %u", guid.GetCounter()))
             {
-                handler->PSendSysMessage("Player's %s (guid: %u) mail:", name.c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player's %s (guid: %u) mail:", name.c_str(), guid.GetCounter());
                 do
                 {
                     Field* fields = mailResult->Fetch();
@@ -2629,7 +2629,7 @@ public:
                 } while (mailResult->NextRow());
             }
             else
-                handler->PSendSysMessage("Player %s (guid: %u) has no mail.", name.c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player %s (guid: %u) has no mail.", name.c_str(), guid.GetCounter());
         }
         return true;
     }
@@ -2659,14 +2659,14 @@ public:
             return false;
         }
 
-        std::vector<uint32> playersList;
+        std::vector<ObjectGuid> playersList;
         if (QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE account = %u", accountId))
         {
             do
             {
                 Field* fields = result->Fetch();
                 uint32 guidLow = fields[0].GetUInt32();
-                playersList.push_back(guidLow);
+                playersList.emplace_back(HighGuid::Player, guidLow);
             } while (result->NextRow());
         }
         else
@@ -2681,7 +2681,7 @@ public:
             {
                 if (!player->GetMail().empty())
                 {
-                    handler->PSendSysMessage("Player's %s (guid: %u) mail:", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Player's %s (guid: %u) mail:", handler->GetNameLink(player).c_str(), guid.GetCounter());
                     for (auto&& mail : player->GetMail())
                     {
                         handler->PSendSysMessage("Mail recived by player %u with subject %s (money %lu)", mail->sender, mail->subject.c_str(), mail->money);
@@ -2695,13 +2695,13 @@ public:
                     }
                 }
                 else
-                    handler->PSendSysMessage("Player %s (guid: %u) has no mail.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Player %s (guid: %u) has no mail.", handler->GetNameLink(player).c_str(), guid.GetCounter());
             }
             else
             {
-                if (QueryResult mailResult = CharacterDatabase.PQuery("SELECT id, sender, subject, has_items, money FROM mail WHERE receiver = %u", GUID_LOPART(guid)))
+                if (QueryResult mailResult = CharacterDatabase.PQuery("SELECT id, sender, subject, has_items, money FROM mail WHERE receiver = %u", guid.GetCounter()))
                 {
-                    handler->PSendSysMessage("Player's %s (guid: %u) mail:", name.c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Player's %s (guid: %u) mail:", name.c_str(), guid.GetCounter());
                     do
                     {
                         Field* fields = mailResult->Fetch();
@@ -2730,7 +2730,7 @@ public:
                     } while (mailResult->NextRow());
                 }
                 else
-                    handler->PSendSysMessage("Player %s (guid: %u) has no mail.", name.c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Player %s (guid: %u) has no mail.", name.c_str(), guid.GetCounter());
             }
         }
         return true;
@@ -2746,7 +2746,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2754,7 +2754,7 @@ public:
         if (player)
         {
             bool found = false;
-            handler->PSendSysMessage("Player's %s (guid: %u) professions:", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player's %s (guid: %u) professions:", handler->GetNameLink(player).c_str(), guid.GetCounter());
             for (uint32 i = 0; i < sSkillLineStore.GetNumRows(); i++)
             {
                 if (auto&& skill = sSkillLineStore.LookupEntry(i))
@@ -2773,13 +2773,13 @@ public:
             }
 
             if (!found)
-                handler->PSendSysMessage("Player %s (guid: %u) has no professions.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player %s (guid: %u) has no professions.", handler->GetNameLink(player).c_str(), guid.GetCounter());
         }
         else
         {
-            if (QueryResult skillResult = CharacterDatabase.PQuery("SELECT skill, value FROM character_skills WHERE guid = %u", GUID_LOPART(guid)))
+            if (QueryResult skillResult = CharacterDatabase.PQuery("SELECT skill, value FROM character_skills WHERE guid = %u", guid.GetCounter()))
             {
-                handler->PSendSysMessage("Player's %s (guid: %u) professions:", name.c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player's %s (guid: %u) professions:", name.c_str(), guid.GetCounter());
                 do
                 {
                     Field* fields = skillResult->Fetch();
@@ -2795,7 +2795,7 @@ public:
                 } while (skillResult->NextRow());
             }
             else
-                handler->PSendSysMessage("Player %s (guid: %u) has no professions.", name.c_str(), GUID_LOPART(guid));
+                handler->PSendSysMessage("Player %s (guid: %u) has no professions.", name.c_str(), guid.GetCounter());
         }
         return true;
     }
@@ -2810,7 +2810,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2819,12 +2819,12 @@ public:
             handler->PSendSysMessage("Player must be offline.");
         else
         {
-            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+            if (QueryResult charResult = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = %u", guid.GetCounter()))
                 LoginDatabase.PExecute("DELETE FROM account_data WHERE accountId = %u", (*charResult)[0].GetUInt32());
 
-            LoginDatabase.PExecute("DELETE FROM character_account_data WHERE guid = %u", guid);
+            LoginDatabase.PExecute("DELETE FROM character_account_data WHERE guid = %u", guid.GetCounter());
 
-            handler->PSendSysMessage("Cache for player %s (guid: %lu) removed.", name.c_str(), guid);
+            handler->PSendSysMessage("Cache for player %s (guid: %u) removed.", name.c_str(), guid.GetCounter());
         }
         return true;
     }
@@ -2840,7 +2840,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2880,7 +2880,7 @@ public:
 
                     player->GetReputationMgr().SetOneFactionReputation(rep, repValue, false);
                     player->GetReputationMgr().SendState(player->GetReputationMgr().GetState(rep));
-                    handler->PSendSysMessage("Reputation with faction %s (%u) changed to %u for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], repId, repValue, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Reputation with faction %s (%u) changed to %u for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], repId, repValue, handler->GetNameLink(player).c_str(), guid.GetCounter());
                 }
                 else
                     handler->PSendSysMessage("Error. Faction %u not found.", repId);
@@ -2909,11 +2909,11 @@ public:
 
                 if (auto rep = sFactionStore.LookupEntry(repId))
                 {
-                    if (CharacterDatabase.PQuery("SELECT faction FROM character_reputation WHERE guid = %u AND faction = %u", GUID_LOPART(guid), repId))
-                        CharacterDatabase.PExecute("UPDATE character_reputation SET standing = %u WHERE guid = %u AND faction = %u AND flags = flags | 1", repValue, GUID_LOPART(guid), repId);
+                    if (CharacterDatabase.PQuery("SELECT faction FROM character_reputation WHERE guid = %u AND faction = %u", guid.GetCounter(), repId))
+                        CharacterDatabase.PExecute("UPDATE character_reputation SET standing = %u WHERE guid = %u AND faction = %u AND flags = flags | 1", repValue, guid.GetCounter(), repId);
                     else
-                        CharacterDatabase.PExecute("INSERT IGNORE INTO character_reputation (guid, faction, standing, flags) VALUES (%u, %u, %u, 17)", GUID_LOPART(guid), repId, repValue);
-                    handler->PSendSysMessage("Reputation with faction %s (%u) changed to %u for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], repId, repValue, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                        CharacterDatabase.PExecute("INSERT IGNORE INTO character_reputation (guid, faction, standing, flags) VALUES (%u, %u, %u, 17)", guid.GetCounter(), repId, repValue);
+                    handler->PSendSysMessage("Reputation with faction %s (%u) changed to %u for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], repId, repValue, handler->GetNameLink(player).c_str(), guid.GetCounter());
                 }
                 else
                     handler->PSendSysMessage("Error. Faction %u not found.", repId);
@@ -2932,7 +2932,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -2950,7 +2950,7 @@ public:
                     uint32 value = player->GetReputation(rep->ID);
                     if (value >= 40000000)
                         value = 0;
-                    handler->PSendSysMessage("Reputation with faction %s (%u) for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], value, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Reputation with faction %s (%u) for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], value, handler->GetNameLink(player).c_str(), guid.GetCounter());
                 }
                 else
                     handler->PSendSysMessage("Error. Faction %u not found.", atoi(repStr));
@@ -2962,9 +2962,9 @@ public:
             {
                 if (auto rep = sFactionStore.LookupEntry(atoi(repStr)))
                 {
-                    QueryResult result = CharacterDatabase.PQuery("SELECT faction FROM character_reputation WHERE guid = %u AND faction = %u", GUID_LOPART(guid), rep->ID);
+                    QueryResult result = CharacterDatabase.PQuery("SELECT faction FROM character_reputation WHERE guid = %u AND faction = %u", guid.GetCounter(), rep->ID);
                     int32 value = result && (*result)[0].GetUInt32();
-                    handler->PSendSysMessage("Reputation with faction %s (%u) is %u for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], rep->ID, value, name.c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Reputation with faction %s (%u) is %u for player %s (%u).", rep->name[handler->GetSessionDbcLocale()], rep->ID, value, name.c_str(), guid.GetCounter());
                 }
                 else
                     handler->PSendSysMessage("Error. Faction %u not found.", atoi(repStr));
@@ -2983,14 +2983,14 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
 
         if (player)
         {
-            handler->PSendSysMessage("Reputation for player %s (%u):", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Reputation for player %s (%u):", handler->GetNameLink(player).c_str(), guid.GetCounter());
             for (uint32 i = 0; i < sFactionStore.GetNumRows(); i++)
             {
                 if (auto rep = sFactionStore.LookupEntry(i))
@@ -3006,9 +3006,9 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("Reputation for player %s (%u):", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Reputation for player %s (%u):", name.c_str(), guid.GetCounter());
 
-            QueryResult result = CharacterDatabase.PQuery("SELECT faction, standing FROM character_reputation WHERE guid = %u", GUID_LOPART(guid));
+            QueryResult result = CharacterDatabase.PQuery("SELECT faction, standing FROM character_reputation WHERE guid = %u", guid.GetCounter());
             if (!result)
             {
                 handler->SendSysMessage("Something gone wrong.");
@@ -3045,7 +3045,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -3056,15 +3056,15 @@ public:
             uint64 mailMoney = 0;
             for (auto&& mail : player->GetMail())
                 mailMoney += mail->money;
-            handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), money, mailMoney);
+            handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", handler->GetNameLink(player).c_str(), guid.GetCounter(), money, mailMoney);
         }
         else
         {
-            QueryResult result = CharacterDatabase.PQuery("SELECT money FROM characters WHERE guid = %u", GUID_LOPART(guid));
+            QueryResult result = CharacterDatabase.PQuery("SELECT money FROM characters WHERE guid = %u", guid.GetCounter());
             uint64 money = result ? (*result)[0].GetUInt64() : 0;
             uint64 mailMoney = 0;
 
-            QueryResult mailResult = CharacterDatabase.PQuery("SELECT money FROM mail WHERE receiver = %u", GUID_LOPART(guid));
+            QueryResult mailResult = CharacterDatabase.PQuery("SELECT money FROM mail WHERE receiver = %u", guid.GetCounter());
             if (mailResult)
             {
                 do
@@ -3074,7 +3074,7 @@ public:
                 } while (mailResult->NextRow());
             }
 
-            handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", name.c_str(), GUID_LOPART(guid), money, mailMoney);
+            handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", name.c_str(), guid.GetCounter(), money, mailMoney);
         }
         return true;
     }
@@ -3104,14 +3104,14 @@ public:
             return false;
         }
 
-        std::vector<uint32> playersList;
+        std::vector<ObjectGuid> playersList;
         if (QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE account = %u", accountId))
         {
             do
             {
                 Field* fields = result->Fetch();
                 uint32 guidLow = fields[0].GetUInt32();
-                playersList.push_back(guidLow);
+                playersList.emplace_back(HighGuid::Player, guidLow);
             } while (result->NextRow());
         }
         else
@@ -3119,7 +3119,7 @@ public:
 
         for (auto&& guid : playersList)
         {
-            Player* player = sObjectMgr->GetPlayerByLowGUID(guid);
+            Player* player = sObjectMgr->GetPlayerByLowGUID(guid.GetCounter());
             std::string name = "unknown";
             sObjectMgr->GetPlayerNameByGUID(guid, name);
             if (player)
@@ -3128,15 +3128,15 @@ public:
                 uint64 mailMoney = 0;
                 for (auto&& mail : player->GetMail())
                     mailMoney += mail->money;
-                handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), money, mailMoney);
+                handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", handler->GetNameLink(player).c_str(), guid.GetCounter(), money, mailMoney);
             }
             else
             {
-                QueryResult result = CharacterDatabase.PQuery("SELECT money FROM characters WHERE guid = %u", GUID_LOPART(guid));
+                QueryResult result = CharacterDatabase.PQuery("SELECT money FROM characters WHERE guid = %u", guid.GetCounter());
                 uint64 money = result ? (*result)[0].GetUInt64() : 0;
                 uint64 mailMoney = 0;
 
-                QueryResult mailResult = CharacterDatabase.PQuery("SELECT money FROM mail WHERE receiver = %u", GUID_LOPART(guid));
+                QueryResult mailResult = CharacterDatabase.PQuery("SELECT money FROM mail WHERE receiver = %u", guid.GetCounter());
                 if (mailResult)
                 {
                     do
@@ -3145,7 +3145,7 @@ public:
                         mailMoney += fields[0].GetUInt64();
                     } while (mailResult->NextRow());
                 }
-                handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", name.c_str(), GUID_LOPART(guid), money, mailMoney);
+                handler->PSendSysMessage("Player %s (%u) have %lu money in bag and %lu in mail.", name.c_str(), guid.GetCounter(), money, mailMoney);
             }
         }
         return true;
@@ -3183,7 +3183,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -3192,12 +3192,12 @@ public:
         if (player)
         {
             player->ModifyMoney(money, true);
-            handler->PSendSysMessage("Changed money for player %s (%u) on amount %ld.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), money);
+            handler->PSendSysMessage("Changed money for player %s (%u) on amount %ld.", handler->GetNameLink(player).c_str(), guid.GetCounter(), money);
             player->SaveToDB();
         }
         else
         {
-            if (QueryResult result = CharacterDatabase.PQuery("SELECT money FROM characters WHERE guid = %u", GUID_LOPART(guid)))
+            if (QueryResult result = CharacterDatabase.PQuery("SELECT money FROM characters WHERE guid = %u", guid.GetCounter()))
             {
                 int64 currentAmount = (*result)[0].GetUInt64();
                 if (money < 0 && (currentAmount - money) < 0)
@@ -3205,8 +3205,8 @@ public:
                 else
                     money = currentAmount + money;
 
-                CharacterDatabase.PExecute("UPDATE characters SET money = %u WHERE guid = %u", money, GUID_LOPART(guid));
-                handler->PSendSysMessage("Changed money for player %s (%u) on amount %ld.", name.c_str(), GUID_LOPART(guid), money);
+                CharacterDatabase.PExecute("UPDATE characters SET money = %u WHERE guid = %u", money, guid.GetCounter());
+                handler->PSendSysMessage("Changed money for player %s (%u) on amount %ld.", name.c_str(), guid.GetCounter(), money);
             }
         }
         return true;
@@ -3235,12 +3235,12 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
 
-        handler->PSendSysMessage("PvP rating for Player %s (%u):", name.c_str(), GUID_LOPART(guid));
+        handler->PSendSysMessage("PvP rating for Player %s (%u):", name.c_str(), guid.GetCounter());
         for (uint32 i = PVP_SLOT_ARENA_2v2; i < PVP_SLOT_MAX; ++i)
         {
             if (auto info = RatedPvpMgr::Instance()->GetInfo(RatedPvpSlot(i), guid))
@@ -3263,7 +3263,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -3280,10 +3280,10 @@ public:
             uint32 oldRating = info->Rating;
             info->Rating = rating;
             RatedPvpMgr::SaveToDB(info);
-            handler->PSendSysMessage("Changed PvP rating for player %s (%u) to %u (from %u) slot %s (%u).", name.c_str(), GUID_LOPART(guid), rating, oldRating, SlotToString(slot).c_str(), slot);
+            handler->PSendSysMessage("Changed PvP rating for player %s (%u) to %u (from %u) slot %s (%u).", name.c_str(), guid.GetCounter(), rating, oldRating, SlotToString(slot).c_str(), slot);
         }
         else
-            handler->PSendSysMessage("Has no PvP info for player %s (%u).", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Has no PvP info for player %s (%u).", name.c_str(), guid.GetCounter());
         return true;
     }
 
@@ -3297,7 +3297,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -3314,10 +3314,10 @@ public:
             uint32 oldMmrRating = info->MatchmakerRating;
             info->MatchmakerRating = mmrRating;
             RatedPvpMgr::SaveToDB(info);
-            handler->PSendSysMessage("Changed PvP MMR rating for player %s (%u) to %u (from %u) slot %s (%u).", name.c_str(), GUID_LOPART(guid), mmrRating, oldMmrRating, SlotToString(slot).c_str(), slot);
+            handler->PSendSysMessage("Changed PvP MMR rating for player %s (%u) to %u (from %u) slot %s (%u).", name.c_str(), guid.GetCounter(), mmrRating, oldMmrRating, SlotToString(slot).c_str(), slot);
         }
         else
-            handler->PSendSysMessage("Has no PvP info for player %s (%u).", name.c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Has no PvP info for player %s (%u).", name.c_str(), guid.GetCounter());
         return true;
     }
 
@@ -3331,7 +3331,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -3357,7 +3357,7 @@ public:
                 {
                     int32 precision = cur->Flags & CURRENCY_FLAG_HIGH_PRECISION ? CURRENCY_PRECISION : 1;
                     player->ModifyCurrency(cur->ID, currencyAmount * precision, true, true, true);
-                    handler->PSendSysMessage("Currency %s (%u) changed on %u for player %s (%u).", cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmount, handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Currency %s (%u) changed on %u for player %s (%u).", cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmount, handler->GetNameLink(player).c_str(), guid.GetCounter());
                 }
                 else
                     handler->PSendSysMessage("Error. Currency %u not found.", currencyId);
@@ -3381,7 +3381,7 @@ public:
                 if (auto cur = sCurrencyTypesStore.LookupEntry(currencyId))
                 {
                     int32 precision = cur->Flags & CURRENCY_FLAG_HIGH_PRECISION ? CURRENCY_PRECISION : 1;
-                    if (QueryResult result = CharacterDatabase.PQuery("SELECT total_count FROM character_currency WHERE guid = %u AND currency = %u", GUID_LOPART(guid), currencyId))
+                    if (QueryResult result = CharacterDatabase.PQuery("SELECT total_count FROM character_currency WHERE guid = %u AND currency = %u", guid.GetCounter(), currencyId))
                     {
                         int32 amount = (*result)[0].GetUInt32();
                         currencyAmount *= precision;
@@ -3396,7 +3396,7 @@ public:
                         }
                         else
                             currencyAmount = amount + currencyAmount;
-                        CharacterDatabase.PExecute("UPDATE character_currency SET total_count = %u WHERE guid = %u AND currency = %u", currencyAmount, GUID_LOPART(guid), cur->ID);
+                        CharacterDatabase.PExecute("UPDATE character_currency SET total_count = %u WHERE guid = %u AND currency = %u", currencyAmount, guid.GetCounter(), cur->ID);
                     }
                     else
                     {
@@ -3405,9 +3405,9 @@ public:
                             handler->PSendSysMessage("You trying to add new currency for player with value 0. Are you sure?");
                             currencyAmount = 0;
                         }
-                        CharacterDatabase.PExecute("INSERT IGNORE INTO character_currency (guid, currency, total_count, week_count, season_count, flags) VALUES (%u, %u, %u, 0, 0, 0)", GUID_LOPART(guid), cur->ID, currencyAmount);
+                        CharacterDatabase.PExecute("INSERT IGNORE INTO character_currency (guid, currency, total_count, week_count, season_count, flags) VALUES (%u, %u, %u, 0, 0, 0)", guid.GetCounter(), cur->ID, currencyAmount);
                     }
-                    handler->PSendSysMessage("Currency %s (%u) changed on %u for player %s (%u).", cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmountOut, name.c_str(), GUID_LOPART(guid));
+                    handler->PSendSysMessage("Currency %s (%u) changed on %u for player %s (%u).", cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmountOut, name.c_str(), guid.GetCounter());
                 }
                 else
                     handler->PSendSysMessage("Error. Currency %u not found.", currencyId);
@@ -3426,7 +3426,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
@@ -3442,9 +3442,9 @@ public:
                 if (auto cur = sCurrencyTypesStore.LookupEntry(atoi(curStr)))
                 {
                     if (uint32 currencyAmount = player->GetCurrency(cur->ID, true))
-                        handler->PSendSysMessage("Player %s (%u) has currency %s (%u) - amount %u.", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmount);
+                        handler->PSendSysMessage("Player %s (%u) has currency %s (%u) - amount %u.", handler->GetNameLink(player).c_str(), guid.GetCounter(), cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmount);
                     else
-                        handler->PSendSysMessage("Player %s (%u) hasn't currency %s (%u).", handler->GetNameLink(player).c_str(), GUID_LOPART(guid), cur->Name[handler->GetSessionDbcLocale()], cur->ID);
+                        handler->PSendSysMessage("Player %s (%u) hasn't currency %s (%u).", handler->GetNameLink(player).c_str(), guid.GetCounter(), cur->Name[handler->GetSessionDbcLocale()], cur->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Currency %u not found.", atoi(curStr));
@@ -3457,13 +3457,13 @@ public:
             {
                 if (auto cur = sCurrencyTypesStore.LookupEntry(atoi(curStr)))
                 {
-                    if (QueryResult result = CharacterDatabase.PQuery("SELECT currency FROM character_currency WHERE guid = %u AND currency = %u", GUID_LOPART(guid), cur->ID))
+                    if (QueryResult result = CharacterDatabase.PQuery("SELECT currency FROM character_currency WHERE guid = %u AND currency = %u", guid.GetCounter(), cur->ID))
                     {
                         uint64 currencyAmount = (*result)[0].GetUInt32();
-                        handler->PSendSysMessage("Player %s (%u) has currency %s (%u) - amount %lu.", name.c_str(), GUID_LOPART(guid), cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmount);
+                        handler->PSendSysMessage("Player %s (%u) has currency %s (%u) - amount %lu.", name.c_str(), guid.GetCounter(), cur->Name[handler->GetSessionDbcLocale()], cur->ID, currencyAmount);
                     }
                     else
-                        handler->PSendSysMessage("Player %s (%u) hasn't currency %s (%u).", name.c_str(), GUID_LOPART(guid), cur->Name[handler->GetSessionDbcLocale()], cur->ID);
+                        handler->PSendSysMessage("Player %s (%u) hasn't currency %s (%u).", name.c_str(), guid.GetCounter(), cur->Name[handler->GetSessionDbcLocale()], cur->ID);
                 }
                 else
                     handler->PSendSysMessage("Error. Currency %u not found.", atoi(curStr));
@@ -3482,14 +3482,14 @@ public:
             return false;
 
         Player* player;
-        uint64 guid;
+        ObjectGuid guid;
         std::string name;
         if (!handler->extractPlayerTarget((char*)tok[0], &player, &guid, &name))
             return false;
 
         if (player)
         {
-            handler->PSendSysMessage("Player's %s (%u) currency:", handler->GetNameLink(player).c_str(), GUID_LOPART(guid));
+            handler->PSendSysMessage("Player's %s (%u) currency:", handler->GetNameLink(player).c_str(), guid.GetCounter());
             for (uint32 i = 0; i < sCurrencyTypesStore.GetNumRows(); i++)
                 if (auto cur = sCurrencyTypesStore.LookupEntry(i))
                     if (uint32 currencyAmount = player->GetCurrency(cur->ID, true))
@@ -3499,7 +3499,7 @@ public:
         {
             for (uint32 i = 0; i < sCurrencyTypesStore.GetNumRows(); i++)
                 if (auto cur = sCurrencyTypesStore.LookupEntry(i))
-                    if (QueryResult result = CharacterDatabase.PQuery("SELECT currency FROM character_currency WHERE guid = %u AND currency = %u", GUID_LOPART(guid), cur->ID))
+                    if (QueryResult result = CharacterDatabase.PQuery("SELECT currency FROM character_currency WHERE guid = %u AND currency = %u", guid.GetCounter(), cur->ID))
                         handler->PSendSysMessage("%s (%u) - amount %u.", cur->Name[handler->GetSessionDbcLocale()], cur->ID, (*result)[0].GetUInt32());
         }
         return true;

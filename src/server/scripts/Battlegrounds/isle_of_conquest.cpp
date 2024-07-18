@@ -341,7 +341,7 @@ class spell_ioc_launch : public SpellScript
         {
             GetCaster()->CastSpell(GetCaster(), SPELL_LAUNCH_NO_FALLING_DAMAGE_AURA, true);
 
-            uint64 vehicleGUID = GetCaster()->GetGUID();
+            ObjectGuid vehicleGUID = GetCaster()->GetGUID();
             SpellCastTargets targets = GetSpell()->m_targets;
             player->m_Events.Schedule(1500, [player, vehicleGUID, targets]()
             {

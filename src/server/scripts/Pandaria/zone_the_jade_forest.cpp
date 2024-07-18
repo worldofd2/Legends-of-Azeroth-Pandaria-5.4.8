@@ -976,7 +976,7 @@ class npc_pandriarch_windfur : public CreatureScript
             npc_pandriarch_windfurAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events;
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
             void Reset() override
             {
@@ -1125,7 +1125,7 @@ class npc_pandriarch_bramblestaff : public CreatureScript
             npc_pandriarch_bramblestaffAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events;
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
             void Reset() override
             {
@@ -1277,7 +1277,7 @@ class npc_pandriarch_goldendraft : public CreatureScript
             npc_pandriarch_goldendraftAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events;
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
             void Reset() override
             {
@@ -1416,7 +1416,7 @@ class npc_big_bao : public CreatureScript
             npc_big_baoAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events;
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
             void Reset() override
             {
@@ -2183,13 +2183,13 @@ struct npc_morgrinn_crackfang : public ScriptedAI
 
     EventMap events;
     uint32 delay;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void Reset() override
     {
         events.Reset();
         delay      = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -2830,7 +2830,7 @@ struct npc_windward_nest_trigger : public ScriptedAI
                 owner->KilledMonsterCredit(58246);
                 who->RemoveAurasDueToSpell(SPELL_ROPE_BEAM);
                 who->GetMotionMaster()->MoveFollow(me, 0, 0);
-                who->ToCreature()->SetOwnerGUID(0);
+                who->ToCreature()->SetOwnerGUID(ObjectGuid::Empty);
                 who->ToCreature()->DespawnOrUnsummon(1000);
             }
         }
@@ -2854,14 +2854,14 @@ class npc_instructor_skythorn : public CreatureScript
         {
             npc_instructor_skythornAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 playerGUID;
+            ObjectGuid playerGUID;
             uint8 eventPhase;
             uint32 eventTimer;
 
             void Reset() override
             {
                 eventTimer = 0;
-                playerGUID = 0;
+                playerGUID = ObjectGuid::Empty;
                 eventPhase = 0;
             }
 
@@ -2986,7 +2986,7 @@ class AreaTrigger_q29586 : public AreaTriggerScript
             if (player->GetQuestStatus(QUEST_THE_SPLINTED_PATH) != QUEST_STATUS_INCOMPLETE || player->FindNearestCreature(NPC_GORMALI_STALKER, 150.0f, true))
                 return false;
 
-            uint64 playerGuid = player->GetGUID();
+            ObjectGuid playerGuid = player->GetGUID();
             if (Creature* gormaliStalker1 = player->SummonCreature(NPC_GORMALI_STALKER, pos[0], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000))
             {
                 gormaliStalker1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
@@ -3098,7 +3098,7 @@ class spell_q29637 : public SpellScriptLoader
                 if (caster->GetQuestStatus(29637) != QUEST_STATUS_INCOMPLETE)
                     return;
 
-                uint64 casterGuid = caster->GetGUID();
+                ObjectGuid casterGuid = caster->GetGUID();
                 Creature* myang = caster->FindNearestCreature(NPC_INSTRUCTOR_MYANG, 100.0f);
                 if (!myang)
                     return;
@@ -3134,7 +3134,7 @@ class spell_q29637 : public SpellScriptLoader
                                                                                                                      }); // 2 min 0 sec (end)
             }
 
-            static void SpawnWave(Creature* myang, uint64 casterguid, uint8 combatantCount, uint8 bruteCount)
+            static void SpawnWave(Creature* myang, ObjectGuid casterguid, uint8 combatantCount, uint8 bruteCount)
             {
                 Player* player = ObjectAccessor::GetPlayer(*myang, casterguid);
                 if (player && player->IsAlive())
@@ -3452,7 +3452,7 @@ class npc_instructor_windblade_cutscene : public CreatureScript
         {
             npc_instructor_windblade_cutsceneAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 SummonerGUID;
+            ObjectGuid SummonerGUID;
 
             void IsSummonedBy(Unit* summoner) override
             {
@@ -3756,7 +3756,7 @@ struct npc_lorewalker_cho_peering_into_past : public customCreatureAI
     npc_lorewalker_cho_peering_into_past(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -3949,7 +3949,7 @@ struct npc_prince_anduin_decision : public customCreatureAI
     npc_prince_anduin_decision(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -4073,7 +4073,7 @@ struct npc_prince_anduin_decision : public customCreatureAI
     }
 
     private:
-        uint64 getCreatureGuidByPlayer(uint32 creature_id)
+        ObjectGuid getCreatureGuidByPlayer(uint32 creature_id)
         {
             if (Player* target = ObjectAccessor::GetPlayer(*me, summonerGUID))
             {
@@ -4084,7 +4084,7 @@ struct npc_prince_anduin_decision : public customCreatureAI
                     return summonedCreatures.front()->GetGUID();
             }
 
-            return 0;
+            return ObjectGuid::Empty;
         }
 
     void UpdateAI(uint32 diff) override
@@ -4099,7 +4099,7 @@ struct npc_prince_anduin_decision_helpers : public customCreatureAI
     npc_prince_anduin_decision_helpers(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
     uint32 delay;
 
     void IsSummonedBy(Unit* summoner) override
@@ -4209,7 +4209,7 @@ struct npc_prince_anduin_decision_helpers : public customCreatureAI
     }
 
     private:
-        uint64 getCreatureGuidByPlayer(uint32 creature_id)
+        ObjectGuid getCreatureGuidByPlayer(uint32 creature_id)
         {
             if (Player* target = ObjectAccessor::GetPlayer(*me, summonerGUID))
             {
@@ -4220,7 +4220,7 @@ struct npc_prince_anduin_decision_helpers : public customCreatureAI
                     return summonedCreatures.front()->GetGUID();
             }
 
-            return 0;
+            return ObjectGuid::Empty;
         }
 };
 
@@ -4593,7 +4593,7 @@ struct npc_jade_forest_alliance_barricade : public customCreatureAI
 {
     npc_jade_forest_alliance_barricade(Creature* creature) : customCreatureAI(creature) { }
 
-    std::list<uint64> barricadeGUIDS;
+    std::list<ObjectGuid> barricadeGUIDS;
     TaskScheduler scheduler;
     bool isRestoring;
 
@@ -4760,7 +4760,7 @@ struct npc_jade_forest_instant_message_camera_bunny : public ScriptedAI
     npc_jade_forest_instant_message_camera_bunny(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {

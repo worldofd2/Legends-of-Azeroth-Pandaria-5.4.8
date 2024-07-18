@@ -198,7 +198,7 @@ class boss_ayamiss : public CreatureScript
                             events.ScheduleEvent(EVENT_PARALYZE, 15000);
                             break;
                         case EVENT_SWARMER_ATTACK:
-                            for (std::list<uint64>::iterator i = _swarmers.begin(); i != _swarmers.end(); ++i)
+                            for (std::list<ObjectGuid>::iterator i = _swarmers.begin(); i != _swarmers.end(); ++i)
                                 if (Creature* swarmer = me->GetMap()->GetCreature(*i))
                                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                                         swarmer->AI()->AttackStart(target);
@@ -223,7 +223,7 @@ class boss_ayamiss : public CreatureScript
                 }
             }
         private:
-            std::list<uint64> _swarmers;
+            std::list<ObjectGuid> _swarmers;
             uint8 _phase;
             bool _enraged;
         };
@@ -250,7 +250,7 @@ class npc_hive_zara_larva : public CreatureScript
             {
                 if (type == POINT_MOTION_TYPE)
                     if (id == POINT_PARALYZE)
-                        if (Player* target = ObjectAccessor::GetPlayer(*me, _instance->GetData64(DATA_PARALYZED)))
+                        if (Player* target = ObjectAccessor::GetPlayer(*me, _instance->GetGuidData(DATA_PARALYZED)))
                             DoCast(target, SPELL_FEED); // Omnomnom
             }
 

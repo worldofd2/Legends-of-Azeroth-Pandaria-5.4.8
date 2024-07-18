@@ -103,7 +103,7 @@ class ChatHandler
         virtual LocaleConstant GetSessionDbcLocale() const;
         virtual int GetSessionDbLocaleIndex() const;
 
-        bool HasLowerSecurity(Player* target, uint64 guid, bool strong = false);
+        bool HasLowerSecurity(Player* target, ObjectGuid guid, bool strong = false);
         bool HasLowerSecurityAccount(WorldSession* target, uint32 account, bool strong = false);
 
         void SendGlobalGMSysMessage(const char *str);
@@ -122,12 +122,12 @@ class ChatHandler
         char*     extractQuotedArg(char* args);
 
         uint32    extractSpellIdFromLink(char* text);
-        uint64    extractGuidFromLink(char* text);
+        ObjectGuid extractGuidFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
-        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &player, Group* &group, uint64 &guid, bool offline = false);
+        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &player, Group* &group, ObjectGuid &guid, bool offline = false);
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
-        bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
+        bool extractPlayerTarget(char* args, Player** player, ObjectGuid* player_guid = nullptr, std::string* player_name = NULL);
 
         std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }
         std::string GetNameLink(Player* chr) const;

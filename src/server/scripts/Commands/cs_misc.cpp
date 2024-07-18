@@ -27,6 +27,7 @@
 #include "GroupMgr.h"
 #include "InstanceSaveMgr.h"
 #include "Language.h"
+#include "MapManager.h"
 #include "MovementGenerator.h"
 #include "ObjectAccessor.h"
 #include "Opcodes.h"
@@ -356,7 +357,7 @@ public:
         WorldObject* object = NULL;
         if (*args)
         {
-            uint64 guid = handler->extractGuidFromLink((char*)args);
+            ObjectGuid guid = handler->extractGuidFromLink((char*)args);
             if (guid)
                 object = (WorldObject*)ObjectAccessor::GetObjectByTypeMask(*handler->GetSession()->GetPlayer(), guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
 
@@ -528,7 +529,7 @@ public:
     static bool HandleAppearCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
@@ -544,7 +545,7 @@ public:
         if (target)
         {
             // check online security
-            if (handler->HasLowerSecurity(target, 0))
+            if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
                 return false;
 
             std::string chrNameLink = handler->playerLink(targetName);
@@ -670,7 +671,7 @@ public:
     static bool HandleSummonCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
@@ -687,7 +688,7 @@ public:
         {
             std::string nameLink = handler->playerLink(targetName);
             // check online security
-            if (handler->HasLowerSecurity(target, 0))
+            if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
                 return false;
 
             if (target->IsBeingTeleported())
@@ -799,7 +800,7 @@ public:
         }
 
         if (Player* player = target->ToPlayer())
-            if (handler->HasLowerSecurity(player, 0, false))
+            if (handler->HasLowerSecurity(player, ObjectGuid::Empty, false))
                 return false;
 
         if (target->IsAlive())
@@ -816,7 +817,7 @@ public:
     static bool HandleReviveCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
 
@@ -827,8 +828,10 @@ public:
             target->SaveToDB();
         }
         else
-            // will resurrected at login without corpse
-            sObjectAccessor->ConvertCorpseForPlayer(targetGuid);
+        {
+            CharacterDatabaseTransaction trans(nullptr);
+            Player::OfflineResurrect(targetGuid, trans);
+        }
 
         return true;
     }
@@ -859,7 +862,7 @@ public:
 
     static bool HandleGUIDCommand(ChatHandler* handler, char const* /*args*/)
     {
-        uint64 guid = handler->GetSession()->GetPlayer()->GetTarget();
+        ObjectGuid guid = handler->GetSession()->GetPlayer()->GetTarget();
 
         if (guid == 0)
         {
@@ -868,7 +871,7 @@ public:
             return false;
         }
 
-        handler->PSendSysMessage(LANG_OBJECT_GUID, GUID_LOPART(guid), GUID_HIPART(guid));
+        handler->PSendSysMessage(LANG_OBJECT_GUID, guid.GetCounter(), guid.GetHigh());
         return true;
     }
 
@@ -967,7 +970,7 @@ public:
 
         if (*args)
         {
-            uint64 guid = handler->extractGuidFromLink((char*)args);
+            ObjectGuid guid = handler->extractGuidFromLink((char*)args);
             if (guid)
                 obj = (WorldObject*)ObjectAccessor::GetObjectByTypeMask(*handler->GetSession()->GetPlayer(), guid, TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
 
@@ -1001,7 +1004,7 @@ public:
             return false;
 
         // check online security
-        if (handler->HasLowerSecurity(target, 0))
+        if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
             return false;
 
         if (target->IsBeingTeleported())
@@ -1048,7 +1051,7 @@ public:
     // Save all players in the world
     static bool HandleSaveAllCommand(ChatHandler* handler, char const* /*args*/)
     {
-        sObjectAccessor->SaveAllPlayers();
+        ObjectAccessor::SaveAllPlayers();
         handler->SendSysMessage(LANG_PLAYERS_SAVED);
         return true;
     }
@@ -1069,7 +1072,7 @@ public:
         }
 
         // check online security
-        if (handler->HasLowerSecurity(target, 0))
+        if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
             return false;
 
         if (sWorld->getBoolConfig(CONFIG_SHOW_KICK_IN_WORLD))
@@ -1488,7 +1491,7 @@ public:
             player->SendNewItem(item, count, false, true);
             if (player != playerTarget)
                 playerTarget->SendNewItem(item, count, true, false);
-            sScriptMgr->OnItemPickup(playerTarget, item, ItemPickupSourceType::Command, player ? player->GetGUIDLow() : 0);
+            sScriptMgr->OnItemPickup(playerTarget, item, ItemPickupSourceType::Command, player ? player->GetGUID().GetCounter() : 0);
         }
 
         if (noSpaceForCount > 0)
@@ -1544,7 +1547,7 @@ public:
                     if (player != playerTarget)
                         playerTarget->SendNewItem(item, 1, true, false);
 
-                    sScriptMgr->OnItemPickup(playerTarget, item, ItemPickupSourceType::Command, player ? player->GetGUIDLow() : 0);
+                    sScriptMgr->OnItemPickup(playerTarget, item, ItemPickupSourceType::Command, player ? player->GetGUID().GetCounter() : 0);
                 }
                 else
                 {
@@ -1709,11 +1712,11 @@ public:
     {
         // Define ALL the player variables!
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         std::string targetName;
 
         // To make sure we get a target, we convert our guid to an omniversal...
-        uint32 parseGUID = MAKE_NEW_GUID(atol((char*)args), 0, HIGHGUID_PLAYER);
+        ObjectGuid parseGUID(HighGuid::Player, uint32(atol((char*)args)));
 
         // ... and make sure we get a target, somehow.
         if (sObjectMgr->GetPlayerNameByGUID(parseGUID, targetName))
@@ -1761,7 +1764,7 @@ public:
         // Account data print variables
         std::string userName          = handler->GetTrinityString(LANG_ERROR);
         uint32 accId                  = 0;
-        uint32 lowguid                = GUID_LOPART(targetGuid);
+        uint32 lowguid                = targetGuid.GetCounter();
         std::string eMail             = handler->GetTrinityString(LANG_ERROR);
         std::string bnetAcc           = handler->GetTrinityString(LANG_ERROR);
         uint32 security               = 0;
@@ -1819,7 +1822,7 @@ public:
         if (target)
         {
             // check online security
-            if (handler->HasLowerSecurity(target, 0))
+            if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
                 return false;
 
             accId             = target->GetSession()->GetAccountId();
@@ -2157,7 +2160,7 @@ public:
         std::string muteReason = cmuteReason;
 
         Player* target;
-        uint64 charId;
+        ObjectGuid charId;
         WorldSession* session = nullptr;
         if (!handler->extractPlayerTarget(cname, &target, &charId, &name))
             return false;
@@ -2236,7 +2239,7 @@ public:
         LoginDatabase.EscapeString(muteReason);
         trans->PAppend("INSERT INTO account_muted (realmid, id, acc_id, char_id, mute_acc, mute_name, mute_date, muted_by, mute_time, mute_reason, public_channels_only) "
             "SELECT %u, %u, id, %u, username, '%s', UNIX_TIMESTAMP(), '%s', %u, '%s', %u FROM account "
-            "WHERE id = '%u'", realm.Id.Realm, muteId, GUID_LOPART(charId), name.c_str(), mutedBy.c_str(), muteTime, muteReason.c_str(), publicChannelsOnly, accId);
+            "WHERE id = '%u'", realm.Id.Realm, muteId, charId.GetCounter(), name.c_str(), mutedBy.c_str(), muteTime, muteReason.c_str(), publicChannelsOnly, accId);
 
         if (sWorld->getBoolConfig(CONFIG_GM_USE_ONLINE_MUTES))
         {
@@ -2286,7 +2289,7 @@ public:
     {
         std::string name;
         Player* target;
-        uint64 charId;
+        ObjectGuid charId;
         WorldSession* session = nullptr;
         if (!handler->extractPlayerTarget((char*)args, &target, &charId, &name))
             return false;
@@ -2551,7 +2554,7 @@ public:
             muteCharId = fields[0].GetUInt32();
 
             // Get current character name and account
-            MuteListGetNameAndAccountHelper(muteCharId, currName, currAcc, nameAccCache);
+            MuteListGetNameAndAccountHelper(ObjectGuid(HighGuid::Player, muteCharId), currName, currAcc, nameAccCache);
 
             muteName = fields[1].GetString();
             muteDate = TimeToTimestampStr(fields[2].GetUInt64());
@@ -2611,7 +2614,7 @@ public:
         Field* fields;
 
         // Get hisrory rows
-        uint32 muteCharId;
+        ObjectGuid muteCharId;
             
         std::string currName;
         std::string currAcc;
@@ -2629,7 +2632,7 @@ public:
         do
         {
             fields = result->Fetch();
-            muteCharId = fields[0].GetUInt32();
+            muteCharId = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
             muteAcc = fields[1].GetString();
             muteName = fields[2].GetString();
             muteDate = TimeToTimestampStr(fields[3].GetUInt64());
@@ -2656,7 +2659,7 @@ public:
         while (result->NextRow());
     }
 
-    static void MuteListGetNameAndAccountHelper(uint32 charId, std::string &name, std::string &acc, std::unordered_map<uint32, std::pair<std::string, std::string>> &nameAccCache)
+    static void MuteListGetNameAndAccountHelper(ObjectGuid charId, std::string &name, std::string &acc, std::unordered_map<uint32, std::pair<std::string, std::string>> &nameAccCache)
     {
         std::unordered_map<uint32, std::pair<std::string, std::string>>::const_iterator iter = nameAccCache.find(charId);
         if (iter != nameAccCache.end())
@@ -2745,7 +2748,7 @@ public:
             return false;
         }
 
-        handler->PSendSysMessage(LANG_MOVEGENS_LIST, (unit->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature"), unit->GetGUIDLow());
+        handler->PSendSysMessage(LANG_MOVEGENS_LIST, (unit->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature"), unit->GetGUID().GetCounter());
 
         MotionMaster* motionMaster = unit->GetMotionMaster();
         float x, y, z;
@@ -2788,9 +2791,9 @@ public:
                     if (!target)
                         handler->SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
                     else if (target->GetTypeId() == TYPEID_PLAYER)
-                        handler->PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName().c_str(), target->GetGUIDLow());
+                        handler->PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName().c_str(), target->GetGUID().GetCounter());
                     else
-                        handler->PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName().c_str(), target->GetGUIDLow());
+                        handler->PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName().c_str(), target->GetGUID().GetCounter());
                     break;
                 }
                 case FOLLOW_MOTION_TYPE:
@@ -2804,9 +2807,9 @@ public:
                     if (!target)
                         handler->SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
                     else if (target->GetTypeId() == TYPEID_PLAYER)
-                        handler->PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName().c_str(), target->GetGUIDLow());
+                        handler->PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName().c_str(), target->GetGUID().GetCounter());
                     else
-                        handler->PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName().c_str(), target->GetGUIDLow());
+                        handler->PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName().c_str(), target->GetGUID().GetCounter());
                     break;
                 }
                 case HOME_MOTION_TYPE:
@@ -2945,7 +2948,7 @@ public:
         }
 
         if (Player* player = target->ToPlayer())
-            if (handler->HasLowerSecurity(player, 0, false))
+            if (handler->HasLowerSecurity(player, ObjectGuid::Empty, false))
                 return false;
 
         if (!target->IsAlive())
@@ -3019,7 +3022,7 @@ public:
 
         if (args && strlen(args) > 0)
         {
-            target = sObjectAccessor->FindPlayerByName(args);
+            target = ObjectAccessor::FindPlayerByName(args);
             if (!target)
             {
                 handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -3035,7 +3038,7 @@ public:
         }
 
         // check online security
-        if (handler->HasLowerSecurity(target, 0))
+        if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
             return false;
 
         target->CombatStop();
@@ -3050,7 +3053,7 @@ public:
             return false;
 
         // check online security
-        if (handler->HasLowerSecurity(target, 0))
+        if (handler->HasLowerSecurity(target, ObjectGuid::Empty))
             return false;
 
         // Repair items
@@ -3081,7 +3084,7 @@ public:
         {
             name = TargetName;
             normalizePlayerName(name);
-            player = sObjectAccessor->FindPlayerByName(name);
+            player = ObjectAccessor::FindPlayerByName(name);
         }
 
         if (!player)
@@ -3132,7 +3135,7 @@ public:
         {
             name = targetName;
             normalizePlayerName(name);
-            player = sObjectAccessor->FindPlayerByName(name);
+            player = ObjectAccessor::FindPlayerByName(name);
         }
         else // If no name was entered - use target
         {
@@ -3309,7 +3312,7 @@ public:
                 pos.RelocateOffset(0, 1.0f);
             if (TempSummon* waypoint = new TempSummon(nullptr, nullptr, false))
             {
-                if (!waypoint->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
+                if (!waypoint->Create(source->GetMap()->GenerateLowGuid<HighGuid::Unit>(), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
                 {
                     delete waypoint;
                     continue;
@@ -3337,7 +3340,7 @@ public:
             pos.RelocateOffset(2 * M_PI * i / max, radius);
             if (TempSummon* waypoint = new TempSummon(nullptr, nullptr, false))
             {
-                if (!waypoint->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
+                if (!waypoint->Create(source->GetMap()->GenerateLowGuid<HighGuid::Unit>(), source->GetMap(), source->GetPhaseMask(), 190012, 0, 0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
                 {
                     delete waypoint;
                     continue;
@@ -3444,7 +3447,7 @@ public:
 
         player->ClearLootLockouts();
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_LOOTLOCKOUTS);
-        stmt->setUInt32(0, player->GetGUIDLow());
+        stmt->setUInt32(0, player->GetGUID().GetCounter());
         CharacterDatabase.Execute(stmt);
         handler->SendSysMessage("All loot lockouts cleared");
         return true;
@@ -3720,9 +3723,10 @@ public:
                 handler->PSendSysMessage("%u - %s: visibility distance set to default", target->GetEntry(), target->GetNameForLocaleIdx((LocaleConstant)handler->GetSessionDbLocaleIndex()).c_str());
             }
 
-            for (auto&& creature : ObjectAccessor::GetCreatures())
-                if (creature.second->GetEntry() == entry)
-                    creature.second->LoadCustomVisibility();
+            if (Map* map = target->FindMap())
+                for (auto creature : map->GetCreatureBySpawnIdStore())
+                    if (creature.second->GetEntry() == entry)
+                        creature.second->LoadCustomVisibility();
 
             return true;
         }
@@ -3786,9 +3790,10 @@ public:
                 handler->PSendSysMessage("%u - %s: visibility distance set to default", target->GetEntry(), target->GetNameForLocaleIdx((LocaleConstant)handler->GetSessionDbLocaleIndex()).c_str());
             }
 
-            for (auto&& go : ObjectAccessor::GetGameObjects())
-                if (go.second->GetEntry() == entry)
-                    go.second->LoadCustomVisibility();
+            if (Map* map = target->FindMap())
+                for (auto creature : map->GetGameObjectBySpawnIdStore())
+                    if (creature.second->GetEntry() == entry)
+                        creature.second->LoadCustomVisibility();
 
             return true;
         }
@@ -3806,14 +3811,15 @@ public:
             handler->PSendSysMessage("%u - %s: visibility settings reloaded", target->GetEntry(), target->GetNameForLocaleIdx((LocaleConstant)handler->GetSessionDbLocaleIndex()).c_str());
 
             uint32 count = 0;
-            for (auto&& creature : ObjectAccessor::GetCreatures())
-            {
-                if (creature.second->GetEntry() == entry)
+            if (Map* map = target->FindMap())
+                for (auto&& creature : map->GetCreatureBySpawnIdStore())
                 {
-                    creature.second->LoadCustomVisibility();
-                    ++count;
+                    if (creature.second->GetEntry() == entry)
+                    {
+                        creature.second->LoadCustomVisibility();
+                        ++count;
+                    }
                 }
-            }
             handler->PSendSysMessage("Updated %u spawned Creatures", count);
 
             return true;
@@ -3832,14 +3838,15 @@ public:
             handler->PSendSysMessage("%u - %s: visibility settings reloaded", target->GetEntry(), target->GetNameForLocaleIdx((LocaleConstant)handler->GetSessionDbLocaleIndex()).c_str());
 
             uint32 count = 0;
-            for (auto&& go : ObjectAccessor::GetGameObjects())
-            {
-                if (go.second->GetEntry() == entry)
-                {
-                    go.second->LoadCustomVisibility();
-                    ++count;
-                }
-            }
+
+            if (Map* map = target->FindMap())
+                for (auto go : map->GetGameObjectBySpawnIdStore())
+                    if (go.second->GetEntry() == entry)
+                    {
+                        go.second->LoadCustomVisibility();
+                        ++count;
+                    }
+
             handler->PSendSysMessage("Updated %u spawned GameObjects", count);
 
             return true;
@@ -3869,25 +3876,32 @@ public:
 
         // Update all entries that either previously had or currently have settings
         uint32 count = 0;
-        for (auto&& creature : ObjectAccessor::GetCreatures())
+        sMapMgr->DoForAllMaps([&count,&objects](Map* map)
         {
-            if (objects[CustomVisibility::Type::Creature].find(creature.second->GetEntry()) != objects[CustomVisibility::Type::Creature].end())
+            for (auto creature : map->GetCreatureBySpawnIdStore())
             {
-                creature.second->LoadCustomVisibility();
-                ++count;
+                if (objects[CustomVisibility::Type::Creature].find(creature.second->GetEntry()) != objects[CustomVisibility::Type::Creature].end())
+                {
+                    creature.second->LoadCustomVisibility();
+                    ++count;
+                }
             }
-        }
+        });
+
         handler->PSendSysMessage("Updated %u spawned Creatures", count);
 
         count = 0;
-        for (auto&& go : ObjectAccessor::GetGameObjects())
+        sMapMgr->DoForAllMaps([&count,&objects](Map* map)
         {
-            if (objects[CustomVisibility::Type::GameObject].find(go.second->GetEntry()) != objects[CustomVisibility::Type::GameObject].end())
+            for (auto go : map->GetGameObjectBySpawnIdStore())
             {
-                go.second->LoadCustomVisibility();
-                ++count;
+                if (objects[CustomVisibility::Type::GameObject].find(go.second->GetEntry()) != objects[CustomVisibility::Type::GameObject].end())
+                {
+                    go.second->LoadCustomVisibility();
+                    ++count;
+                }
             }
-        }
+        });
         handler->PSendSysMessage("Updated %u spawned GameObjects", count);
 
         return true;
@@ -3973,7 +3987,7 @@ public:
         int32 value = atoi(tempArgs[3]);
         Player* target = NULL;
         std::string targetName;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
 
         // extract target
         if (!handler->extractPlayerTarget(name, &target, &targetGuid, &targetName))
@@ -3985,18 +3999,18 @@ public:
 
         std::string chrNameLink = handler->playerLink(targetName);
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT guid, skill FROM character_skills WHERE guid = %u AND skill = %u", GUID_LOPART(targetGuid), uint32(oldSkill));
+        QueryResult result = CharacterDatabase.PQuery("SELECT guid, skill FROM character_skills WHERE guid = %u AND skill = %u", targetGuid.GetCounter(), uint32(oldSkill));
         if (!result)
         {
             if (!target || (target && !target->HasSkill(oldSkill)))
             {
-                handler->PSendSysMessage(LANG_PLAYER_DOES_NOT_HAVE_SKILL, chrNameLink.c_str(), GUID_LOPART(targetGuid), uint32(oldSkill));
+                handler->PSendSysMessage(LANG_PLAYER_DOES_NOT_HAVE_SKILL, chrNameLink.c_str(), targetGuid.GetCounter(), uint32(oldSkill));
                 handler->SetSentErrorMessage(true);
                 return false;
             }
         }
 
-        uint32 guid = GUID_LOPART(targetGuid);
+        uint32 guid = targetGuid.GetCounter();
         ServiceEntry s{ ISERVICE_REPLACE_PROFFESION };
         s.Data1 = oldSkill;
         s.Data2 = newSkill;
@@ -4126,8 +4140,8 @@ public:
             info.inventory_slot = fields[i++].GetUInt8();
         }
 
-        uint64 ownerGuid = MAKE_NEW_GUID(info.owner_guid, 0, HIGHGUID_PLAYER);
-        if (Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(ownerGuid))
+        ObjectGuid ownerGuid(HighGuid::Player, info.owner_guid);
+        if (Player* player = ObjectAccessor::FindPlayer(ownerGuid))
         {
             handler->PSendSysMessage("Item owner %s (GUID: %u) is currently online.", player->GetName().c_str(), info.owner_guid);
             handler->SetSentErrorMessage(true);
@@ -4315,7 +4329,7 @@ public:
             return false;
 
         Player* player;
-        uint64 guid = 0;
+        ObjectGuid guid = ObjectGuid::Empty;
         std::string name;
 
         if (!handler->extractPlayerTarget((char*)args, &player, &guid, &name))
@@ -4331,7 +4345,7 @@ public:
             return false;
         }
 
-        handler->PSendSysMessage("List of deleted items for player %s (guid %u):", name.c_str(), GUID_LOPART(guid));
+        handler->PSendSysMessage("List of deleted items for player %s (guid %u):", name.c_str(), guid.GetCounter());
         do
         {
             if (count > 50)
@@ -4342,7 +4356,7 @@ public:
 
             Field* fields = result->Fetch();
             uint32 id = fields[0].GetUInt32();
-            uint64 oldItemGuid = fields[1].GetUInt64();
+            ObjectGuid oldItemGuid(fields[1].GetUInt64());
             uint32 itemEntry = fields[2].GetUInt32();
             uint32 itemCount = fields[3].GetUInt32();
             std::string deleteDate = TimeToTimestampStr(fields[4].GetUInt64());
@@ -4373,10 +4387,10 @@ public:
                 if (ItemLocale const* locale = sObjectMgr->GetItemLocale(itemEntry))
                     sObjectMgr->GetLocaleString(locale->Name, handler->GetSession()->GetSessionDbLocaleIndex(), name);
 
-                handler->PSendSysMessage("%s - ID %u - %ux |c%x|Hitem:%u:%u:%u:%u:%u:%u:%d:%u:%u|h[%s]|h|r (guid: %u) - %s Status - %s", deleteDate.c_str(), id, itemCount, ItemQualityColors[item->Quality], itemEntry, 0, 0, 0, 0, 0, 0, 0, 0, name.c_str(), GUID_LOPART(oldItemGuid), deleteTypeStr, restoredTypeStr);
+                handler->PSendSysMessage("%s - ID %u - %ux |c%x|Hitem:%u:%u:%u:%u:%u:%u:%d:%u:%u|h[%s]|h|r (guid: %u) - %s Status - %s", deleteDate.c_str(), id, itemCount, ItemQualityColors[item->Quality], itemEntry, 0, 0, 0, 0, 0, 0, 0, 0, name.c_str(), oldItemGuid.GetCounter(), deleteTypeStr, restoredTypeStr);
             }
             else
-                handler->PSendSysMessage("%s - ID %u - %ux [MISSING ITEM TEMPLATE %u] (guid: %u) - %s Status - %s", deleteDate.c_str(), id, itemCount, itemEntry, GUID_LOPART(oldItemGuid), deleteTypeStr, restoredTypeStr);
+                handler->PSendSysMessage("%s - ID %u - %ux [MISSING ITEM TEMPLATE %u] (guid: %u) - %s Status - %s", deleteDate.c_str(), id, itemCount, itemEntry, oldItemGuid.GetCounter(), deleteTypeStr, restoredTypeStr);
 
             count++;
         } while (result->NextRow());
@@ -4391,7 +4405,7 @@ public:
 
         Player* player;
         std::string name, itemsStr;
-        uint64 guid = 0;
+        ObjectGuid guid = ObjectGuid::Empty;
         bool all = false;
 
         if (!handler->extractPlayerTarget((char*)args, &player, &guid, &name))
@@ -4405,7 +4419,7 @@ public:
             all = true;
         else for (auto&& itemIdStr : Tokenizer { tail, ' ' })
         {
-            QueryResult result = CharacterDatabase.PQuery("SELECT id FROM item_deleted WHERE id = '%u' AND owner_guid = '%u' AND (`restored`= 0 OR `restored`= 2)", atoi(itemIdStr), GUID_LOPART(guid));
+            QueryResult result = CharacterDatabase.PQuery("SELECT id FROM item_deleted WHERE id = '%u' AND owner_guid = '%u' AND (`restored`= 0 OR `restored`= 2)", atoi(itemIdStr), guid.GetCounter());
             if (!result)
             {
                 handler->SetSentErrorMessage(true);
@@ -4431,9 +4445,9 @@ public:
         CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
 
         if (all)
-            result = CharacterDatabase.PQuery("SELECT id, old_item_guid, item_entry, item_count FROM item_deleted WHERE owner_guid = '%u' AND `restored`=0", GUID_LOPART(guid));
+            result = CharacterDatabase.PQuery("SELECT id, old_item_guid, item_entry, item_count FROM item_deleted WHERE owner_guid = '%u' AND `restored`=0", guid.GetCounter());
         else
-            result = CharacterDatabase.PQuery("SELECT id, old_item_guid, item_entry, item_count FROM item_deleted WHERE id in (%s) AND owner_guid = '%u' AND `restored`=0", itemsStr.c_str(), GUID_LOPART(guid));
+            result = CharacterDatabase.PQuery("SELECT id, old_item_guid, item_entry, item_count FROM item_deleted WHERE id in (%s) AND owner_guid = '%u' AND `restored`=0", itemsStr.c_str(), guid.GetCounter());
 
         if (!result)
         {
@@ -4452,13 +4466,13 @@ public:
             uint32 itemCount = fields[3].GetUInt32();
 
             // keep in mind item will finally deleted only after logout
-            if (CharacterDatabase.PQuery("SELECT 1 FROM item_instance WHERE guid = '%u' AND owner_guid = '%u' AND itemEntry = '%u'", oldItemGuid, GUID_LOPART(guid), itemEntry))
+            if (CharacterDatabase.PQuery("SELECT 1 FROM item_instance WHERE guid = '%u' AND owner_guid = '%u' AND itemEntry = '%u'", oldItemGuid, guid.GetCounter(), itemEntry))
                 Item::DeleteFromDB(trans, oldItemGuid);
 
             if (Item* item = Item::CreateItem(itemEntry, itemCount))
             {
                 itemStorage.push_back(item);
-                item->SetOwnerGUID(MAKE_NEW_GUID(GUID_LOPART(guid), 0, HIGHGUID_PLAYER));
+                item->SetOwnerGUID(guid);
                 item->SetBinding(true);
                 item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
                 restoredItems << itemEntry << " ";
@@ -4470,7 +4484,7 @@ public:
                 continue;
             }
 
-            CharacterDatabase.PExecute("UPDATE item_deleted SET `restored`=1, `restore_date`='%u' WHERE id = '%u' AND owner_guid = '%u'", uint32(time(NULL)), id, GUID_LOPART(guid));
+            CharacterDatabase.PExecute("UPDATE item_deleted SET `restored`=1, `restore_date`='%u' WHERE id = '%u' AND owner_guid = '%u'", uint32(time(NULL)), id, guid.GetCounter());
         } while (result->NextRow());
 
         while (!itemStorage.empty())
@@ -4481,9 +4495,9 @@ public:
                 draft.AddItem(itemStorage.front());
                 itemStorage.pop_front();
             }
-            draft.SendMailTo(trans, MailReceiver(player, GUID_LOPART(guid)), MailSender(MAIL_NORMAL, handler->GetSession() ? handler->GetSession()->GetPlayer()->GetGUIDLow() : 0, MAIL_STATIONERY_GM));
+            draft.SendMailTo(trans, MailReceiver(player, guid.GetCounter()), MailSender(MAIL_NORMAL, handler->GetSession() ? handler->GetSession()->GetPlayer()->GetGUID().GetCounter() : 0, MAIL_STATIONERY_GM));
 
-            sServiceMgr->ExecutedServices(GUID_LOPART(guid), SERVICE_TYPE_ITEM_RESTORE, std::string("Restored Items: ") + restoredItems.str(), "");
+            sServiceMgr->ExecutedServices(guid.GetCounter(), SERVICE_TYPE_ITEM_RESTORE, std::string("Restored Items: ") + restoredItems.str(), "");
         }
         CharacterDatabase.CommitTransaction(trans);
 

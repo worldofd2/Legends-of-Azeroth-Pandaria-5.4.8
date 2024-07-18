@@ -167,18 +167,25 @@ void BattlePetSpawnMgr::PopulateWorld()
     // populate wild battle pets on all maps
     for (auto &battlePetPool : m_battlePetMapPools)
         for (auto &zonePool : battlePetPool.second)
-            zonePool.second.PopulateZone();
+        {
+            auto map = sMapMgr->FindBaseMap(battlePetPool.first);
+            if (map)
+                zonePool.second.PopulateZone(map);
+        }
 }
 
-void BattlePetSpawnMgr::DepopulateMap(uint32 map)
+void BattlePetSpawnMgr::DepopulateMap(uint32 mapId)
 {
     // check if there are any wild battle pets for the map
-    if (m_battlePetMapPools.find(map) == m_battlePetMapPools.end())
+    if (m_battlePetMapPools.find(mapId) == m_battlePetMapPools.end())
         return;
 
     // depopulate all wild battle pets in a map
-    for (auto &mapPool : m_battlePetMapPools[map])
-        mapPool.second.DepopulateZone();
+    for (auto &mapPool : m_battlePetMapPools[mapId])
+    {
+        auto map = sMapMgr->FindBaseMap(mapId);
+        mapPool.second.DepopulateZone(map);
+    }
 }
 
 void BattlePetSpawnMgr::Update(uint32 diff)
@@ -240,13 +247,13 @@ void BattlePetSpawnMgr::LeftBattle(Creature* creature, bool killed)
         for (auto &spawnTemplate : m_battlePetMapPools[mapId][zoneId].m_spawnTemplates)
             for (auto &creatureRelation : spawnTemplate.CreaturesRelation)
                 if (creatureRelation.second == creature->GetGUID())
-                    m_battlePetMapPools[mapId][zoneId].RemoveCreature(creatureRelation.first, &spawnTemplate);
+                    m_battlePetMapPools[mapId][zoneId].RemoveCreature(creature->GetMap(), creatureRelation.first, &spawnTemplate);
     }
 }
 
 // -------------------------------------------------------------------------------
 
-void BattlePetSpawnZoneMgr::PopulateZone()
+void BattlePetSpawnZoneMgr::PopulateZone(Map* map)
 {
     for (auto &spawnTemplate : m_spawnTemplates)
     {
@@ -260,18 +267,18 @@ void BattlePetSpawnZoneMgr::PopulateZone()
 
         // replace all creatures
         for (auto &replacement : spawnTemplate.CreaturesReadyForReplace)
-            SpawnCreature(replacement, &spawnTemplate);
+            SpawnCreature(map, replacement, &spawnTemplate);
 
         spawnTemplate.CreaturesReadyForReplace.clear();
     }
 }
 
-void BattlePetSpawnZoneMgr::DepopulateZone()
+void BattlePetSpawnZoneMgr::DepopulateZone(Map* map)
 {
     // remove all wild battle pets from the zone
     for (auto &spawnTemplate : m_spawnTemplates)
         for (auto &relationTemplate : spawnTemplate.CreaturesRelation)
-            RemoveCreature(relationTemplate.first, &spawnTemplate);
+            RemoveCreature(map, relationTemplate.first, &spawnTemplate);
 }
 
 // called when a creature is added to the zone
@@ -308,7 +315,7 @@ void BattlePetSpawnZoneMgr::OnRespawn(Creature* creature, BattlePet* battlePet)
     creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
 }
 
-void BattlePetSpawnZoneMgr::SpawnCreature(uint64 guid, BattlePetSpawnTemplate* spawnTemplate)
+void BattlePetSpawnZoneMgr::SpawnCreature(Map* map, ObjectGuid guid, BattlePetSpawnTemplate* spawnTemplate)
 {
     if (!spawnTemplate)
         return;
@@ -318,7 +325,7 @@ void BattlePetSpawnZoneMgr::SpawnCreature(uint64 guid, BattlePetSpawnTemplate* s
         return;
 
     // make sure creature that is being replaced exists in the world
-    auto creature = ObjectAccessor::GetObjectInWorld(guid, (Creature*)nullptr);
+    auto creature = map->GetCreature(guid);
     if (!creature)
         return;
 
@@ -331,7 +338,7 @@ void BattlePetSpawnZoneMgr::SpawnCreature(uint64 guid, BattlePetSpawnTemplate* s
     Creature* replacementCreature = new Creature();
     replacementCreature->m_isTempWorldObject = true;
 
-    if (!replacementCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), creature->GetMap(), creature->GetPhaseMask(),
+    if (!replacementCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), creature->GetMap(), creature->GetPhaseMask(),
         speciesEntry->NpcId, 0, 0, creature->m_positionX, creature->m_positionY, creature->m_positionZ, creature->GetOrientation()))
     {
         // something went wrong, delete newly created creature
@@ -370,7 +377,7 @@ void BattlePetSpawnZoneMgr::SpawnCreature(uint64 guid, BattlePetSpawnTemplate* s
     spawnTemplate->CreaturesRelation[creature->GetGUID()] = replacementCreature->GetGUID();
 }
 
-void BattlePetSpawnZoneMgr::RemoveCreature(uint64 guid, BattlePetSpawnTemplate* spawnTemplate)
+void BattlePetSpawnZoneMgr::RemoveCreature(Map* map, ObjectGuid guid, BattlePetSpawnTemplate* spawnTemplate)
 {
     if (!spawnTemplate)
         return;
@@ -380,12 +387,12 @@ void BattlePetSpawnZoneMgr::RemoveCreature(uint64 guid, BattlePetSpawnTemplate* 
         return;
 
     // make sure the creature that was replaced still exists in the world
-    auto creature = ObjectAccessor::GetObjectInWorld(guid, (Creature*)nullptr);
+    auto creature = map->GetCreature(guid);
     if (!creature)
         return;
 
     // make sure the creature that was the replacement still exists in the world
-    auto replacementCreature = ObjectAccessor::GetObjectInWorld(spawnTemplate->CreaturesRelation[guid], (Creature*)nullptr);
+    auto replacementCreature = map->GetCreature(spawnTemplate->CreaturesRelation[guid]);
     if (!replacementCreature)
         return;
 

@@ -1050,10 +1050,10 @@ class spell_mastery_icicles_periodic : public AuraScript
 {
     PrepareAuraScript(spell_mastery_icicles_periodic);
 
-    uint64 targetGuid = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
 
 public:
-    void SetTarget(uint64 target)
+    void SetTarget(ObjectGuid target)
     {
         targetGuid = target;
     }
@@ -1441,7 +1441,7 @@ class spell_mage_ignite : public AuraScript
     void HandleProc(AuraEffect const* mastery, ProcEventInfo& eventInfo)
     {
         Unit* caster  = GetCaster();
-        uint64 targetGuid  = eventInfo.GetProcTarget()->GetGUID();
+        ObjectGuid targetGuid  = eventInfo.GetProcTarget()->GetGUID();
         if (mastery->GetFloatAmount() <= 0.0f)
             return;
 
@@ -2568,7 +2568,7 @@ class spell_mage_glyph_of_icy_veins : public SpellScript
         if (mage->HasAura(SPELL_MAGE_ICY_VEINS_GLYPHED))
         {
             Unit* caster = GetCaster();
-            uint64 guid = GetSpell()->m_targets.GetUnitTargetGUID();
+            ObjectGuid guid = GetSpell()->m_targets.GetUnitTargetGUID();
             uint32 spell = GetSpellId();
 
             float mult = 0.4f;   // Primiry mod

@@ -313,7 +313,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = sObjectAccessor->FindPlayerByName(args);
+        Player* target = ObjectAccessor::FindPlayerByName(args);
         uint32 targetGuid = 0;
         std::string name(args);
 
@@ -332,7 +332,7 @@ public:
             targetGuid = (*resultCharacter)[0].GetUInt32();
         }
         else
-            targetGuid = target->GetGUIDLow();
+            targetGuid = target->GetGUID().GetCounter();
 
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANINFO);
         stmt->setUInt32(0, targetGuid);

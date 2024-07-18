@@ -49,7 +49,7 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
     recvData.ReadByteSeq(guid[4]);
     recvData.ReadByteSeq(guid[5]);
 
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_ATTACKSWING Message guidlow:%u guidhigh:%u", GUID_LOPART(guid), GUID_HIPART(guid));
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_ATTACKSWING Message guidlow:%u guidhigh:%u", guid.GetCounter(), uint32(guid.GetHigh()));
 
     Unit* pEnemy = ObjectAccessor::GetUnit(*_player, guid);
 
@@ -100,7 +100,7 @@ void WorldSession::HandleSetSheathedOpcode(WorldPacket& recvData)
     recvData >> sheathed;
     hasData = recvData.ReadBit();
 
-    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed);
+    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUID().GetCounter(), sheathed);
 
     if (hasData)
     {
@@ -119,7 +119,7 @@ void WorldSession::SendAttackStop(Unit const* enemy)
     WorldPacket data(SMSG_ATTACKSTOP, (8+8+1));
 
     ObjectGuid attackerGuid = GetPlayer()->GetGUID();
-    ObjectGuid victimGuid = enemy ? enemy->GetGUID() : 0;
+    ObjectGuid victimGuid = enemy ? enemy->GetGUID() : ObjectGuid::Empty;
 
     data.WriteBit(victimGuid[5]);
     data.WriteBit(victimGuid[6]);

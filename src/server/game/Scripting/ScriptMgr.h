@@ -766,7 +766,7 @@ class PlayerScript : public UnitScript
         // Both of the below are called on emote opcodes.
         virtual void OnEmote(Player* /*player*/, uint32 /*emote*/) { }
 
-        virtual void OnTextEmote(Player* /*player*/, uint32 /*textEmote*/, uint32 /*emoteNum*/, uint64 /*guid*/) { }
+        virtual void OnTextEmote(Player* /*player*/, uint32 /*textEmote*/, uint32 /*emoteNum*/, ObjectGuid /*guid*/) { }
 
         // Called in Spell::Cast.
         virtual void OnSpellCast(Player* /*player*/, Spell* /*spell*/, bool /*skipCheck*/) { }
@@ -781,7 +781,7 @@ class PlayerScript : public UnitScript
         virtual void OnCreate(Player* /*player*/) { }
 
         // Called when a player is deleted.
-        virtual void OnDelete(uint64 /*guid*/) { }
+        virtual void OnDelete(ObjectGuid /*guid*/) { }
 
         // Called when a player is about to be saved.
         virtual void OnSave(Player* /*player*/) { }
@@ -854,16 +854,16 @@ class GroupScript : public ScriptObject
     public:
 
         // Called when a member is added to a group.
-        virtual void OnAddMember(Group* /*group*/, uint64 /*guid*/) { }
+        virtual void OnAddMember(Group* /*group*/, ObjectGuid /*guid*/) { }
 
         // Called when a member is invited to join a group.
-        virtual void OnInviteMember(Group* /*group*/, uint64 /*guid*/) { }
+        virtual void OnInviteMember(Group* /*group*/, ObjectGuid /*guid*/) { }
 
         // Called when a member is removed from a group.
-        virtual void OnRemoveMember(Group* /*group*/, uint64 /*guid*/, RemoveMethod /*method*/, uint64 /*kicker*/, const char* /*reason*/) { }
+        virtual void OnRemoveMember(Group* /*group*/, ObjectGuid /*guid*/, RemoveMethod /*method*/, ObjectGuid /*kicker*/, const char* /*reason*/) { }
 
         // Called when the leader of a group is changed.
-        virtual void OnChangeLeader(Group* /*group*/, uint64 /*newLeaderGuid*/, uint64 /*oldLeaderGuid*/) { }
+        virtual void OnChangeLeader(Group* /*group*/, ObjectGuid /*newLeaderGuid*/, ObjectGuid /*oldLeaderGuid*/) { }
 
         // Called when a group is disbanded.
         virtual void OnDisband(Group* /*group*/) { }
@@ -953,7 +953,7 @@ protected:
 public:
 
     // items
-    virtual void OnItemDelFromDB(CharacterDatabaseTransaction /*trans*/, uint32 /*itemGuid*/) { }
+    virtual void OnItemDelFromDB(CharacterDatabaseTransaction /*trans*/, ObjectGuid /*itemGuid*/) { }
     virtual void OnMirrorImageDisplayItem(const Item* /*item*/, uint32& /*display*/) { }
 };
 
@@ -1177,12 +1177,12 @@ class TC_GAME_API ScriptMgr
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel);
         void OnPlayerEmote(Player* player, uint32 emote);
-        void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, uint64 guid);
+        void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, ObjectGuid guid);
         void OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck);
         void OnPlayerLogin(Player* player);
         void OnPlayerLogout(Player* player);
         void OnPlayerCreate(Player* player);
-        void OnPlayerDelete(uint64 guid);
+        void OnPlayerDelete(ObjectGuid guid);
         void OnPlayerSave(Player* player);
         void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
         void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
@@ -1207,10 +1207,10 @@ class TC_GAME_API ScriptMgr
 
     public: /* GroupScript */
 
-        void OnGroupAddMember(Group* group, uint64 guid);
-        void OnGroupInviteMember(Group* group, uint64 guid);
-        void OnGroupRemoveMember(Group* group, uint64 guid, RemoveMethod method, uint64 kicker, const char* reason);
-        void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
+        void OnGroupAddMember(Group* group, ObjectGuid guid);
+        void OnGroupInviteMember(Group* group, ObjectGuid guid);
+        void OnGroupRemoveMember(Group* group, ObjectGuid guid, RemoveMethod method, ObjectGuid kicker, const char* reason);
+        void OnGroupChangeLeader(Group* group, ObjectGuid newLeaderGuid, ObjectGuid oldLeaderGuid);
         void OnGroupDisband(Group* group);
 
     public: /* GameEventScript */
@@ -1224,7 +1224,7 @@ class TC_GAME_API ScriptMgr
         void FillGameEventWorldStates(GameEventData const& event, Player* player, WorldStateBuilder& builder);
 
     public: /* GlobalScript */
-        void OnGlobalItemDelFromDB(CharacterDatabaseTransaction trans, uint32 itemGuid);
+        void OnGlobalItemDelFromDB(CharacterDatabaseTransaction trans, ObjectGuid itemGuid);
         void OnGlobalMirrorImageDisplayItem(const Item *item, uint32 &display);
 
     public: /* UnitScript */

@@ -95,7 +95,7 @@ class boss_mekgineer_steamrigger : public CreatureScript
                     instance->SetBossState(DATA_MEKGINEER_STEAMRIGGER, DONE);
 
                     if (instance)
-                        if (GameObject* goMekDoor = ObjectAccessor::GetGameObject(*me, instance->GetData64(GO_ACCESS_PANEL_MEK)))
+                        if (GameObject* goMekDoor = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(GO_ACCESS_PANEL_MEK)))
                             goMekDoor->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 }
             }
@@ -219,7 +219,7 @@ class npc_steamrigger_mechanic : public CreatureScript
                 {
                     if (instance && instance->GetBossState(DATA_MEKGINEER_STEAMRIGGER) == IN_PROGRESS)
                     {
-                        if (Unit* pMekgineer = Unit::GetUnit(*me, instance->GetData64(DATA_MEKGINEER_STEAMRIGGER)))
+                        if (Unit* pMekgineer = Unit::GetUnit(*me, instance->GetGuidData(DATA_MEKGINEER_STEAMRIGGER)))
                         {
                             if (me->IsWithinDistInMap(pMekgineer, MAX_REPAIR_RANGE))
                             {

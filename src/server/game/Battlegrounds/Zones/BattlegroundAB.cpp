@@ -228,7 +228,7 @@ void BattlegroundAB::AddPlayer(Player* player)
         player->StartCriteria(CRITERIA_START_TYPE_EVENT, AB_EVENT_START_BATTLE, (TimeValue::Now() - m_doorOpeningTime).ToMilliseconds());
 }
 
-void BattlegroundAB::RemovePlayer(Player* player, uint64 guid, uint32 team)
+void BattlegroundAB::RemovePlayer(Player* player, ObjectGuid guid, uint32 team)
 {
     Battleground::RemovePlayer(player, guid, team);
 }

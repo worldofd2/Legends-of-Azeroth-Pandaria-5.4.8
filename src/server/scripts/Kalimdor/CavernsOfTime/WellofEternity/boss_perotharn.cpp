@@ -157,7 +157,7 @@ class boss_perotharn : public CreatureScript
                 _Reset();
 
                 phase = 0;
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 me->GetMap()->SetWorldState(WORLDSTATE_LAZY_EYE, 0);
 
                 if (instance->GetData(DATA_EVENT_DEMON) == DONE)
@@ -247,14 +247,14 @@ class boss_perotharn : public CreatureScript
                 if (Creature* pIllidan = me->FindNearestCreature(NPC_ILLIDAN_1, 100.0f))
                     pIllidan->AI()->DoAction(1); // ACTION_PEROTHARN_DEAD
 
-                instance->DoKilledMonsterKredit(QUEST_IN_UNENDING_NUMBERS, 58239, 0);
-                instance->DoKilledMonsterKredit(QUEST_IN_UNENDING_NUMBERS, 58240, 0);
-                instance->DoKilledMonsterKredit(QUEST_IN_UNENDING_NUMBERS, 58241, 0);                               
+                instance->DoKilledMonsterKredit(QUEST_IN_UNENDING_NUMBERS, 58239, ObjectGuid::Empty);
+                instance->DoKilledMonsterKredit(QUEST_IN_UNENDING_NUMBERS, 58240, ObjectGuid::Empty);
+                instance->DoKilledMonsterKredit(QUEST_IN_UNENDING_NUMBERS, 58241, ObjectGuid::Empty);
             }
             
             void KilledUnit(Unit* victim) override { }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 targetGUID = guid;
             }
@@ -428,7 +428,7 @@ class boss_perotharn : public CreatureScript
             uint32 updatePositionTimer;
             uint32 preeventDisapperTimer;
             uint8 phase;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             bool hasPreeventAppeared;
         };
 

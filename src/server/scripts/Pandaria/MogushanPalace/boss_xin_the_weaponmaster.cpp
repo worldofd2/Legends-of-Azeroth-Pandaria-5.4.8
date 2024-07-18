@@ -110,7 +110,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
 
             bool m_bHasYelled;
             std::list <Creature*> gems;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
 
             void InitializeAI() override
             {
@@ -120,7 +120,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_PULL_TOWARDS, true);
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_PULL_TOWARDS_DEST, true);
                 me->HandleEmoteStateCommand(EMOTE_STATE_SIT_CHAIR_HIGH);
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
             }
 
             void InitializeGems()
@@ -146,7 +146,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 _Reset();
                 events.Reset();
                 InitializeGems();
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
 
                 if (instance)
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -187,7 +187,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 Talk(TALK_RESET);
 
                 if (auto const script = me->GetInstanceScript())
-                    script->HandleGameObject(0, true, ObjectAccessor::GetGameObject(*me, script->GetData64(GO_DOOR_BEFORE_KING)));
+                    script->HandleGameObject(ObjectGuid::Empty, true, ObjectAccessor::GetGameObject(*me, script->GetGuidData(GO_DOOR_BEFORE_KING)));
             }
 
             void KilledUnit(Unit* /*victim*/) override
@@ -320,7 +320,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 Talk(TALK_AGGRO);
 
                 if (auto const script = me->GetInstanceScript())
-                    script->HandleGameObject(0, false, ObjectAccessor::GetGameObject(*me, script->GetData64(GO_DOOR_BEFORE_KING)));
+                    script->HandleGameObject(ObjectGuid::Empty, false, ObjectAccessor::GetGameObject(*me, script->GetGuidData(GO_DOOR_BEFORE_KING)));
             }
 
             void JustDied(Unit* /*killer*/) override
@@ -336,7 +336,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 DeactivateWeapons();
 
                 if (auto const script = me->GetInstanceScript())
-                    script->HandleGameObject(0, true, ObjectAccessor::GetGameObject(*me, script->GetData64(GO_DOOR_BEFORE_KING)));
+                    script->HandleGameObject(ObjectGuid::Empty, true, ObjectAccessor::GetGameObject(*me, script->GetGuidData(GO_DOOR_BEFORE_KING)));
             }
 
             void DoAction(int32 actionId) override
@@ -856,7 +856,7 @@ class npc_mp_quilen_guardian : public CreatureScript
                 CallQuilensForHelp(who->GetGUID());
             }
 
-            void CallQuilensForHelp(uint64 attacker)
+            void CallQuilensForHelp(ObjectGuid attacker)
             {
                 std::list<Creature*> Quilens;
                 GetCreatureListWithEntryInGrid(Quilens, me, CREATURE_QUILEN_GUARDIAN, 50.0f);

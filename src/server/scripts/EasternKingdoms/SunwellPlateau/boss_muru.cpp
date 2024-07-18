@@ -410,7 +410,7 @@ class npc_muru_portal : public CreatureScript
             void JustSummoned(Creature* summon) override
             {
                 if (instance)
-                    if (Player* Target = Unit::GetPlayer(*me, instance->GetData64(DATA_PLAYER_GUID)))
+                    if (Player* Target = Unit::GetPlayer(*me, instance->GetGuidData(DATA_PLAYER_GUID)))
                         summon->AI()->AttackStart(Target);
 
                 summons.Summon(summon);
@@ -607,7 +607,7 @@ class npc_blackhole : public CreatureScript
             {
                 if (spellTimer <= diff)
                 {
-                    Unit* Victim = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
+                    Unit* Victim = Unit::GetUnit(*me, instance ? instance->GetGuidData(DATA_PLAYER_GUID) : ObjectGuid::Empty);
                     if (DATA_PLAYER_GUID>0)
                     switch (needForAHack)
                     {

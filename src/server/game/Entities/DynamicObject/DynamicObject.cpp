@@ -54,7 +54,7 @@ void DynamicObject::AddToWorld()
     ///- Register the dynamicObject for guid lookup and for caster
     if (!IsInWorld())
     {
-        sObjectAccessor->AddObject(this);
+        GetMap()->GetObjectsStore().Insert<DynamicObject>(GetGUID(), this);
         WorldObject::AddToWorld();
 
         if (GetType() != DYNAMIC_OBJECT_RAID_MARKER)
@@ -81,7 +81,7 @@ void DynamicObject::RemoveFromWorld()
             UnbindFromCaster();
 
         WorldObject::RemoveFromWorld();
-        sObjectAccessor->RemoveObject(this);
+        GetMap()->GetObjectsStore().Remove<DynamicObject>(GetGUID());
     }
 }
 
@@ -97,7 +97,7 @@ bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, SpellInfo 
         return false;
     }
 
-    WorldObject::_Create(guidlow, HIGHGUID_DYNAMICOBJECT, caster->GetPhaseMask(), caster->GetPhases());
+    WorldObject::_Create(guidlow, HighGuid::DynamicObject, caster->GetPhaseMask(), caster->GetPhases());
 
     SetEntry(spell->Id);
     SetObjectScale(1);

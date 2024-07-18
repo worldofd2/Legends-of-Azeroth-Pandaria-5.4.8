@@ -69,7 +69,7 @@ public:
                 if (InstanceScript* instance = creature->GetInstanceScript())
                 {
                     //are 5 minutes expected? go template may have data to despawn when used at quest
-                    instance->DoRespawnGameObject(instance->GetData64(DATA_GO_CHALICE), MINUTE*5);
+                    instance->DoRespawnGameObject(instance->GetGuidData(DATA_GO_CHALICE), MINUTE*5);
                 }
                 break;
         }

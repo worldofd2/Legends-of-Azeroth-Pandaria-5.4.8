@@ -189,7 +189,7 @@ class AbominationDespawner
     public:
         explicit AbominationDespawner(Unit* owner) : _owner(owner) { }
 
-        bool operator()(uint64 guid)
+        bool operator()(ObjectGuid guid)
         {
             if (Unit* summon = ObjectAccessor::GetUnit(*_owner, guid))
             {
@@ -414,7 +414,7 @@ class boss_professor_putricide : public CreatureScript
                         instance->SetBossState(DATA_FESTERGUT, IN_PROGRESS); // needed here for delayed gate close
                         me->SetSpeed(MOVE_RUN, _baseSpeed, true);
                         DoAction(ACTION_FESTERGUT_GAS);
-                        if (Creature* festergut = Unit::GetCreature(*me, instance->GetData64(DATA_FESTERGUT)))
+                        if (Creature* festergut = Unit::GetCreature(*me, instance->GetGuidData(DATA_FESTERGUT)))
                             festergut->CastSpell(festergut, SPELL_GASEOUS_BLIGHT_LARGE, false, nullptr, nullptr, festergut->GetGUID());
                         break;
                     case POINT_ROTFACE:
@@ -429,7 +429,7 @@ class boss_professor_putricide : public CreatureScript
                         events.CancelEvent(EVENT_MOVE_TO_TABLE_FORCED);
                         me->GetMotionMaster()->MoveIdle();
                         me->SetSpeed(MOVE_RUN, _baseSpeed, true);
-                        if (GameObject* table = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_PUTRICIDE_TABLE)))
+                        if (GameObject* table = ObjectAccessor::GetGameObject(*me, instance->GetGuidData(DATA_PUTRICIDE_TABLE)))
                             me->SetFacingToObject(table);
                         if (IsHeroic())
                             Talk(SAY_PHASE_TRANSITION_HEROIC);
@@ -491,7 +491,7 @@ class boss_professor_putricide : public CreatureScript
                         DoZoneInCombat(me);
                         me->GetMotionMaster()->MovePoint(POINT_ROTFACE, rotfaceWatchPos);
                         // init random sequence of floods
-                        if (Creature* rotface = Unit::GetCreature(*me, instance->GetData64(DATA_ROTFACE)))
+                        if (Creature* rotface = Unit::GetCreature(*me, instance->GetGuidData(DATA_ROTFACE)))
                         {
                             std::list<Creature*> list;
                             GetCreatureListWithEntryInGrid(list, rotface, NPC_PUDDLE_STALKER, 36.0f);
@@ -802,7 +802,7 @@ class boss_professor_putricide : public CreatureScript
                 events.SetPhase(newPhase);
             }
 
-            uint64 _oozeFloodDummyGUIDs[4];
+            ObjectGuid _oozeFloodDummyGUIDs[4];
             Phases _phase;          // external of EventMap because event phase gets reset on evade
             float const _baseSpeed;
             uint8 _oozeFloodStage;
@@ -1107,7 +1107,7 @@ class npc_malleable_ooze : public CreatureScript
             void IsSummonedBy(Unit* /*summoner*/)
             {
                 if (InstanceScript* instance = me->GetInstanceScript())
-                    if (Creature* boss = instance->instance->GetCreature(instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
+                    if (Creature* boss = instance->instance->GetCreature(instance->GetGuidData(DATA_PROFESSOR_PUTRICIDE)))
                         boss->CastSpell(me, SPELL_MALLEABLE_GOO_H);
             }
         };
@@ -1347,7 +1347,7 @@ class spell_putricide_unstable_experiment : public SpellScriptLoader
                 uint32 stage = GetCaster()->ToCreature()->AI()->GetData(DATA_EXPERIMENT_STAGE);
                 Creature* target = nullptr;
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                    if (uint64 guid = instance->GetData64(stage ? DATA_UNSTABLE_EXPERIMENT_STALKER_RED : DATA_UNSTABLE_EXPERIMENT_STALKER_GREEN))
+                    if (ObjectGuid guid = instance->GetGuidData(stage ? DATA_UNSTABLE_EXPERIMENT_STALKER_RED : DATA_UNSTABLE_EXPERIMENT_STALKER_GREEN))
                         target = instance->instance->GetCreature(guid);
                 /*std::list<Creature*> creList;
                 GetCreatureListWithEntryInGrid(creList, GetCaster(), NPC_ABOMINATION_WING_MAD_SCIENTIST_STALKER, 200.0f);
@@ -1506,7 +1506,7 @@ class spell_putricide_unbound_plague : public SpellScriptLoader
 
                 if (!GetHitUnit()->HasAura(SPELL_UNBOUND_PLAGUE))
                 {
-                    if (Creature* professor = ObjectAccessor::GetCreature(*GetCaster(), instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
+                    if (Creature* professor = ObjectAccessor::GetCreature(*GetCaster(), instance->GetGuidData(DATA_PROFESSOR_PUTRICIDE)))
                     {
                         if (Aura* oldPlague = GetCaster()->GetAura(SPELL_UNBOUND_PLAGUE, professor->GetGUID()))
                         {
@@ -1708,7 +1708,7 @@ class spell_putricide_mutation_init : public SpellScriptLoader
                 if (!instance)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-                Creature* professor = ObjectAccessor::GetCreature(*GetExplTargetUnit(), instance->GetData64(DATA_PROFESSOR_PUTRICIDE));
+                Creature* professor = ObjectAccessor::GetCreature(*GetExplTargetUnit(), instance->GetGuidData(DATA_PROFESSOR_PUTRICIDE));
                 if (!professor)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
@@ -1829,7 +1829,7 @@ class spell_putricide_mutated_transformation : public SpellScriptLoader
                 if (!instance)
                     return;
 
-                Creature* putricide = ObjectAccessor::GetCreature(*caster, instance->GetData64(DATA_PROFESSOR_PUTRICIDE));
+                Creature* putricide = ObjectAccessor::GetCreature(*caster, instance->GetGuidData(DATA_PROFESSOR_PUTRICIDE));
                 if (!putricide)
                     return;
 

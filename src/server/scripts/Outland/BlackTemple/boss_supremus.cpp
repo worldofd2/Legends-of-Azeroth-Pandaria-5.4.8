@@ -165,7 +165,7 @@ class boss_supremus : public CreatureScript
                 if (instance)
                 {
                     instance->SetData(DATA_SUPREMUS_EVENT, DONE);
-                    instance->HandleGameObject(instance->GetData64(DATA_GAMEOBJECT_SUPREMUS_DOORS), true);
+                    instance->HandleGameObject(instance->GetGuidData(DATA_GAMEOBJECT_SUPREMUS_DOORS), true);
                 }
                 summons.DespawnAll();
             }

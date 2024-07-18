@@ -697,12 +697,12 @@ class spell_web_doors : public SpellScriptLoader
                 {
                     if (GetSpellInfo()->Id == SPELL_WEB_FRONT_DOORS)
                     {
-                        if (Unit* target = instance->instance->GetCreature(instance->GetData64(DATA_HADRONOX_FRONT_DOOR_1)))
+                        if (Unit* target = instance->instance->GetCreature(instance->GetGuidData(DATA_HADRONOX_FRONT_DOOR_1)))
                             targets.push_back(target);
-                        if (Unit* target = instance->instance->GetCreature(instance->GetData64(DATA_HADRONOX_FRONT_DOOR_2)))
+                        if (Unit* target = instance->instance->GetCreature(instance->GetGuidData(DATA_HADRONOX_FRONT_DOOR_2)))
                             targets.push_back(target);
                     }
-                    else if (Unit* target = instance->instance->GetCreature(instance->GetData64(DATA_HADRONOX_SIDE_DOOR)))
+                    else if (Unit* target = instance->instance->GetCreature(instance->GetGuidData(DATA_HADRONOX_SIDE_DOOR)))
                         targets.push_back(target);
                 }
             }

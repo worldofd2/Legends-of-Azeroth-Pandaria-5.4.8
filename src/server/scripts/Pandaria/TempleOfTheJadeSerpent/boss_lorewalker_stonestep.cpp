@@ -172,7 +172,7 @@ class boss_lorewalker_stonestep : public CreatureScript
                             if (instance)
                             {
                                 instance->SetData(DATA_SUN, DONE);
-                                if (Creature* zao = Unit::GetCreature(*me, instance->GetData64(DATA_ZAO)))
+                                if (Creature* zao = Unit::GetCreature(*me, instance->GetGuidData(DATA_ZAO)))
                                    if (zao->IsAIEnabled)
                                       zao->AI()->DoAction(1);
                             }
@@ -489,7 +489,7 @@ class npc_haunting_sha : public CreatureScript
             {
                 instance = me->GetInstanceScript();
 
-                if (Creature* zao = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_ZAO) : 0))
+                if (Creature* zao = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_ZAO) : ObjectGuid::Empty))
                     zao->AI()->JustSummoned(me);
             }
 
@@ -504,7 +504,7 @@ class npc_haunting_sha : public CreatureScript
                 {
                     if (instance)
                     {
-                        if (Creature* zao = Unit::GetCreature(*me, instance->GetData64(DATA_ZAO)))
+                        if (Creature* zao = Unit::GetCreature(*me, instance->GetGuidData(DATA_ZAO)))
                         {
                             me->getThreatManager().addThreat(zao, 1000000.f);
                             me->AI()->AttackStart(zao);

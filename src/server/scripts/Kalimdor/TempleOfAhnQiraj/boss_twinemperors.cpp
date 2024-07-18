@@ -118,7 +118,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     Creature* GetOtherBoss()
     {
         if (instance)
-            return Unit::GetCreature(*me, instance->GetData64(IAmVeklor() ? NPC_VEKNILASH : NPC_VEKLOR));
+            return Unit::GetCreature(*me, instance->GetGuidData(IAmVeklor() ? NPC_VEKNILASH : NPC_VEKLOR));
         else
             return NULL;
     }
@@ -569,7 +569,7 @@ class boss_veklor : public CreatureScript
                     me->m_Events.Schedule(delay += 3000, 10, [this]()
                     {
                         if (instance)
-                            if (Creature* vekhilash = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_VEKNILASH)))
+                            if (Creature* vekhilash = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_VEKNILASH)))
                                 vekhilash->AI()->DoAction(ACTION_INTRO);
                     });
 
@@ -668,7 +668,7 @@ class AreaTrigger_at_twin_emperors : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                if (Creature* Veklor = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_VEKLOR)))
+                if (Creature* Veklor = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_VEKLOR)))
                     Veklor->AI()->DoAction(ACTION_INTRO);
     
             return false;

@@ -1011,7 +1011,7 @@ void PetBattle::SendInitialUpdate(Player * player)
     bool hasDisplayId = false;
 
     // only set wild battle pet guid if you are in a pve match
-    ObjectGuid wildBattlePetGuid = 0;
+    ObjectGuid wildBattlePetGuid = ObjectGuid::Empty;
     if (GetType() == PET_BATTLE_TYPE_PVE)
         wildBattlePetGuid = m_teams[PET_BATTLE_TEAM_OPPONENT]->GetWildBattlePet()->GetGUID();
 
@@ -1030,7 +1030,7 @@ void PetBattle::SendInitialUpdate(Player * player)
         bool hasFrontPet = team->GetActivePet() != nullptr;
         bool trapStatus = true;
 
-        ObjectGuid characterGuid = 0;
+        ObjectGuid characterGuid = ObjectGuid::Empty;
         if ((GetType() != PET_BATTLE_TYPE_PVE || team->GetTeamIndex() == PET_BATTLE_TEAM_CHALLANGER))
             characterGuid = team->GetOwner()->GetGUID();
 
@@ -1055,23 +1055,32 @@ void PetBattle::SendInitialUpdate(Player * player)
 
             data.WriteBit(petEntry[0]);
             data.WriteBit(!pet->GetFlags());
-            data.WriteGuidMask(petEntry, 5, 1);
+            data.WriteBit(petEntry[5]);
+            data.WriteBit(petEntry[1]);
 
             data.WriteBits(abilityCount, 20);
             data.WriteBit(0);
             data.WriteBits(pet->GetNickname().size(), 7);
-            data.WriteGuidMask(petEntry, 2, 4);
+            data.WriteBit(petEntry[2]);
+            data.WriteBit(petEntry[4]);
 
             for (uint8 i = 0; i < BATTLE_PET_MAX_ABILITIES; i++)
                 if (pet->Abilities[i])
                     data.WriteBit(0);
 
-            data.WriteGuidMask(petEntry, 6, 7);
+            data.WriteBit(petEntry[6]);
+            data.WriteBit(petEntry[7]);
         }
 
         data.WriteBit(!hasFrontPet);
         data.WriteBit(!hasRoundTimeSec);
-        data.WriteGuidMask(characterGuid, 5, 3, 4, 6, 7, 0, 1);
+        data.WriteBit(characterGuid[5]);
+        data.WriteBit(characterGuid[3]);
+        data.WriteBit(characterGuid[4]);
+        data.WriteBit(characterGuid[6]);
+        data.WriteBit(characterGuid[7]);
+        data.WriteBit(characterGuid[0]);
+        data.WriteBit(characterGuid[1]);
     }
 
     data.WriteBit(!hasForfietPenalty);
@@ -1084,14 +1093,21 @@ void PetBattle::SendInitialUpdate(Player * player)
     data.WriteBit(!hasWatingForFrontPetsMaxSecs);
     data.WriteBit(!wildBattlePetGuid);
 
-    data.WriteGuidMask(wildBattlePetGuid, 2, 4, 5, 1, 3, 6, 7, 0);
+    data.WriteBit(wildBattlePetGuid[2]);
+    data.WriteBit(wildBattlePetGuid[4]);
+    data.WriteBit(wildBattlePetGuid[5]);
+    data.WriteBit(wildBattlePetGuid[1]);
+    data.WriteBit(wildBattlePetGuid[3]);
+    data.WriteBit(wildBattlePetGuid[6]);
+    data.WriteBit(wildBattlePetGuid[7]);
+    data.WriteBit(wildBattlePetGuid[0]);
 
     data.WriteBit(!hasPvPMaxRoundTime);
     data.WriteBit(0); // CurPetBattleState
 
     for (auto&& team : m_teams)
     {
-        ObjectGuid characterGuid = 0;
+        ObjectGuid characterGuid = ObjectGuid::Empty;
         if ((GetType() != PET_BATTLE_TYPE_PVE || team->GetTeamIndex() == PET_BATTLE_TEAM_CHALLANGER))
             characterGuid = team->GetOwner()->GetGUID();
 
@@ -1147,7 +1163,12 @@ void PetBattle::SendInitialUpdate(Player * player)
             data << uint32(team->GetTrapStatus());
 
         data << uint32(team->GetOwner() ? team->GetOwner()->GetBattlePetMgr().GetTrapAbility() : 0);
-        data.WriteGuidBytes(characterGuid, 5, 7, 6, 1, 4, 0);
+        data.WriteByteSeq(characterGuid[5]);
+        data.WriteByteSeq(characterGuid[7]);
+        data.WriteByteSeq(characterGuid[6]);
+        data.WriteByteSeq(characterGuid[1]);
+        data.WriteByteSeq(characterGuid[4]);
+        data.WriteByteSeq(characterGuid[0]);
 
         if (hasFrontPet)
             data << uint8(team->ConvertToLocalIndex(team->GetActivePet()->GetGlobalIndex()));
@@ -1157,7 +1178,8 @@ void PetBattle::SendInitialUpdate(Player * player)
         if (hasRoundTimeSec)
             data << uint16(0);
 
-        data.WriteGuidBytes(characterGuid, 3, 2);
+        data.WriteByteSeq(characterGuid[3]);
+        data.WriteByteSeq(characterGuid[2]);
     }
 
     if (hasForfietPenalty)
@@ -1166,7 +1188,14 @@ void PetBattle::SendInitialUpdate(Player * player)
     if (true)
         data << uint8(PET_BATTLE_ROUND_RESULT_INITIALISE);
 
-    data.WriteGuidBytes(wildBattlePetGuid, 5, 4, 3, 2, 7, 0, 1, 6);
+    data.WriteByteSeq(wildBattlePetGuid[5]);
+    data.WriteByteSeq(wildBattlePetGuid[4]);
+    data.WriteByteSeq(wildBattlePetGuid[3]);
+    data.WriteByteSeq(wildBattlePetGuid[2]);
+    data.WriteByteSeq(wildBattlePetGuid[7]);
+    data.WriteByteSeq(wildBattlePetGuid[0]);
+    data.WriteByteSeq(wildBattlePetGuid[1]);
+    data.WriteByteSeq(wildBattlePetGuid[6]);
 
     if (hasDisplayId)
         data << uint32(0);

@@ -163,7 +163,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                     break;
                 default:
                     TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid language/message type combination",
-                        GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+                        GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
 
                     recvData.rfinish();
                     return;
@@ -310,7 +310,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) && !ChatHandler(this).isValidChatMessage(msg.c_str()))
             {
                 TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName().c_str(),
-                    GetPlayer()->GetGUIDLow(), msg.c_str());
+                    GetPlayer()->GetGUID().GetCounter(), msg.c_str());
 
                 if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
                     KickPlayer();
@@ -382,7 +382,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 break;
             }
 
-            Player* receiver = sObjectAccessor->FindPlayerByName(to);
+            Player* receiver = ObjectAccessor::FindPlayerByName(to);
             if (!receiver || (!receiver->isAcceptWhispers() && GetSecurity() == SEC_PLAYER && !receiver->IsInWhisperWhiteList(sender->GetGUID())))
             {
                 SendPlayerNotFoundNotice(to);
@@ -438,7 +438,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, type, Language(lang), _player, NULL, msg);
-            group->BroadcastChat(&data, GetPlayer()->GetGUIDLow(), group->GetMemberGroup(GetPlayer()->GetGUID()));
+            group->BroadcastChat(&data, GetPlayer()->GetGUID(), group->GetMemberGroup(GetPlayer()->GetGUID()));
         } break;
         case CHAT_MSG_GUILD:
         {
@@ -494,7 +494,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, type, Language(lang), _player, NULL, msg);
-            group->BroadcastChat(&data, GetPlayer()->GetGUIDLow());
+            group->BroadcastChat(&data, GetPlayer()->GetGUID());
             break;
         }
         case CHAT_MSG_RAID_WARNING:
@@ -604,7 +604,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, type, Language(lang), _player, NULL, msg);
-            group->BroadcastChat(&data, GetPlayer()->GetGUIDLow());
+            group->BroadcastChat(&data, GetPlayer()->GetGUID());
             break;
         }
         default:
@@ -732,7 +732,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
         {
             if (!normalizePlayerName(targetName))
                 break;
-            Player* receiver = sObjectAccessor->FindPlayerByName(targetName.c_str());
+            Player* receiver = ObjectAccessor::FindPlayerByName(targetName.c_str());
             if (!receiver)
                 break;
 
@@ -786,7 +786,7 @@ namespace Trinity
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
             {
                 ObjectGuid PlayerGuid = i_player.GetGUID();
-                ObjectGuid TargetGuid = i_target ? i_target->GetGUID() : 0;
+                ObjectGuid TargetGuid = i_target ? i_target->GetGUID() : ObjectGuid::Empty;
 
                 data.Initialize(SMSG_TEXT_EMOTE, 2 * (8 + 1) + 4 + 4);
 

@@ -181,7 +181,7 @@ class npc_azure_ring_captain : public CreatureScript
 
             void Initialize()
             {
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
             }
 
             void Reset() override
@@ -226,7 +226,7 @@ class npc_azure_ring_captain : public CreatureScript
                 switch (action)
                 {
                    case ACTION_CALL_DRAGON_EVENT:
-                        if (Creature* varos = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VAROS)))
+                        if (Creature* varos = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_VAROS)))
                         {
                             if (Unit* victim = varos->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
@@ -241,7 +241,7 @@ class npc_azure_ring_captain : public CreatureScript
            }
 
         private:
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
             InstanceScript* instance;
         };
 

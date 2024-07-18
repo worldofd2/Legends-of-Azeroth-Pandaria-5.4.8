@@ -157,7 +157,7 @@ class at_sunket_temple_eranikus : public AreaTriggerScript
             if (InstanceScript* instance = player->GetInstanceScript())
             {
                 if (instance->GetBossState(DATA_HAKKAR) == DONE && instance->GetBossState(DATA_JAMMAL) == DONE && instance->GetBossState(DATA_WARDENS) == DONE)
-                    if (Creature* m_eranikus = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_SHADE_OF_ERANIKUS)))
+                    if (Creature* m_eranikus = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_SHADE_OF_ERANIKUS)))
                         m_eranikus->AI()->DoAction(ACTION_ERANIKUS_DREAM);
             }
 

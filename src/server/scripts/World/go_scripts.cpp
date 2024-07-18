@@ -769,7 +769,7 @@ public:
             return false;
 
         pPrisoner->DisappearAndDie();
-        player->KilledMonsterCredit(NPC_EBON_BLADE_PRISONER_HUMAN, 0);
+        player->KilledMonsterCredit(NPC_EBON_BLADE_PRISONER_HUMAN, ObjectGuid::Empty);
         switch (pPrisoner->GetEntry())
         {
             case NPC_EBON_BLADE_PRISONER_HUMAN:
@@ -982,7 +982,7 @@ public:
             if (pTadpole)
             {
                 pTadpole->DisappearAndDie();
-                player->KilledMonsterCredit(NPC_WINTERFIN_TADPOLE, 0);
+                player->KilledMonsterCredit(NPC_WINTERFIN_TADPOLE, ObjectGuid::Empty);
                 //FIX: Summon minion tadpole
             }
         }
@@ -1139,7 +1139,7 @@ class go_gjalerbron_cage : public GameObjectScript
             {
                 if (Creature* prisoner = go->FindNearestCreature(NPC_GJALERBRON_PRISONER, 5.0f))
                 {
-                    player->KilledMonsterCredit(NPC_GJALERBRON_PRISONER, 0);
+                    player->KilledMonsterCredit(NPC_GJALERBRON_PRISONER, ObjectGuid::Empty);
 
                     prisoner->AI()->Talk(SAY_FREE);
                     prisoner->DespawnOrUnsummon(6000);

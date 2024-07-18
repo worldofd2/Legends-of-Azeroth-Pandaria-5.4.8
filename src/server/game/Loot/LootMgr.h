@@ -130,7 +130,7 @@ struct LootStoreItem
                                                             // Checks correctness of values
 };
 
-typedef std::set<uint32> AllowedLooterSet;
+typedef std::set<ObjectGuid> AllowedLooterSet;
 
 struct WorldDropLootItem
 {
@@ -413,9 +413,9 @@ struct Loot
     void NotifyItemRemoved(uint8 lootIndex);
     void NotifyQuestItemRemoved(uint8 questIndex);
     void NotifyMoneyRemoved();
-    void AddLooter(uint64 GUID) { PlayersLooting.insert(GUID); }
-    void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
-    bool HasLooter(uint64 GUID) { return PlayersLooting.find(GUID) != PlayersLooting.end(); }
+    void AddLooter(ObjectGuid GUID) { PlayersLooting.insert(GUID); }
+    void RemoveLooter(ObjectGuid GUID) { PlayersLooting.erase(GUID); }
+    bool HasLooter(ObjectGuid GUID) { return PlayersLooting.find(GUID) != PlayersLooting.end(); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     bool FillLoot(Object* source, uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, Difficulty difficulty = REGULAR_DIFFICULTY);
@@ -433,8 +433,8 @@ struct Loot
 
     Object* GetSource() const { return m_source; }
 
-    uint64 GetGUID() const { return m_guid; }
-    void SetGUID(uint64 guid) { m_guid = MAKE_NEW_GUID(GUID_LOPART(guid), 0, HIGHGUID_LOOT); }
+    ObjectGuid GetGUID() const { return m_guid; }
+    void SetGUID(ObjectGuid guid) { m_guid = std::move(guid); }
 
 private:
     bool CanItemBeLooted(Player* player, LootStoreItem const& item, uint32& min, uint32& max);
@@ -446,7 +446,7 @@ private:
         void FillQuestLoot(Player* player);
         void FillNonQuestNonFFANonCurrencyConditionalLoot(Player* player, bool presentAtLooting);
 
-        std::set<uint64> PlayersLooting;
+        GuidSet PlayersLooting;
         QuestItemMap PlayerCurrencies;
         QuestItemMap PlayerQuestItems;
         QuestItemMap PlayerFFAItems;
@@ -456,7 +456,7 @@ private:
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;
         Object* m_source = nullptr;
-        uint64 m_guid = 0;
+        ObjectGuid m_guid;
         bool m_normalLootMode = true;
         bool m_mainLootGenerated = false;
 };

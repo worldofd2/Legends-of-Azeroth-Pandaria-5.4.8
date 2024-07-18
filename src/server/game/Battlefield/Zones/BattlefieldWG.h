@@ -384,7 +384,7 @@ class BattlefieldWG : public Battlefield
         GameObject* GetRelic() { return GetGameObject(m_titansRelicGUID); }
 
         /// Define relic object
-        void SetRelic(uint64 relicGUID) { m_titansRelicGUID = relicGUID; }
+        void SetRelic(ObjectGuid relicGUID) { m_titansRelicGUID = relicGUID; }
 
         /// Check if players can interact with the relic (Only if the last door has been broken)
         bool CanInteractWithRelic() { return m_isRelicInteractible; }
@@ -430,7 +430,7 @@ class BattlefieldWG : public Battlefield
         uint32 m_tenacityStack;
         uint32 m_saveTimer;
 
-        uint64 m_titansRelicGUID;
+        ObjectGuid m_titansRelicGUID;
 };
 
 uint32 const VehNumWorldState[]        = { 3680, 3490 };
@@ -1063,7 +1063,7 @@ struct BfWGGameObjectBuilding
     {
         m_WG = WG;
         m_Team = 0;
-        m_BuildGUID = 0;
+        m_BuildGUID = ObjectGuid::Empty;
         m_Type = 0;
         m_WorldState = 0;
         m_State = 0;
@@ -1077,7 +1077,7 @@ struct BfWGGameObjectBuilding
     BattlefieldWG* m_WG;
 
     // Linked gameobject
-    uint64 m_BuildGUID;
+    ObjectGuid m_BuildGUID;
 
     // eWGGameObjectBuildingType
     uint32 m_Type;

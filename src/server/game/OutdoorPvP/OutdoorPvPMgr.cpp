@@ -129,7 +129,7 @@ void OutdoorPvPMgr::HandlePlayerEnterZone(Player* player, uint32 zoneid)
         return;
 
     itr->second->HandlePlayerEnterZone(player, zoneid);
-    TC_LOG_DEBUG("outdoorpvp", "Player %u entered outdoorpvp id %u", player->GetGUIDLow(), itr->second->GetTypeId());
+    TC_LOG_DEBUG("outdoorpvp", "Player %u entered outdoorpvp id %u", player->GetGUID().GetCounter(), itr->second->GetTypeId());
 }
 
 void OutdoorPvPMgr::HandlePlayerLeaveZone(Player* player, uint32 zoneid)
@@ -143,7 +143,7 @@ void OutdoorPvPMgr::HandlePlayerLeaveZone(Player* player, uint32 zoneid)
         return;
 
     itr->second->HandlePlayerLeaveZone(player, zoneid);
-    TC_LOG_DEBUG("outdoorpvp", "Player %u left outdoorpvp id %u", player->GetGUIDLow(), itr->second->GetTypeId());
+    TC_LOG_DEBUG("outdoorpvp", "Player %u left outdoorpvp id %u", player->GetGUID().GetCounter(), itr->second->GetTypeId());
 }
 
 OutdoorPvP* OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)
@@ -187,7 +187,7 @@ ZoneScript* OutdoorPvPMgr::GetZoneScript(uint32 zoneId)
         return NULL;
 }
 
-bool OutdoorPvPMgr::HandleOpenGo(Player* player, uint64 guid)
+bool OutdoorPvPMgr::HandleOpenGo(Player* player, ObjectGuid guid)
 {
     for (OutdoorPvPSet::iterator itr = m_OutdoorPvPSet.begin(); itr != m_OutdoorPvPSet.end(); ++itr)
     {
@@ -197,11 +197,11 @@ bool OutdoorPvPMgr::HandleOpenGo(Player* player, uint64 guid)
     return false;
 }
 
-void OutdoorPvPMgr::HandleGossipOption(Player* player, uint64 guid, uint32 gossipid)
+void OutdoorPvPMgr::HandleGossipOption(Player* player, Creature* creature, uint32 gossipid)
 {
     for (OutdoorPvPSet::iterator itr = m_OutdoorPvPSet.begin(); itr != m_OutdoorPvPSet.end(); ++itr)
     {
-        if ((*itr)->HandleGossipOption(player, guid, gossipid))
+        if ((*itr)->HandleGossipOption(player, creature, gossipid))
             return;
     }
 }

@@ -350,7 +350,7 @@ class npc_servant_of_siamat : public CreatureScript
 
                     if (!LightningCharge)
                     {
-                        me->CastSpell(me, SPELL_LIGHTNING_CHARGE, false, NULL, NULL, instance->GetData64(DATA_SIAMAT));
+                        me->CastSpell(me, SPELL_LIGHTNING_CHARGE, false, NULL, NULL, instance->GetGuidData(DATA_SIAMAT));
 
                         LightningCharge = true;
                         me->SetReactState(REACT_PASSIVE);
@@ -440,7 +440,7 @@ class npc_siamat_minion : public CreatureScript
                     summon->GetMotionMaster()->MoveRandom(25.0f);
                     InstanceScript* instance = me->GetInstanceScript();
 
-                    if (Creature* siamat = Unit::GetCreature(*me, instance->GetData64(DATA_SIAMAT)))
+                    if (Creature* siamat = Unit::GetCreature(*me, instance->GetGuidData(DATA_SIAMAT)))
                         siamat->AI()->JustSummoned(summon);
                 }
             }

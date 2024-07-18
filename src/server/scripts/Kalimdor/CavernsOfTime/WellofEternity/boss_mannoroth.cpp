@@ -213,7 +213,7 @@ class boss_mannoroth : public CreatureScript
 
             void JustEngagedWith(Unit* /*who*/) override
             {
-                if (Creature* pVarothen = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VAROTHEN)))
+                if (Creature* pVarothen = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_VAROTHEN)))
                     if (!pVarothen->IsInCombat())
                         DoZoneInCombat(pVarothen);
 
@@ -431,7 +431,7 @@ class boss_mannoroth : public CreatureScript
                                 pIllidan->AI()->Talk(18); // SAY_ILLIDAN_2_BUFF_3
                             break;
                         case EVENT_DESPAWN:
-                            instance->DoRespawnGameObject(instance->GetData64(DATA_MINOR_CACHE), DAY);
+                            instance->DoRespawnGameObject(instance->GetGuidData(DATA_MINOR_CACHE), DAY);
                             me->DespawnOrUnsummon();
                             break;
                         default:
@@ -473,7 +473,7 @@ class boss_mannoroth : public CreatureScript
                                 }
                     }
                 }
-                instance->DoKilledMonsterKredit(QUEST_THE_PATH_TO_THE_DRAGON_SOUL, 54969, 0);
+                instance->DoKilledMonsterKredit(QUEST_THE_PATH_TO_THE_DRAGON_SOUL, 54969, ObjectGuid::Empty);
                 instance->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_COMPLETE_ENCOUNTER, me); 
                 instance->SetBossState(DATA_MANNOROTH, DONE);
                 instance->DoModifyPlayerCurrencies(CURRENCY_TYPE_JUSTICE_POINTS, 7000);
@@ -529,7 +529,7 @@ class npc_mannoroth_varothen : public CreatureScript
                 events.ScheduleEvent(EVENT_MAGNISTRIKE, urand(3000, 7000));
 
                 if (instance)
-                    if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MANNOROTH)))
+                    if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MANNOROTH)))
                         if (!pMannoroth->IsInCombat())
                             DoZoneInCombat(pMannoroth);
             }
@@ -550,7 +550,7 @@ class npc_mannoroth_varothen : public CreatureScript
             {
                 Talk(SAY_VAROTHEN_DEATH);
 
-                if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MANNOROTH)))
+                if (Creature* pMannoroth = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MANNOROTH)))
                     pMannoroth->AI()->DoAction(ACTION_VAROTHEN_DIED);
 
                 Map::PlayerList const &PlayerList = instance->instance->GetPlayers();

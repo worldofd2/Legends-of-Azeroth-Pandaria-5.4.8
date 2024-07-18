@@ -1316,7 +1316,7 @@ struct npc_vile_fin_puddlejumper : public ScriptedAI
 {
     npc_vile_fin_puddlejumper(Creature* creature) : ScriptedAI(creature) { }
 
-    uint64 m_playerGUID;
+    ObjectGuid m_playerGUID;
 
     void Reset() override
     {
@@ -1364,7 +1364,7 @@ struct npc_vile_fin_minor_oracle : public ScriptedAI
 {
     npc_vile_fin_minor_oracle(Creature* creature) : ScriptedAI(creature) { }
 
-    uint64 m_playerGUID;
+    ObjectGuid m_playerGUID;
     uint32 m_lightning_bolt_timer;
     uint32 m_lightning_shield_timer;
 
@@ -1480,7 +1480,7 @@ struct npc_captured_vile_fin_puddlejumper : public ScriptedAI
     npc_captured_vile_fin_puddlejumper(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap m_events;
-    uint64 m_playerGUID;
+    ObjectGuid m_playerGUID;
 
     void Reset() override
     {
@@ -1507,7 +1507,7 @@ struct npc_captured_vile_fin_minor_oracle : public ScriptedAI
     npc_captured_vile_fin_minor_oracle(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap m_events;
-    uint64 m_playerGUID;
+    ObjectGuid m_playerGUID;
 
     void Reset() override
     {

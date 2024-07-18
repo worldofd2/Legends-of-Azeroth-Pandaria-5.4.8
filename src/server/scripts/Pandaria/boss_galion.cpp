@@ -61,9 +61,9 @@ enum GalionMisc
     DATA_BOSS_GALION,
 };
 
-void HandleInitCombat(uint64 ownerGUID)
+void HandleInitCombat(Creature* me, ObjectGuid ownerGUID)
 {
-    Unit* owner = ObjectAccessor::FindUnit(ownerGUID);
+    Unit* owner = ObjectAccessor::GetUnit(*me, ownerGUID);
 
     if (!owner)
         return;
@@ -226,7 +226,7 @@ struct npc_salyin_skrimisher : public ScriptedAI
     npc_salyin_skrimisher(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap events;
-    uint64 ownerGUID;
+    ObjectGuid ownerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {
@@ -237,7 +237,7 @@ struct npc_salyin_skrimisher : public ScriptedAI
     {
         if (actionId == ACTION_INIT_COMBAT)
         {
-            HandleInitCombat(me->GetGUID());
+            HandleInitCombat(me, me->GetGUID());
             events.ScheduleEvent(EVENT_FIRE_SHOT, randtime(3s, 16s));
         }
     }
@@ -266,7 +266,7 @@ struct npc_salyin_warmonger : public ScriptedAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        HandleInitCombat(me->GetGUID());
+        HandleInitCombat(me, me->GetGUID());
     }
 
     void Reset() override

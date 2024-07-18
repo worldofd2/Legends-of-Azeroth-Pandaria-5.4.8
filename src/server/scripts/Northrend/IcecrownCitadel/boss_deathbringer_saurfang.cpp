@@ -294,7 +294,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                 if (!_introDone)
                 {
                     DoCast(me, SPELL_GRIP_OF_AGONY);
-                    if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SAURFANG_EVENT_NPC)))
+                    if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SAURFANG_EVENT_NPC)))
                         creature->AI()->DoAction(ACTION_INTERRUPT_INTRO);
                 }
                 _introDone = true;
@@ -320,7 +320,7 @@ class boss_deathbringer_saurfang : public CreatureScript
              //   me->RemoveAurasDueToSpell(SPELL_GRIP_OF_AGONY);
 
              //   instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_THE_FALLEN_CHAMPION);
-             //   if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SAURFANG_EVENT_NPC)))
+             //   if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SAURFANG_EVENT_NPC)))
              //       creature->AI()->DoAction(ACTION_START_OUTRO);
             }
 
@@ -347,7 +347,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                 if (_dead)
                     return;
 
-                if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SAURFANG_EVENT_NPC)))
+                if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SAURFANG_EVENT_NPC)))
                     creature->AI()->DoAction(ACTION_RESET_INTRO);
             }
 
@@ -399,7 +399,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                     Talk(SAY_DEATH);
 
                     //instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_THE_FALLEN_CHAMPION);
-                    if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SAURFANG_EVENT_NPC)))
+                    if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SAURFANG_EVENT_NPC)))
                     {
                         DoCast(me, SPELL_PERMANENT_FEIGN_DEATH, true);
                         creature->AI()->DoAction(ACTION_START_OUTRO);
@@ -437,7 +437,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                 if (type != POINT_MOTION_TYPE && pointId != POINT_SAURFANG)
                     return;
 
-                instance->HandleGameObject(instance->GetData64(GO_SAURFANG_S_DOOR), false);
+                instance->HandleGameObject(instance->GetGuidData(GO_SAURFANG_S_DOOR), false);
             }
 
             void SpellHitTarget(Unit* target, SpellInfo const* spell) override
@@ -591,9 +591,9 @@ class boss_deathbringer_saurfang : public CreatureScript
                     case PHASE_INTRO_A:
                     case PHASE_INTRO_H:
                     {
-                        if (GameObject* teleporter = GameObject::GetGameObject(*me, instance->GetData64(GO_SCOURGE_TRANSPORTER_DEATHBRINGERS)))
+                        if (GameObject* teleporter = GameObject::GetGameObject(*me, instance->GetGuidData(GO_SCOURGE_TRANSPORTER_DEATHBRINGERS)))
                         {
-                            instance->HandleGameObject(0, false, teleporter);
+                            instance->HandleGameObject(ObjectGuid::Empty, false, teleporter);
                             teleporter->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
                         }
 
@@ -716,7 +716,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
                 _events.SetPhase(PHASE_INTRO_H);
                 _events.ScheduleEvent(EVENT_INTRO_HORDE_1, 6000, 0, PHASE_INTRO_H);
                 _events.ScheduleEvent(EVENT_INTRO_HORDE_3, 6000+18000, 0, PHASE_INTRO_H);
-                if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                     deathbringer->AI()->DoAction(PHASE_INTRO_H);
                 break;
             }
@@ -750,7 +750,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
                 Schedule(delay += 19000, [this]() { Talk(SAY_OUTRO_HORDE_3); });
                 Schedule(delay +=  7000, [this]()
                 {
-                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                     {
                         deathbringer->CastSpell(me, SPELL_RIDE_VEHICLE, true);
                         deathbringer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
@@ -816,7 +816,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
                     _events.ScheduleEvent(EVENT_INTRO_HORDE_6, 9000+10500+18500, 0, PHASE_INTRO_H);
                     _events.ScheduleEvent(EVENT_INTRO_HORDE_7, 9000+10500+18500+17500, 0, PHASE_INTRO_H);
                     _events.ScheduleEvent(EVENT_INTRO_HORDE_8, 9000+10500+18500+17500+4000, 0, PHASE_INTRO_H);
-                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                         deathbringer->AI()->DoAction(ACTION_CONTINUE_INTRO);
                     break;
                 case POINT_HORDE_OUTRO_0:
@@ -843,7 +843,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
                 }
                 case POINT_HORDE_OUTRO_4:
                 {
-                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                     {
                         deathbringer->ExitVehicle();
                         deathbringer->DespawnOrUnsummon();
@@ -910,14 +910,14 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
                     break;
                 case POINT_ALLIANCE_OUTRO_8:
                 {
-                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                         me->SetFacingToObject(deathbringer);
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
                     uint32 delay = 0;
                     Schedule(delay += 1000, [this]() { Talk(SAY_OUTRO_ALLIANCE_13); });
                     Schedule(delay += 7000, [this]()
                     {
-                        if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                        if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                         {
                             deathbringer->CastSpell(me, SPELL_RIDE_VEHICLE, true);
                             deathbringer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
@@ -955,7 +955,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
                     break;
                 }
                 case POINT_ALLIANCE_OUTRO_12:
-                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                     {
                         deathbringer->ExitVehicle();
                         deathbringer->DespawnOrUnsummon();
@@ -988,7 +988,7 @@ struct npc_high_overlord_saurfang_icc : public ScriptedAI
             switch (eventId)
             {
                 case EVENT_INTRO_HORDE_1:
-                    _instance->HandleGameObject(_instance->GetData64(GO_SAURFANG_S_DOOR), true);
+                    _instance->HandleGameObject(_instance->GetGuidData(GO_SAURFANG_S_DOOR), true);
                     break;
                 case EVENT_INTRO_HORDE_3:
                     me->SetWalk(true);
@@ -1085,8 +1085,8 @@ struct npc_muradin_bronzebeard_icc : public ScriptedAI
                 me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 Talk(SAY_INTRO_ALLIANCE_1);
                 _events.ScheduleEvent(EVENT_INTRO_ALLIANCE_4, 32000, 0, PHASE_INTRO_A);
-                _instance->HandleGameObject(_instance->GetData64(GO_SAURFANG_S_DOOR), true);
-                if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                _instance->HandleGameObject(_instance->GetGuidData(GO_SAURFANG_S_DOOR), true);
+                if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                     deathbringer->AI()->DoAction(PHASE_INTRO_A);
                 break;
             }
@@ -1162,7 +1162,7 @@ struct npc_muradin_bronzebeard_icc : public ScriptedAI
                 {
                     if (Creature* saurfang = ObjectAccessor::GetCreature(*me, saurfangTransportGUID))
                     {
-                        saurfangTransportGUID = 0;
+                        saurfangTransportGUID = ObjectGuid::Empty;
                         saurfang->DespawnOrUnsummon();
                     }
                 });
@@ -1375,7 +1375,7 @@ struct npc_muradin_bronzebeard_icc : public ScriptedAI
                 case EVENT_INTRO_ALLIANCE_4:
                     Talk(SAY_INTRO_ALLIANCE_4);
                     _events.ScheduleEvent(EVENT_INTRO_ALLIANCE_5, 6500, 0, PHASE_INTRO_A);
-                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                    if (Creature* deathbringer = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                         deathbringer->AI()->DoAction(ACTION_CONTINUE_INTRO);
                     break;
                 case EVENT_INTRO_ALLIANCE_5:
@@ -1393,8 +1393,8 @@ private:
     InstanceScript* _instance;
     std::list<Creature*> _guardList;
     Transport* transport = nullptr;
-    uint64 saurfangTransportGUID = 0;
-    uint64 saurfangGUID = 0;
+    ObjectGuid saurfangTransportGUID = ObjectGuid::Empty;
+    ObjectGuid saurfangGUID = ObjectGuid::Empty;
     void Schedule(uint32 delay, std::function<void()> const& func)
     {
         me->m_Events.Schedule(delay, func);
@@ -2020,7 +2020,7 @@ class npc_bloodbeast : public CreatureScript
                     if (!path.CalculatePath(me->GetVictim()->GetPositionX(), me->GetVictim()->GetPositionY(), me->GetVictim()->GetPositionZ()) ||
                         path.GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE))
                     {
-                        if (Creature* saurfang = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DEATHBRINGER_SAURFANG)))
+                        if (Creature* saurfang = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_DEATHBRINGER_SAURFANG)))
                             saurfang->AI()->EnterEvadeMode();
 
                         return true;

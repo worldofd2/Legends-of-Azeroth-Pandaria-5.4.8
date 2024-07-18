@@ -129,7 +129,7 @@ struct npc_thunder_king_treasure_sentry_totem : public ScriptedAI
     npc_thunder_king_treasure_sentry_totem(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void InitializeAI() override
     {
@@ -140,12 +140,12 @@ struct npc_thunder_king_treasure_sentry_totem : public ScriptedAI
         });
     }
 
-    void SetGUID(uint64 guid, int32 /*type*/) override
+    void SetGUID(ObjectGuid guid, int32 /*type*/) override
     {
         targetGUID = guid;
     }
 
-    uint64 GetGUID(int32 /*type*/) const override
+    ObjectGuid GetGUID(int32 /*type*/) const override
     {
         return targetGUID;
     }
@@ -276,7 +276,7 @@ struct npc_thunder_king_treasure_sentry_beam_bunny : public ScriptedAI
     npc_thunder_king_treasure_sentry_beam_bunny(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {

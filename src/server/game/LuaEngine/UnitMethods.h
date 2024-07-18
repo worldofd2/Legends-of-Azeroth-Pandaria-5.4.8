@@ -31,7 +31,7 @@ namespace LuaUnit
     {
         uint64 guid = sEluna->CHECK_ULONG(L, 1);
 
-        unit->SetOwnerGUID(guid);
+        unit->SetOwnerGUID(ObjectGuid(guid));
         return 0;
     }
 
@@ -969,35 +969,35 @@ namespace LuaUnit
     int SetCreatorGUID(lua_State* L, Unit* unit)
     {
         uint64 guid = sEluna->CHECK_ULONG(L, 1);
-        unit->SetCreatorGUID(guid);
+        unit->SetCreatorGUID(ObjectGuid(guid));
         return 0;
     }
 
     int SetMinionGUID(lua_State* L, Unit* unit)
     {
         uint64 guid = sEluna->CHECK_ULONG(L, 1);
-        unit->SetPetGUID(guid); // TC MinionGuid methods = same field as Mangos PetGuid
+        unit->SetPetGUID(ObjectGuid(guid)); // TC MinionGuid methods = same field as Mangos PetGuid
         return 0;
     }
 
     int SetCharmerGUID(lua_State* L, Unit* unit)
     {
         uint64 guid = sEluna->CHECK_ULONG(L, 1);
-        unit->SetCharmerGUID(guid);
+        unit->SetCharmerGUID(ObjectGuid(guid));
         return 0;
     }
 
     int SetPetGUID(lua_State* L, Unit* unit)
     {
         uint64 guid = sEluna->CHECK_ULONG(L, 1);
-        unit->SetPetGUID(guid);
+        unit->SetPetGUID(ObjectGuid(guid));
         return 0;
     }
 
     int SetCritterGUID(lua_State* L, Unit* unit)
     {
         uint64 guid = sEluna->CHECK_ULONG(L, 1);
-        unit->SetCritterGUID(guid);
+        unit->SetCritterGUID(ObjectGuid(guid));
         return 0;
     }
 
@@ -1085,32 +1085,32 @@ namespace LuaUnit
     {
         //@TODO
         const char* msg = luaL_checkstring(L, 1);
-        uint64 receiver = luaL_checknumber(L, 2);
+        ObjectGuid receiver(uint64(luaL_checknumber(L, 2)));
         bool bossWhisper = luaL_optbool(L, 3, false);
 
         WorldObject* target = nullptr;
         if (receiver)
         {
-            switch (GUID_HIPART(receiver))
+            switch (receiver.GetHigh())
             {
-            case HIGHGUID_UNIT:
-            case HIGHGUID_VEHICLE:
-                target = HashMapHolder<Creature>::Find(receiver);
+            case HighGuid::Unit:
+            case HighGuid::Vehicle:
+                target = unit->GetMap()->GetCreature(receiver);;
                 break;
-            case HIGHGUID_PET:
-                target = HashMapHolder<Pet>::Find(receiver);
+            case HighGuid::Pet:
+                target = unit->GetMap()->GetPet(receiver);
                 break;
-            case HIGHGUID_PLAYER:                       // empty GUID case also
-                target = HashMapHolder<Player>::Find(receiver);
+            case HighGuid::Player:                       // empty GUID case also
+                target = unit->GetMap()->GetPlayer(receiver);
                 break;
-            case HIGHGUID_TRANSPORT:
-            case HIGHGUID_GAMEOBJECT:
-                target = HashMapHolder<GameObject>::Find(receiver);
+            case HighGuid::Transport:
+            case HighGuid::GameObject:
+                target = unit->GetMap()->GetGameObject(receiver);
                 break;
-            case HIGHGUID_CORPSE:
-                target = HashMapHolder<Corpse>::Find(receiver);
+            case HighGuid::Corpse:
+                target = unit->GetMap()->GetCorpse(receiver);
                 break;
-                //case HIGHGUID_MO_TRANSPORT:
+                //case HighGuid::Mo_Transport:
                 //{
                 //    GameObject* go = HashMapHolder<GameObject>::Find(receiver);
                 //    target = go ? go->ToTransport() : NULL;
@@ -1131,33 +1131,33 @@ namespace LuaUnit
     {
         //@TODO
         const char* msg = luaL_checkstring(L, 1);
-        uint64 receiver = luaL_checknumber(L, 2);
+        ObjectGuid receiver(uint64(luaL_checknumber(L, 2)));
         bool bossEmote = luaL_optbool(L, 3, false);
 
 
         WorldObject* target = nullptr;
         if (receiver)
         {
-            switch (GUID_HIPART(receiver))
+            switch (receiver.GetHigh())
             {
-            case HIGHGUID_UNIT:
-            case HIGHGUID_VEHICLE:
-                target = HashMapHolder<Creature>::Find(receiver);
+            case HighGuid::Unit:
+            case HighGuid::Vehicle:
+                target = unit->GetMap()->GetCreature(receiver);
                 break;
-            case HIGHGUID_PET:
-                target = HashMapHolder<Pet>::Find(receiver);
+            case HighGuid::Pet:
+                target = unit->GetMap()->GetPet(receiver);
                 break;
-            case HIGHGUID_PLAYER:                       // empty GUID case also
-                target = HashMapHolder<Player>::Find(receiver);
+            case HighGuid::Player:                       // empty GUID case also
+                target = unit->GetMap()->GetPlayer(receiver);
                 break;
-            case HIGHGUID_TRANSPORT:
-            case HIGHGUID_GAMEOBJECT:
-                target = HashMapHolder<GameObject>::Find(receiver);
+            case HighGuid::Transport:
+            case HighGuid::GameObject:
+                target = unit->GetMap()->GetGameObject(receiver);
                 break;
-            case HIGHGUID_CORPSE:
-                target = HashMapHolder<Corpse>::Find(receiver);
+            case HighGuid::Corpse:
+                target = unit->GetMap()->GetCorpse(receiver);
                 break;
-            //case HIGHGUID_MO_TRANSPORT:
+            //case HighGuid::Mo_Transport:
             //{
             //    GameObject* go = HashMapHolder<GameObject>::Find(receiver);
             //    target = go ? go->ToTransport() : NULL;
@@ -1180,31 +1180,31 @@ namespace LuaUnit
         //@TODO
         const char* msg = luaL_checkstring(L, 1);
         uint32 language = luaL_checknumber(L, 2);
-        uint64 guid = luaL_checknumber(L, 3);
+        ObjectGuid guid(uint64(luaL_checknumber(L, 3)));
 
         WorldObject* target = nullptr;
         if (guid)
         {
-            switch (GUID_HIPART(guid))
+            switch (guid.GetHigh())
             {
-            case HIGHGUID_UNIT:
-            case HIGHGUID_VEHICLE:
-                target = HashMapHolder<Creature>::Find(guid);
+            case HighGuid::Unit:
+            case HighGuid::Vehicle:
+                target = unit->GetMap()->GetCreature(guid);
                 break;
-            case HIGHGUID_PET:
-                target = HashMapHolder<Pet>::Find(guid);
+            case HighGuid::Pet:
+                target = unit->GetMap()->GetPet(guid);
                 break;
-            case HIGHGUID_PLAYER:                       // empty GUID case also
-                target = HashMapHolder<Player>::Find(guid);
+            case HighGuid::Player:                       // empty GUID case also
+                target = unit->GetMap()->GetPlayer(guid);
                 break;
-            case HIGHGUID_TRANSPORT:
-            case HIGHGUID_GAMEOBJECT:
-                target = HashMapHolder<GameObject>::Find(guid);
+            case HighGuid::Transport:
+            case HighGuid::GameObject:
+                target = unit->GetMap()->GetGameObject(guid);
                 break;
-            case HIGHGUID_CORPSE:
-                target = HashMapHolder<Corpse>::Find(guid);
+            case HighGuid::Corpse:
+                target = unit->GetMap()->GetCorpse(guid);
                 break;
-            //case HIGHGUID_MO_TRANSPORT:
+            //case HighGuid::Mo_Transport:
             //{
             //    GameObject* go = HashMapHolder<GameObject>::Find(guid);
             //    target = go ? go->ToTransport() : NULL;
@@ -1227,31 +1227,31 @@ namespace LuaUnit
         //@TODO
         const char* msg = luaL_checkstring(L, 1);
         uint32 language = luaL_checknumber(L, 2);
-        uint64 guid = luaL_checknumber(L, 3);
+        ObjectGuid guid(uint64(luaL_checknumber(L, 3)));
 
         WorldObject* target = nullptr;
         if (guid)
         {
-            switch (GUID_HIPART(guid))
+            switch (guid.GetHigh())
             {
-            case HIGHGUID_UNIT:
-            case HIGHGUID_VEHICLE:
-                target = HashMapHolder<Creature>::Find(guid);
+            case HighGuid::Unit:
+            case HighGuid::Vehicle:
+                target = unit->GetMap()->GetCreature(guid);
                 break;
-            case HIGHGUID_PET:
-                target = HashMapHolder<Pet>::Find(guid);
+            case HighGuid::Pet:
+                target = unit->GetMap()->GetPet(guid);
                 break;
-            case HIGHGUID_PLAYER:                       // empty GUID case also
-                target = HashMapHolder<Player>::Find(guid);
+            case HighGuid::Player:                       // empty GUID case also
+                target = unit->GetMap()->GetPlayer(guid);
                 break;
-            case HIGHGUID_TRANSPORT:
-            case HIGHGUID_GAMEOBJECT:
-                target = HashMapHolder<GameObject>::Find(guid);
+            case HighGuid::Transport:
+            case HighGuid::GameObject:
+                target = unit->GetMap()->GetGameObject(guid);
                 break;
-            case HIGHGUID_CORPSE:
-                target = HashMapHolder<Corpse>::Find(guid);
+            case HighGuid::Corpse:
+                target = unit->GetMap()->GetCorpse(guid);
                 break;
-                //case HIGHGUID_MO_TRANSPORT:
+                //case HighGuid::Mo_Transport:
                 //{
                 //    GameObject* go = HashMapHolder<GameObject>::Find(guid);
                 //    target = go ? go->ToTransport() : NULL;

@@ -469,7 +469,7 @@ public:
         uint32 PostEventTimer;
         uint32 PhasePostEvent;
 
-        uint64 TortaGUID;
+        ObjectGuid TortaGUID;
 
         void Reset() override
         {
@@ -477,7 +477,7 @@ public:
             PostEventTimer = 1000;
             PhasePostEvent = 0;
 
-            TortaGUID = 0;
+            TortaGUID = ObjectGuid::Empty;
         }
 
         void MoveInLineOfSight(Unit* who) override
@@ -651,7 +651,7 @@ public:
             {
                 case ACTION_START_WP:
                 {
-                    Start(false, true, 0, NULL, false, true, true);
+                    Start(false, true, ObjectGuid::Empty, NULL, false, true, true);
                     SetDespawnAtEnd(false);
                     break;
                 }

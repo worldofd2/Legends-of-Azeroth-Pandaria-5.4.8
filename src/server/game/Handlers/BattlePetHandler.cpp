@@ -37,27 +37,33 @@ void WorldSession::HandlePetBattleStartPvpMatchmaking(WorldPacket& recvData)
     //CliRideTicket.RequesterGuid
     ObjectGuid guid = GetPlayer()->GetGUID();
 
-    data.WriteGuidMask(guid, 7, 2, 6, 1);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[1]);
     data.WriteBit(0); // 20 hasAverageWaitTime
-    data.WriteGuidMask(guid, 4);
+    data.WriteBit(guid[4]);
     data.WriteBits(0, 22);
-    data.WriteGuidMask(guid, 0);
+    data.WriteBit(guid[0]);
     data.WriteBit(0); // 48 hasClientWaitTime
-    data.WriteGuidMask(guid, 3, 5);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[5]);
 
     data.FlushBits();
-    data.WriteGuidBytes(guid, 2, 4);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
     data << uint32(0); // 72 CliRideTicket.Time
-    data.WriteGuidBytes(guid, 3);
+    data.WriteByteSeq(guid[3]);
     data << uint32(1); // 24 Status // ERR_PETBATTLE_QUEUE_ status, 1 = ERR_PETBATTLE_QUEUE_QUEUED
-    data.WriteGuidBytes(guid, 6);
+    data.WriteByteSeq(guid[6]);
     //if (hasClientWaitTime)
     //data << uint32(0) // 44
-    data.WriteGuidBytes(guid, 1);
+    data.WriteByteSeq(guid[1]);
     data << uint32(0); // 68 CliRideTicket.Type
-    data.WriteGuidBytes(guid, 5, 7);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
     data << uint32(0); // 64 CliRideTicket.Id
-    data.WriteGuidBytes(guid, 0);
+    data.WriteByteSeq(guid[0]);
 
     for (uint8 i = 0; i < 3; i++)
         data << uint32(1); // SlotResult
@@ -105,7 +111,7 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
     if (!battlePet)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_DELETE - Player %u tryed to release Battle Pet %lu which it doesn't own!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
@@ -114,7 +120,7 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
     if (!HasBattlePetSpeciesFlag(battlePet->GetSpecies(), BATTLE_PET_FLAG_RELEASABLE))
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_DELETE - Player %u tryed to release Battle Pet %lu which isn't releasable!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
     */
@@ -172,14 +178,14 @@ void WorldSession::HandleBattlePetModifyName(WorldPacket& recvData)
     if (!battlePet)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_MODIFY_NAME - Player %u tryed to set the name for Battle Pet %lu which it doesn't own!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
     if (nickname.size() > BATTLE_PET_MAX_NAME_LENGTH)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_MODIFY_NAME - Player %u tryed to set the name for Battle Pet %lu with an invalid length!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
@@ -232,11 +238,11 @@ void WorldSession::HandleBattlePetQueryName(WorldPacket& recvData)
     recvData.ReadByteSeq(petguid[4]);
     recvData.ReadByteSeq(petEntry[5]);
 
-    Unit* tempUnit = sObjectAccessor->FindUnit(petguid);
+    Unit* tempUnit = ObjectAccessor::GetUnit(*GetPlayer(), petguid);
     if (!tempUnit)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_QUERY_NAME - Player %u queried the name of Battle Pet %lu which doesnt't exist in world!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
@@ -311,14 +317,14 @@ void WorldSession::HandleBattlePetSetBattleSlot(WorldPacket& recvData)
     if (!battlePet)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_SET_BATTLE_SLOT - Player %u tryed to add Battle Pet %lu to loadout which it doesn't own!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
     if (!battlePetMgr.HasLoadoutSlot(slot))
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_SET_BATTLE_SLOT - Player %u tryed to add Battle Pet %lu into slot %u which is locked!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry, slot);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry, slot);
         return;
     }
 
@@ -326,7 +332,7 @@ void WorldSession::HandleBattlePetSetBattleSlot(WorldPacket& recvData)
     if (HasBattlePetSpeciesFlag(battlePet->GetSpecies(), BATTLE_PET_FLAG_COMPANION))
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_SET_BATTLE_SLOT - Player %u tryed to add a compainion Battle Pet %lu into slot %u!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry, slot);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry, slot);
         return;
     }
 
@@ -376,7 +382,7 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
     if (!battlePet)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_SET_FLAGS - Player %u tryed to set the flags for Battle Pet %lu which it doesn't own!",
-            GetPlayer()->GetGUIDLow(), (uint64)petEntry);
+            GetPlayer()->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
@@ -387,7 +393,7 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
         && flag != BATTLE_PET_JOURNAL_FLAG_ABILITY_3)
     {
         TC_LOG_DEBUG("network", "CMSG_BATTLE_PET_SET_FLAGS - Player %u tryed to set an invalid Battle Pet flag %u!",
-            GetPlayer()->GetGUIDLow(), flag);
+            GetPlayer()->GetGUID().GetCounter(), flag);
         return;
     }
 
@@ -435,14 +441,14 @@ void WorldSession::HandleBattlePetSummonCompanion(WorldPacket& recvData)
     if (!battlePet)
     {
         TC_LOG_DEBUG("network", "CMSG_SUMMON_BATTLE_PET_COMPANION - Player %u tryed to summon battle pet companion %lu which it doesn't own!",
-            player->GetGUIDLow(), (uint64)petEntry);
+            player->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
     if (!battlePet->GetCurrentHealth())
     {
         TC_LOG_DEBUG("network", "CMSG_SUMMON_BATTLE_PET_COMPANION - Player %u tryed to summon battle pet companion %lu which is dead!",
-            player->GetGUIDLow(), (uint64)petEntry);
+            player->GetGUID().GetCounter(), (uint64)petEntry);
         return;
     }
 
@@ -462,8 +468,22 @@ void WorldSession::HandleBattlePetSummonCompanion(WorldPacket& recvData)
 void WorldSession::HandleBattlePetCage(WorldPacket& recvData)
 {
     ObjectGuid petEntry;
-    recvData.ReadGuidMask(petEntry, 5, 1, 4, 3, 0, 6, 2, 7);
-    recvData.ReadGuidBytes(petEntry, 5, 4, 2, 7, 1, 3, 6, 0);
+    petEntry[5] = recvData.ReadBit();
+    petEntry[1] = recvData.ReadBit();
+    petEntry[4] = recvData.ReadBit();
+    petEntry[3] = recvData.ReadBit();
+    petEntry[0] = recvData.ReadBit();
+    petEntry[6] = recvData.ReadBit();
+    petEntry[2] = recvData.ReadBit();
+    petEntry[7] = recvData.ReadBit();
+    recvData.ReadByteSeq(petEntry[5]);
+    recvData.ReadByteSeq(petEntry[4]);
+    recvData.ReadByteSeq(petEntry[2]);
+    recvData.ReadByteSeq(petEntry[7]);
+    recvData.ReadByteSeq(petEntry[1]);
+    recvData.ReadByteSeq(petEntry[3]);
+    recvData.ReadByteSeq(petEntry[6]);
+    recvData.ReadByteSeq(petEntry[0]);
 
     GetPlayer()->GetBattlePetMgr().CageBattlePet(petEntry);
 }
@@ -471,20 +491,34 @@ void WorldSession::HandleBattlePetCage(WorldPacket& recvData)
 void WorldSession::HandleBattlePetLearn(WorldPacket& recvData)
 {
     ObjectGuid itemGuid;
-    recvData.ReadGuidMask(itemGuid, 7, 1, 0, 5, 4, 2, 3, 6);
-    recvData.ReadGuidBytes(itemGuid, 2, 3, 4, 1, 5, 7, 0, 6);
+    itemGuid[7] = recvData.ReadBit();
+    itemGuid[1] = recvData.ReadBit();
+    itemGuid[0] = recvData.ReadBit();
+    itemGuid[5] = recvData.ReadBit();
+    itemGuid[4] = recvData.ReadBit();
+    itemGuid[2] = recvData.ReadBit();
+    itemGuid[3] = recvData.ReadBit();
+    itemGuid[6] = recvData.ReadBit();
+    recvData.ReadByteSeq(itemGuid[2]);
+    recvData.ReadByteSeq(itemGuid[3]);
+    recvData.ReadByteSeq(itemGuid[4]);
+    recvData.ReadByteSeq(itemGuid[1]);
+    recvData.ReadByteSeq(itemGuid[5]);
+    recvData.ReadByteSeq(itemGuid[7]);
+    recvData.ReadByteSeq(itemGuid[0]);
+    recvData.ReadByteSeq(itemGuid[6]);
 
     Item* item = GetPlayer()->GetItemByGuid(itemGuid);
     if (!item)
     {
-        TC_LOG_ERROR("network", "WorldSession::HandleBattlePetLearn - Player %u tryed to learn pet from non existing item: " UI64FMTD, GetPlayer()->GetGUIDLow(), (uint64)itemGuid);
+        TC_LOG_ERROR("network", "WorldSession::HandleBattlePetLearn - Player %u tryed to learn pet from non existing item: " UI64FMTD, GetPlayer()->GetGUID().GetCounter(), (uint64)itemGuid);
         return;
     }
 
     uint32 learnSpell = item->GetTemplate()->Spells[1].SpellId;
     if (!learnSpell)
     {
-        TC_LOG_ERROR("network", "WorldSession::HandleBattlePetLearn - Player %u tryed to learn pet from wrong item: %u", GetPlayer()->GetGUIDLow(), item->GetEntry());
+        TC_LOG_ERROR("network", "WorldSession::HandleBattlePetLearn - Player %u tryed to learn pet from wrong item: %u", GetPlayer()->GetGUID().GetCounter(), item->GetEntry());
         return;
     }
 
@@ -534,7 +568,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     if (!petBattle)
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried to make a pet battle move while not in battle!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str());
         return;
     }
 
@@ -542,7 +576,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     if (petBattle->GetState() != PetBattleState::InProgress)
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried to make a move in a pet battle that isn't in progress!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str());
         return;
     }
 
@@ -552,7 +586,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         if (!sBattlePetAbilityStore.LookupEntry(abilityId))
         {
             TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried use an invalid battle pet ability %u!",
-                GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), abilityId);
+                GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), abilityId);
             return;
         }
     }
@@ -563,7 +597,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         if (newFrontPet >= PET_BATTLE_MAX_TEAM_PETS)
         {
             TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried to switch to invalid front pet %u!",
-                GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), newFrontPet);
+                GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), newFrontPet);
             return;
         }
     }
@@ -575,7 +609,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     if (team->IsReady())
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried use an invalid battle pet ability %u!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), abilityId);
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), abilityId);
         return;
     }
 
@@ -587,7 +621,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         if (!battlePet)
         {
             TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried to swap to invalid team battle pet %u!",
-                GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), newFrontPet);
+                GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), newFrontPet);
             return;
         }
     }
@@ -596,7 +630,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     if (moveType >= PET_BATTLE_MOVE_MAX)
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_INPUT - Player %u(%s) tried to do invalid move %u!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), moveType);
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), moveType);
         return;
     }
 
@@ -641,8 +675,14 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
 
     bool hasLocationResult = !recvData.ReadBit();
 
-    uint8 bytesorder[8] = { 3, 6, 5, 2, 7, 1, 0, 4 };
-    recvData.ReadBytesSeq(guid, bytesorder);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[2]);
+    recvData.ReadByteSeq(guid[7]);
+    recvData.ReadByteSeq(guid[1]);
+    recvData.ReadByteSeq(guid[0]);
+    recvData.ReadByteSeq(guid[4]);
 
     petBattleRequest.OpponentGuid = guid;
 
@@ -656,7 +696,7 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     if (!GetPlayer()->IsAlive())
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_REQUEST_WILD - Player %u(%s) tried to initiate a wild pet battle while dead!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str());
 
         SendPetBattleRequestFailed(PET_BATTLE_REQUEST_DEAD);
         return;
@@ -666,7 +706,7 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     if (GetPlayer()->IsInCombat())
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_REQUEST_WILD - Player %u(%s) tried to initiate a wild pet battle while in combat!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str());
 
         SendPetBattleRequestFailed(PET_BATTLE_REQUEST_ALREADY_IN_COMBAT);
         return;
@@ -676,7 +716,7 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     if (sPetBattleSystem->GetPlayerPetBattle(GetPlayer()->GetGUID()))
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_REQUEST_WILD - Player %u(%s) tried to initiate a new wild pet battle while still in an old pet battle!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str());
 
         SendPetBattleRequestFailed(PET_BATTLE_REQUEST_ALREADY_IN_PETBATTLE);
         return;
@@ -699,7 +739,7 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     if (!GetPlayer()->GetNPCIfCanInteractWith(petBattleRequest.OpponentGuid, UNIT_NPC_FLAG_WILDPET_CAPTURABLE))
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_REQUEST_WILD - Player %u(%s) tried to initiate a wild pet battle but can't interact with opponent %u!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), wildBattlePet->GetGUIDLow());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), wildBattlePet->GetGUID().GetCounter());
 
         SendPetBattleRequestFailed(PET_BATTLE_REQUEST_NOT_VALID_TARGET);
         return;
@@ -709,7 +749,7 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     if (!sBattlePetSpawnMgr->GetWildBattlePet(wildBattlePet))
     {
         TC_LOG_DEBUG("network", "CMSG_PET_BATTLE_REQUEST_WILD - Player %u(%s) tried to initiate a wild pet battle but creature %u isn't a wild battle pet!",
-            GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), wildBattlePet->GetGUIDLow());
+            GetPlayer()->GetGUID().GetCounter(), GetPlayer()->GetName().c_str(), wildBattlePet->GetGUID().GetCounter());
 
         SendPetBattleRequestFailed(PET_BATTLE_REQUEST_INVALID_TARGET);
         return;
@@ -784,7 +824,7 @@ void WorldSession::HandlePetBattleSetFrontPet(WorldPacket& recvData)
     PetBattle* battle = sPetBattleSystem->GetPlayerPetBattle(_player->GetGUID());
     if (!battle)
     {
-        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u doesn't in a pet battle", GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u doesn't in a pet battle", GetPlayer()->GetGUID().GetCounter());
         return;
     }
 
@@ -794,7 +834,7 @@ void WorldSession::HandlePetBattleSetFrontPet(WorldPacket& recvData)
     BattlePet* pet = team->GetPet(petNum);
     if (!pet)
     {
-        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u sent invalid pet number %u", GetPlayer()->GetGUIDLow(), petNum);
+        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u sent invalid pet number %u", GetPlayer()->GetGUID().GetCounter(), petNum);
         return;
     }
 
@@ -810,13 +850,13 @@ void WorldSession::HandlePetBattleSetFrontPet(WorldPacket& recvData)
 
     if (team->GetActivePet()->IsAlive())
     {
-        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u want to swap dead pet but it is alive", GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u want to swap dead pet but it is alive", GetPlayer()->GetGUID().GetCounter());
         return;
     }
 
     if (!pet->IsAlive())
     {
-        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u want to swap dead pet but a replacement is dead too", GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network", "CMSG_PET_BATTLE_SET_FRONT_PET Player %u want to swap dead pet but a replacement is dead too", GetPlayer()->GetGUID().GetCounter());
         return;
     }
 

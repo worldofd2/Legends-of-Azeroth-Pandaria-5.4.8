@@ -486,7 +486,7 @@ class npc_chess_piece : public CreatureScript
                 if (!damage || isAttacked || !instance || attacker->GetTypeId() != TYPEID_UNIT || instance->GetData(TYPE_CHESS) == SPECIAL)
                     return;
 
-                if (Creature* medivh = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ECHO_MEDIVH)))
+                if (Creature* medivh = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ECHO_MEDIVH)))
                 {
                     if (dynamic_cast<karazhan_accessor*>(instance)->GetPlayerTeam() == chessPieceInfo.PieceTeam)
                         DoPlaySoundToSet(medivh, SOUND_ID_CHECK_PLAYER);
@@ -505,7 +505,7 @@ class npc_chess_piece : public CreatureScript
                 if (!instance)
                     return;
 
-                Creature* medivh = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_ECHO_MEDIVH));
+                Creature* medivh = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_ECHO_MEDIVH));
                 if (!medivh)
                     return;
 
@@ -554,9 +554,9 @@ class npc_chess_piece : public CreatureScript
 
             uint32 GetData(uint32 type) const override { return type ? chessPieceInfo.PieceTeam : chessPieceInfo.MeleeSpell; }
 
-            uint64 GetGUID(int32 /* = 0 */) const override { return currentSquareGuid; }
+            ObjectGuid GetGUID(int32 /* = 0 */) const override { return currentSquareGuid; }
 
-            void SetGUID(uint64 guid, int32 type) override
+            void SetGUID(ObjectGuid guid, int32 type) override
             {
                 // handle move event
                 if (type)
@@ -580,7 +580,7 @@ class npc_chess_piece : public CreatureScript
                     isAttacked = false;
 
                     // ToDo: enable this when the scope of the spell is clear
-                    //if (Creature* pStalker = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_WAITING_ROOM_STALKER))
+                    //if (Creature* pStalker = ObjectAccessor::GetCreature(*me, instance->GetGuidData(NPC_WAITING_ROOM_STALKER))
                     //    pStalker->CastSpell(pStalker, SPELL_AI_ACTION_TIMER, true);
 
                     //DoCast(me, SPELL_AI_SNAPSHOT_TIMER, true);
@@ -864,7 +864,7 @@ class npc_chess_piece : public CreatureScript
         private:
             InstanceScript* instance;
 
-            uint64 currentSquareGuid;
+            ObjectGuid currentSquareGuid;
 
             uint32 moveTimer;
             uint32 moveCommandTimer;

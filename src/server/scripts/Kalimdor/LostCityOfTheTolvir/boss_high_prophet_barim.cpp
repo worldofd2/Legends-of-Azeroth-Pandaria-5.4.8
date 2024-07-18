@@ -139,7 +139,7 @@ class boss_high_prophet_barim : public CreatureScript
                 instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
                 instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
 
-                if (Creature* blaze = Unit::GetCreature(*me, instance->GetData64(DATA_BLAZE)))
+                if (Creature* blaze = Unit::GetCreature(*me, instance->GetGuidData(DATA_BLAZE)))
                     blaze->AI()->EnterEvadeMode();
             }
 
@@ -147,7 +147,7 @@ class boss_high_prophet_barim : public CreatureScript
             {
                 if (me->IsInCombat())
                 {
-                    if (Creature* blaze = Unit::GetCreature(*me, instance->GetData64(DATA_BLAZE)))
+                    if (Creature* blaze = Unit::GetCreature(*me, instance->GetGuidData(DATA_BLAZE)))
                         blaze->AI()->DoAction(ACTION_REPENTANCE_START);
 
                     Talk(SAY_KNEEL_DOWN);
@@ -185,7 +185,7 @@ class boss_high_prophet_barim : public CreatureScript
                 Talk(SAY_DEATH);
                 summons.DespawnAll();
 
-                if (Creature* blaze = Unit::GetCreature(*me, instance->GetData64(DATA_BLAZE)))
+                if (Creature* blaze = Unit::GetCreature(*me, instance->GetGuidData(DATA_BLAZE)))
                     blaze->AI()->EnterEvadeMode();
 
                 DespawnCreatures(NPC_BLAZE_OF_THE_HEAVENS_SUMMONER);
@@ -291,7 +291,7 @@ class boss_high_prophet_barim : public CreatureScript
                                             events.ScheduleEvent(EVENT_HEAVENS_FURY, 5000, 0, PHASE_BARIM);
                                             events.ScheduleEvent(EVENT_PLAGUE_OF_AGES, 6000, 0, PHASE_BARIM);
 
-                                            if (Creature* blaze = Unit::GetCreature(*me, instance->GetData64(DATA_BLAZE)))
+                                            if (Creature* blaze = Unit::GetCreature(*me, instance->GetGuidData(DATA_BLAZE)))
                                                 blaze->AI()->DoAction(ACTION_REPENTANCE_DONE);
                                         }
                                         break;
@@ -660,7 +660,7 @@ class npc_harbinger_of_darkness : public CreatureScript
                 events.ScheduleEvent(EVENT_SOUL_SEVER, 1000);
                 events.ScheduleEvent(EVENT_WAIL_OF_DARKNESS, urand(1000, 4000));
 
-                if (Creature* barim = Unit::GetCreature(*me, instance->GetData64(DATA_HIGH_PROPHET_BARIM)))
+                if (Creature* barim = Unit::GetCreature(*me, instance->GetGuidData(DATA_HIGH_PROPHET_BARIM)))
                     barim->AI()->JustSummoned(me);
             }
 
@@ -668,7 +668,7 @@ class npc_harbinger_of_darkness : public CreatureScript
             {
                 instance->SetData64(DATA_HARBINGER, 0);
 
-                if (Creature* barim = Unit::GetCreature(*me, instance->GetData64(DATA_HIGH_PROPHET_BARIM)))
+                if (Creature* barim = Unit::GetCreature(*me, instance->GetGuidData(DATA_HIGH_PROPHET_BARIM)))
                     barim->AI()->EnterEvadeMode();
             }
 
@@ -783,10 +783,10 @@ class npc_lstv_soul_fragment : public CreatureScript
 
             void IsSummonedBy(Unit* /*summoner*/) override
             {
-                if (Creature* barim = Unit::GetCreature(*me, instance->GetData64(DATA_HIGH_PROPHET_BARIM)))
+                if (Creature* barim = Unit::GetCreature(*me, instance->GetGuidData(DATA_HIGH_PROPHET_BARIM)))
                     barim->AI()->JustSummoned(me);
 
-                if (!instance->GetData64(DATA_HARBINGER))
+                if (!instance->GetGuidData(DATA_HARBINGER))
                 {
                     me->DespawnOrUnsummon();
                     return;
@@ -811,7 +811,7 @@ class npc_lstv_soul_fragment : public CreatureScript
                     return;
                 }
 
-                if (Creature* harbinger = Unit::GetCreature(*me, instance->GetData64(DATA_HARBINGER)))
+                if (Creature* harbinger = Unit::GetCreature(*me, instance->GetGuidData(DATA_HARBINGER)))
                 {
                     if (me->GetExactDist2d(harbinger) <= 1.0f)
                     {

@@ -191,9 +191,9 @@ void BattlePetMgr::LoadSlotsFromDb(PreparedQueryResult result)
 
     Field* fields = result->Fetch();
 
-    uint64 slot1   = fields[0].GetUInt64();
-    uint64 slot2   = fields[1].GetUInt64();
-    uint64 slot3   = fields[2].GetUInt64();
+    ObjectGuid slot1(HighGuid::BattlePet, fields[0].GetUInt32());
+    ObjectGuid slot2(HighGuid::BattlePet, fields[1].GetUInt32());
+    ObjectGuid slot3(HighGuid::BattlePet, fields[2].GetUInt32());
     m_loadoutFlags = fields[3].GetUInt8();
 
     // update flag and spell state for new alt characters
@@ -226,9 +226,9 @@ void BattlePetMgr::LoadSlotsFromDb(PreparedQueryResult result)
     if (hasError)
         m_loadoutSave = true;
 
-    SetLoadoutSlot(BATTLE_PET_LOADOUT_SLOT_1, hasError ? 0 : slot1);
-    SetLoadoutSlot(BATTLE_PET_LOADOUT_SLOT_2, hasError ? 0 : slot2);
-    SetLoadoutSlot(BATTLE_PET_LOADOUT_SLOT_3, hasError ? 0 : slot3);
+    SetLoadoutSlot(BATTLE_PET_LOADOUT_SLOT_1, hasError ? ObjectGuid::Empty : slot1);
+    SetLoadoutSlot(BATTLE_PET_LOADOUT_SLOT_2, hasError ? ObjectGuid::Empty : slot2);
+    SetLoadoutSlot(BATTLE_PET_LOADOUT_SLOT_3, hasError ? ObjectGuid::Empty : slot3);
 }
 
 void BattlePetMgr::SaveSlotsToDb(CharacterDatabaseTransaction trans)
@@ -279,18 +279,18 @@ void BattlePetMgr::UnSummonCurrentBattlePet(bool temporary)
         if (m_summonedBattlePetId)
         {
             TC_LOG_ERROR("shitlog", "BattlePetMgr::UnSummonCurrentBattlePet !m_summonGuid && m_summonedBattlePetId");
-            m_summonedBattlePetId = 0;
+            m_summonedBattlePetId.Clear();
         }
         return;
     }
 
-    m_lastSummonedBattlePetId = temporary ? m_summonedBattlePetId : 0;
-    m_summonedBattlePetId = 0;
+    m_lastSummonedBattlePetId = temporary ? m_summonedBattlePetId : ObjectGuid::Empty;
+    m_summonedBattlePetId.Clear();
 
     if (TempSummon* summon = GetCurrentSummon())
         summon->UnSummon();
 
-    m_summonGuid = 0;
+    m_summonGuid.Clear();
 }
 
 void BattlePetMgr::ResummonLastBattlePet()
@@ -298,15 +298,15 @@ void BattlePetMgr::ResummonLastBattlePet()
     if (!m_lastSummonedBattlePetId)
         return;
 
-    uint64 battlePetId = m_lastSummonedBattlePetId;
-    m_lastSummonedBattlePetId = 0;
+    ObjectGuid battlePetId = m_lastSummonedBattlePetId;
+    m_lastSummonedBattlePetId.Clear();
 
     BattlePet* battlePet = GetBattlePet(battlePetId);
     if (!battlePet)
     {
 
         TC_LOG_ERROR("shitlog", "BattlePetMgr::ResummonLastBattlePet !summon, player: %s (%u), battle pet: " UI64FMTD "",
-            m_owner->GetName().c_str(), m_owner->GetGUIDLow(), battlePetId);
+            m_owner->GetName().c_str(), m_owner->GetGUID().GetCounter(), battlePetId.GetRawValue());
         return;
     }
 
@@ -317,7 +317,7 @@ void BattlePetMgr::ResummonLastBattlePet()
     if (!summon)
     {
         TC_LOG_ERROR("shitlog", "BattlePetMgr::ResummonLastBattlePet !summon, player: %s (%u), battle pet: " UI64FMTD ", spell: %u",
-            m_owner->GetName().c_str(), m_owner->GetGUIDLow(), battlePetId, spell);
+            m_owner->GetName().c_str(), m_owner->GetGUID().GetCounter(), battlePetId.GetRawValue(), spell);
     }
 
     m_summonedBattlePetId = battlePetId;
@@ -364,13 +364,13 @@ void BattlePetMgr::UnlockLoadoutSlot(uint8 slot)
             break;
     }
 
-    SetLoadoutSlot(slot, 0);
+    SetLoadoutSlot(slot, ObjectGuid::Empty);
 
     // alert client of new Battle Pet loadout slot
     SendBattlePetSlotUpdate(slot, true);
 }
 
-void BattlePetMgr::SetLoadoutSlot(uint8 slot, uint64 id, bool save)
+void BattlePetMgr::SetLoadoutSlot(uint8 slot, ObjectGuid id, bool save)
 {
     if (!HasLoadoutSlot(slot))
         return;
@@ -381,10 +381,10 @@ void BattlePetMgr::SetLoadoutSlot(uint8 slot, uint64 id, bool save)
         m_loadoutSave = true;
 }
 
-uint64 BattlePetMgr::GetLoadoutSlot(uint8 slot) const
+ObjectGuid BattlePetMgr::GetLoadoutSlot(uint8 slot) const
 {
     if (!HasLoadoutSlot(slot))
-        return 0;
+        return ObjectGuid::Empty;
 
     return m_loadout[slot];
 }
@@ -467,7 +467,7 @@ void BattlePetMgr::Delete(BattlePet* battlePet)
     uint8 srcSlot = GetLoadoutSlotForBattlePet(battlePet->GetId());
     if (srcSlot != BATTLE_PET_LOADOUT_SLOT_NONE)
     {
-        SetLoadoutSlot(srcSlot, 0, true);
+        SetLoadoutSlot(srcSlot, ObjectGuid::Empty, true);
         SendBattlePetSlotUpdate(srcSlot, false);
     }
 
@@ -486,7 +486,7 @@ void BattlePetMgr::CageBattlePet(ObjectGuid guid)
     if (!battlePet)
     {
         TC_LOG_DEBUG("network", "WorldSession::CageBattlePet - Player %u tryed to cage battle pet companion " UI64FMTD " which it doesn't own!",
-            m_owner->GetGUIDLow(), (uint64)guid);
+            m_owner->GetGUID().GetCounter(), (uint64)guid);
         return;
     }
 
@@ -552,28 +552,26 @@ uint32 BattlePetMgr::GetTrapAbility() const
     return 0;
 }
 
-void BattlePetMgr::SendBattlePetDeleted(uint64 id)
+void BattlePetMgr::SendBattlePetDeleted(ObjectGuid id)
 {
-    ObjectGuid petEntry = id;
-
     WorldPacket data(SMSG_BATTLE_PET_DELETED, 1 + 8);
-    data.WriteBit(petEntry[0]);
-    data.WriteBit(petEntry[4]);
-    data.WriteBit(petEntry[7]);
-    data.WriteBit(petEntry[6]);
-    data.WriteBit(petEntry[1]);
-    data.WriteBit(petEntry[5]);
-    data.WriteBit(petEntry[2]);
-    data.WriteBit(petEntry[3]);
+    data.WriteBit(id[0]);
+    data.WriteBit(id[4]);
+    data.WriteBit(id[7]);
+    data.WriteBit(id[6]);
+    data.WriteBit(id[1]);
+    data.WriteBit(id[5]);
+    data.WriteBit(id[2]);
+    data.WriteBit(id[3]);
 
-    data.WriteByteSeq(petEntry[6]);
-    data.WriteByteSeq(petEntry[1]);
-    data.WriteByteSeq(petEntry[7]);
-    data.WriteByteSeq(petEntry[0]);
-    data.WriteByteSeq(petEntry[4]);
-    data.WriteByteSeq(petEntry[3]);
-    data.WriteByteSeq(petEntry[5]);
-    data.WriteByteSeq(petEntry[2]);
+    data.WriteByteSeq(id[6]);
+    data.WriteByteSeq(id[1]);
+    data.WriteByteSeq(id[7]);
+    data.WriteByteSeq(id[0]);
+    data.WriteByteSeq(id[4]);
+    data.WriteByteSeq(id[3]);
+    data.WriteByteSeq(id[5]);
+    data.WriteByteSeq(id[2]);
 
     m_owner->GetSession()->SendPacket(&data);
 }
@@ -700,10 +698,8 @@ void BattlePetMgr::SendBattlePetJournal()
     m_owner->GetSession()->SendPacket(&data);
 }
 
-void BattlePetMgr::SendBattlePetSlotUpdate(uint8 slot, bool notification, uint64 id)
+void BattlePetMgr::SendBattlePetSlotUpdate(uint8 slot, bool notification, ObjectGuid id)
 {
-    ObjectGuid petEntry = id;
-
     WorldPacket data(SMSG_BATTLE_PET_SLOT_UPDATE, 5 + 1);
     data.WriteBits(1, 25);
     data.WriteBit(0);                   // unknown
@@ -713,28 +709,28 @@ void BattlePetMgr::SendBattlePetSlotUpdate(uint8 slot, bool notification, uint64
         data.WriteBit(1);               // unknown
         data.WriteBit(0);               // unknown
         data.WriteBit(0);               // fake
-        data.WriteBit(petEntry[4]);
-        data.WriteBit(petEntry[5]);
-        data.WriteBit(petEntry[2]);
-        data.WriteBit(petEntry[1]);
-        data.WriteBit(petEntry[0]);
-        data.WriteBit(petEntry[3]);
-        data.WriteBit(petEntry[7]);
-        data.WriteBit(petEntry[6]);
+        data.WriteBit(id[4]);
+        data.WriteBit(id[5]);
+        data.WriteBit(id[2]);
+        data.WriteBit(id[1]);
+        data.WriteBit(id[0]);
+        data.WriteBit(id[3]);
+        data.WriteBit(id[7]);
+        data.WriteBit(id[6]);
     }
 
     data.WriteBit(notification);
     data.FlushBits();
 
     {
-        data.WriteByteSeq(petEntry[0]);
-        data.WriteByteSeq(petEntry[3]);
-        data.WriteByteSeq(petEntry[2]);
-        data.WriteByteSeq(petEntry[1]);
-        data.WriteByteSeq(petEntry[6]);
-        data.WriteByteSeq(petEntry[4]);
-        data.WriteByteSeq(petEntry[5]);
-        data.WriteByteSeq(petEntry[7]);
+        data.WriteByteSeq(id[0]);
+        data.WriteByteSeq(id[3]);
+        data.WriteByteSeq(id[2]);
+        data.WriteByteSeq(id[1]);
+        data.WriteByteSeq(id[6]);
+        data.WriteByteSeq(id[4]);
+        data.WriteByteSeq(id[5]);
+        data.WriteByteSeq(id[7]);
         data << uint8(slot);
     }
 

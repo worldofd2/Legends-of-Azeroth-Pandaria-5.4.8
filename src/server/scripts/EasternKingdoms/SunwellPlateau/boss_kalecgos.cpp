@@ -133,7 +133,7 @@ class boss_kalecgos : public CreatureScript
                     if (instance->GetData(DATA_KALECGOS_EVENT) != DONE)
                         instance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
 
-                    if (Creature* Sath = Unit::GetCreature(*me, instance->GetData64(DATA_SATHROVARR)))
+                    if (Creature* Sath = Unit::GetCreature(*me, instance->GetGuidData(DATA_SATHROVARR)))
                         Sath->AI()->EnterEvadeMode();
                 }
 
@@ -233,13 +233,13 @@ class boss_kalecgos : public CreatureScript
                         }
                         if (HealthBelowPct(10) && !isEnraged)
                         {
-                            if (Creature* Sath = Unit::GetCreature(*me, instance->GetData64(DATA_SATHROVARR)))
+                            if (Creature* Sath = Unit::GetCreature(*me, instance->GetGuidData(DATA_SATHROVARR)))
                                 Sath->AI()->DoAction(DO_ENRAGE);
                             DoAction(DO_ENRAGE);
                         }
                         if (!isBanished && HealthBelowPct(1))
                         {
-                            if (Creature* Sath = Unit::GetCreature(*me, instance->GetData64(DATA_SATHROVARR)))
+                            if (Creature* Sath = Unit::GetCreature(*me, instance->GetGuidData(DATA_SATHROVARR)))
                             {
                                 if (Sath->HasAura(SPELL_BANISH))
                                 {
@@ -442,7 +442,7 @@ class boss_kalec : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage) override
             {
-                if (attacker->GetGUID() != instance->GetData64(DATA_SATHROVARR))
+                if (attacker->GetGUID() != instance->GetGuidData(DATA_SATHROVARR))
                     damage = 0;
                 else if (isEnraged)
                     damage *= 3;
@@ -543,12 +543,12 @@ class boss_sathrovarr : public CreatureScript
             boss_sathrovarrAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
-                kalecGUID = 0;
+                kalecGUID = ObjectGuid::Empty;
                 isStarted = false;
             }
 
             InstanceScript* instance;
-            uint64 kalecGUID;
+            ObjectGuid kalecGUID;
             uint32 corruptionStrikeTimer;
             uint32 agonyCurseTimer;
             uint32 shadowBoltTimer;
@@ -570,7 +570,7 @@ class boss_sathrovarr : public CreatureScript
                 {
                     if (Creature* kalec = Unit::GetCreature(*me, kalecGUID))
                         kalec->setDeathState(JUST_DIED);
-                    kalecGUID = 0;
+                    kalecGUID = ObjectGuid::Empty;
                 }
 
                 shadowBoltTimer = urand(7, 10) * 1000;
@@ -610,7 +610,7 @@ class boss_sathrovarr : public CreatureScript
                 if (victim->GetGUID() == kalecGUID)
                 {
                     TeleportAllPlayersBack();
-                    if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_DRAGON)))
+                    if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_DRAGON)))
                     {
                         CAST_AI(boss_kalecgos::boss_kalecgosAI, kalecgos->AI())->talkTimer = 1;
                         CAST_AI(boss_kalecgos::boss_kalecgosAI, kalecgos->AI())->isFriendly = false;
@@ -626,7 +626,7 @@ class boss_sathrovarr : public CreatureScript
                 Talk(SAY_SATH_DEATH);
                 me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), DRAGON_REALM_Z, me->GetOrientation());
                 TeleportAllPlayersBack();
-                if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_DRAGON)))
+                if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_DRAGON)))
                 {
                     CAST_AI(boss_kalecgos::boss_kalecgosAI, kalecgos->AI())->talkTimer = 1;
                     CAST_AI(boss_kalecgos::boss_kalecgosAI, kalecgos->AI())->isFriendly = true;
@@ -681,19 +681,19 @@ class boss_sathrovarr : public CreatureScript
                     Creature* kalec = Unit::GetCreature(*me, kalecGUID);
                     if (!kalec || (kalec && !kalec->IsAlive()))
                     {
-                        if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_DRAGON)))
+                        if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_DRAGON)))
                             kalecgos->AI()->EnterEvadeMode();
                             return;
                     }
 
                     if (HealthBelowPct(10) && !isEnraged)
                     {
-                        if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_DRAGON)))
+                        if (Creature* kalecgos = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_DRAGON)))
                             kalecgos->AI()->DoAction(DO_ENRAGE);
                         DoAction(DO_ENRAGE);
                     }
 
-                    Creature* kalecgos = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_DRAGON));
+                    Creature* kalecgos = Unit::GetCreature(*me, instance->GetGuidData(DATA_KALECGOS_DRAGON));
                     if (kalecgos)
                     {
                         if (!kalecgos->IsInCombat())

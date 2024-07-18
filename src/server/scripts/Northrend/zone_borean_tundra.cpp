@@ -67,13 +67,13 @@ public:
 
         uint32 phaseTimer;
         uint8  phase;
-        uint64 casterGuid;
+        ObjectGuid casterGuid;
 
         void Reset() override
         {
             phaseTimer = 500;
             phase = 0;
-            casterGuid = 0;
+            casterGuid = ObjectGuid::Empty;
         }
 
         void SpellHit(Unit* caster, const SpellInfo* spell) override
@@ -373,7 +373,7 @@ public:
                 if (uiRand < 25)
                 {
                     player->CastSpell(me, 45532, true);
-                    player->KilledMonsterCredit(WARSONG_PEON, 0);
+                    player->KilledMonsterCredit(WARSONG_PEON, ObjectGuid::Empty);
                 }
                 else if (uiRand < 75)
                     player->CastSpell(me, nerubarVictims[urand(0, 2)], true);
@@ -544,7 +544,7 @@ public:
     {
         npc_nesingwary_trapperAI(Creature* creature) : ScriptedAI(creature) { creature->SetVisible(false); }
 
-        uint64 go_caribouGUID;
+        ObjectGuid go_caribouGUID;
         uint8  phase;
         uint32 phaseTimer;
 
@@ -553,7 +553,7 @@ public:
             me->SetVisible(false);
             phaseTimer = 2500;
             phase = 1;
-            go_caribouGUID = 0;
+            go_caribouGUID = ObjectGuid::Empty;
         }
 
         void JustEngagedWith(Unit* /*who*/) override { }
@@ -569,7 +569,7 @@ public:
                 if (summon->IsSummon())
                     if (Unit* temp = summon->GetSummoner())
                         if (Player* player = temp->ToPlayer())
-                            player->KilledMonsterCredit(me->GetEntry(), 0);
+                            player->KilledMonsterCredit(me->GetEntry(), ObjectGuid::Empty);
 
             if (GameObject* go_caribou = me->GetMap()->GetGameObject(go_caribouGUID))
                 go_caribou->SetGoState(GO_STATE_READY);
@@ -825,10 +825,10 @@ public:
     {
         npc_nexus_drake_hatchlingAI(Creature* creature) : FollowerAI(creature)
         {
-            HarpoonerGUID = 0;
+            HarpoonerGUID = ObjectGuid::Empty;
         }
 
-        uint64 HarpoonerGUID;
+        ObjectGuid HarpoonerGUID;
         bool WithRedDragonBlood;
 
         void Reset() override
@@ -866,10 +866,10 @@ public:
                 {
                     if (Player* pHarpooner = ObjectAccessor::GetPlayer(*me, HarpoonerGUID))
                     {
-                        pHarpooner->KilledMonsterCredit(26175, 0);
+                        pHarpooner->KilledMonsterCredit(26175, ObjectGuid::Empty);
                         pHarpooner->RemoveAura(SPELL_DRAKE_HATCHLING_SUBDUED);
                         SetFollowComplete();
-                        HarpoonerGUID = 0;
+                        HarpoonerGUID = ObjectGuid::Empty;
                         me->DisappearAndDie();
                     }
                 }
@@ -895,7 +895,7 @@ public:
 
             if ((me->GetFaction() == 35) && (!me->HasAura(SPELL_SUBDUED)))
             {
-                HarpoonerGUID = 0;
+                HarpoonerGUID = ObjectGuid::Empty;
                 me->DisappearAndDie();
             }
 
@@ -967,10 +967,10 @@ public:
     {
         npc_thassarianAI(Creature* creature) : npc_escortAI(creature) { }
 
-        uint64 arthasGUID;
-        uint64 talbotGUID;
-        uint64 leryssaGUID;
-        uint64 arlosGUID;
+        ObjectGuid arthasGUID;
+        ObjectGuid talbotGUID;
+        ObjectGuid leryssaGUID;
+        ObjectGuid arlosGUID;
 
         bool arthasInPosition;
         bool arlosInPosition;
@@ -985,10 +985,10 @@ public:
             me->RestoreFaction();
             me->RemoveStandFlags(UNIT_STAND_STATE_SIT);
 
-            arthasGUID = 0;
-            talbotGUID = 0;
-            leryssaGUID = 0;
-            arlosGUID = 0;
+            arthasGUID = ObjectGuid::Empty;
+            talbotGUID = ObjectGuid::Empty;
+            leryssaGUID = ObjectGuid::Empty;
+            arlosGUID = ObjectGuid::Empty;
 
             arthasInPosition = false;
             arlosInPosition = false;
@@ -1347,8 +1347,8 @@ public:
             creature->RestoreFaction();
         }
 
-        uint64 leryssaGUID;
-        uint64 arlosGUID;
+        ObjectGuid leryssaGUID;
+        ObjectGuid arlosGUID;
 
         bool bCheck;
 
@@ -1358,8 +1358,8 @@ public:
 
         void Reset() override
         {
-            leryssaGUID         = 0;
-            arlosGUID           = 0;
+            leryssaGUID = ObjectGuid::Empty;
+            arlosGUID = ObjectGuid::Empty;
             bCheck              = false;
             shadowBoltTimer   = urand(5000, 12000);
             deflectionTimer   = urand(20000, 25000);
@@ -1620,7 +1620,7 @@ public:
                 DoCast(me, SPELL_COSMETIC_ENSLAVE_CHAINS_SELF, true);
 
                 if (Player* player = pCaster->ToPlayer())
-                    player->KilledMonsterCredit(NPC_CAPTURED_BERLY_SORCERER, 0);
+                    player->KilledMonsterCredit(NPC_CAPTURED_BERLY_SORCERER, ObjectGuid::Empty);
 
                 bEnslaved = true;
             }
@@ -1723,7 +1723,7 @@ public:
             }
         }
 
-        void GotStinged(uint64 casterGUID)
+        void GotStinged(ObjectGuid casterGUID)
         {
             if (Player* caster = ObjectAccessor::GetPlayer(*me, casterGUID))
             {
@@ -1750,7 +1750,7 @@ public:
                         break;
                     case 7:
                         Talk(SAY_IMPRISIONED_BERYL_7);
-                        caster->KilledMonsterCredit(NPC_IMPRISONED_BERYL_SORCERER, 0);
+                        caster->KilledMonsterCredit(NPC_IMPRISONED_BERYL_SORCERER, ObjectGuid::Empty);
                         break;
                 }
             }
@@ -2091,7 +2091,7 @@ public:
                     {
                         if (objective.StorageIndex == 0)
                         {
-                            player->KilledMonsterCredit(objective.ObjectID, 0);
+                            player->KilledMonsterCredit(objective.ObjectID, ObjectGuid::Empty);
                             break;
                         }
                     }

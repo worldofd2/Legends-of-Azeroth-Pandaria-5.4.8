@@ -29,7 +29,7 @@ TempSummon::TempSummon(SummonPropertiesEntry const* properties, Unit* owner, boo
 Creature(isWorldObject), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN),
 m_timer(0), m_lifetime(0)
 {
-    m_summonerGUID = owner ? owner->GetGUID() : 0;
+    m_summonerGUID = owner ? owner->GetGUID() : ObjectGuid::Empty;
     m_unitTypeMask |= UNIT_MASK_SUMMON;
 }
 
@@ -356,9 +356,9 @@ void TempSummon::RemoveFromWorld()
             if (Unit* owner = GetSummoner())
             {
                 if (owner->m_SummonSlot[slot] == GetGUID())
-                    owner->m_SummonSlot[slot] = 0;
+                    owner->m_SummonSlot[slot].Clear();
                 else if (owner->m_SummonSlot[SUMMON_SLOT_TOTEM_EXTRA] == GetGUID())
-                    owner->m_SummonSlot[SUMMON_SLOT_TOTEM_EXTRA] = 0;
+                    owner->m_SummonSlot[SUMMON_SLOT_TOTEM_EXTRA].Clear();
             }
         }
     }
@@ -368,7 +368,7 @@ void TempSummon::RemoveFromWorld()
         owner->RemoveSummon(this);
         if (Player* player = owner->ToPlayer())
             if (player->GetBattlePetMgr().GetCurrentSummon() == this)
-                player->GetBattlePetMgr().SetCurrentSummon(0);
+                player->GetBattlePetMgr().SetCurrentSummon(ObjectGuid::Empty);
     }
 
     //if (GetOwnerGUID())

@@ -880,7 +880,7 @@ class npc_timeless_silkworms : public CreatureScript
 
             uint32 uiVenomSpitTimer;
             uint32 uiPoisonSpitTimer;
-            std::vector<uint64> swarmers;
+            std::vector<ObjectGuid> swarmers;
 
             void Reset() override
             {
@@ -890,7 +890,7 @@ class npc_timeless_silkworms : public CreatureScript
                 if (me->GetEntry() == 72909)
                 {
                     for (auto&& guid : swarmers)
-                        if (Creature* swarmer = sObjectAccessor->GetCreature(*me, guid))
+                        if (Creature* swarmer = ObjectAccessor::GetCreature(*me, guid))
                             swarmer->DespawnOrUnsummon();
                     swarmers.clear();
 
@@ -912,7 +912,7 @@ class npc_timeless_silkworms : public CreatureScript
                 if (me->GetEntry() == 72909)
                 {
                     for (auto&& guid : swarmers)
-                        if (Creature* swarmer = sObjectAccessor->GetCreature(*me, guid))
+                        if (Creature* swarmer = ObjectAccessor::GetCreature(*me, guid))
                             swarmer->AI()->AttackStart(who);
                 }
             }
@@ -922,7 +922,7 @@ class npc_timeless_silkworms : public CreatureScript
                 if (me->GetEntry() == 72909)
                 {
                     for (auto&& guid : swarmers)
-                        if (Creature* swarmer = sObjectAccessor->GetCreature(*me, guid))
+                        if (Creature* swarmer = ObjectAccessor::GetCreature(*me, guid))
                             swarmer->DespawnOrUnsummon();
                     swarmers.clear();
                 }
@@ -1632,7 +1632,7 @@ class npc_ordos_minions : public CreatureScript
             {
                 if (me->GetEntry() == RARE_ARCHIEREUS_OF_FLAME_CLOAK)
                     for (auto&& guid : me->GetLootRecipients())
-                        if (Player* player = sObjectAccessor->GetPlayer(*me, guid))
+                        if (Player* player = ObjectAccessor::GetPlayer(*me, guid))
                             if (!player->IsDailyQuestDone(QUEST_ARCHIEREUS_OF_FLAME))
                                 if (Quest const* quest = sObjectMgr->GetQuestTemplate(QUEST_ARCHIEREUS_OF_FLAME))
                                     player->RewardQuest(quest, 0, player, false);
@@ -2180,12 +2180,12 @@ class npc_molten_guards : public CreatureScript
             EventMap events;
             TaskScheduler scheduler;
             uint8 spellRotation;
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
 
             void Reset() override
             {
                 spellRotation = 0;
-                targetGUID    = 0;
+                targetGUID = ObjectGuid::Empty;
                 me->SetReactState(REACT_AGGRESSIVE);
                 events.Reset();
             }
@@ -3924,7 +3924,7 @@ struct npc_dread_ship_vazuvius : public ScriptedAI
     }
 
 private:
-    std::list<uint64> playersAura;
+    std::list<ObjectGuid> playersAura;
     Unit* GetTarget()
     {
         std::list<HostileReference*> threatList = me->getThreatManager().getThreatList();
@@ -3961,7 +3961,7 @@ private:
     {
         for (auto&& guid : playersAura)
         {
-            if (Player* player = sObjectAccessor->GetPlayer(*me, guid))
+            if (Player* player = ObjectAccessor::GetPlayer(*me, guid))
             {
                 player->RemoveAura(SPELL_EERIE_FOG);
                 player->RemoveAura(SPELL_SKYBOX);

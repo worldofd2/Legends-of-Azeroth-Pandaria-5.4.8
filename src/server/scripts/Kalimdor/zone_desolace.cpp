@@ -63,7 +63,7 @@ public:
     {
         if (player->HasAura(SPELL_KODO_KOMBO_PLAYER_BUFF) && creature->HasAura(SPELL_KODO_KOMBO_DESPAWN_BUFF))
         {
-            player->TalkedToCreature(creature->GetEntry(), 0);
+            player->TalkedToCreature(creature->GetEntry(), ObjectGuid::Empty);
             player->RemoveAurasDueToSpell(SPELL_KODO_KOMBO_PLAYER_BUFF);
         }
 
@@ -163,7 +163,7 @@ class go_demon_portal : public GameObjectScript
         {
             if (player->GetQuestStatus(QUEST_PORTAL_OF_THE_LEGION_H) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_PORTAL_OF_THE_LEGION_A) == QUEST_STATUS_INCOMPLETE)
             {
-                uint64 goGuid = go->GetGUID();
+                ObjectGuid goGuid = go->GetGUID();
                 if (Creature* guardian = go->SummonCreature(NPC_DEMON_GUARDIAN, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 0))
                 {
                     guardian->AI()->AttackStart(player);

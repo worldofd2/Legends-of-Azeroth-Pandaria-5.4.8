@@ -312,7 +312,7 @@ class npc_annhylde_the_caller : public CreatureScript
                 me->GetPosition(x, y, z);
                 DoTeleportTo(x + 1, y, z + 30);
 
-                Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_INGVAR) : 0);
+                Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetGuidData(DATA_INGVAR) : ObjectGuid::Empty);
                 if (ingvar)
                 {
                     me->GetMotionMaster()->MovePoint(1, x, y, z + 15);
@@ -326,7 +326,7 @@ class npc_annhylde_the_caller : public CreatureScript
                 if (type != POINT_MOTION_TYPE)
                     return;
 
-                Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_INGVAR) : 0);
+                Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetGuidData(DATA_INGVAR) : ObjectGuid::Empty);
                 if (ingvar)
                 {
                     switch (pointId)
@@ -361,7 +361,7 @@ class npc_annhylde_the_caller : public CreatureScript
                     {
                         if (uiResurectPhase == 1)
                         {
-                            Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_INGVAR) : 0);
+                            Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetGuidData(DATA_INGVAR) : ObjectGuid::Empty);
                             if (ingvar)
                             {
                                 ingvar->SetStandState(UNIT_STAND_STATE_STAND);
@@ -372,7 +372,7 @@ class npc_annhylde_the_caller : public CreatureScript
                         }
                         else if (uiResurectPhase == 2)
                         {
-                            if (Creature* ingvar = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_INGVAR) : 0))
+                            if (Creature* ingvar = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_INGVAR) : ObjectGuid::Empty))
                             {
                                 ingvar->RemoveAurasDueToSpell(SPELL_SCOURG_RESURRECTION_DUMMY);
 

@@ -233,13 +233,13 @@ struct npc_gochao_the_iron_fist : public ScriptedAI
 
     EventMap events;
     uint32 delay;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void Reset() override
     {
         events.Reset();
         delay      = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -352,14 +352,14 @@ struct npc_mogu_jade_guardian : public ScriptedAI
     EventMap events;
     uint32 prevSpellId;
     uint32 delay;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void Reset() override
     {
         events.Reset();
         prevSpellId = 0;
         delay       = 0;
-        targetGUID  = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -996,7 +996,7 @@ struct npc_mercurial_guardian : public customCreatureAI
     npc_mercurial_guardian(Creature* creature) : customCreatureAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     bool hasTriggered;
     uint8 counter;
 
@@ -1005,7 +1005,7 @@ struct npc_mercurial_guardian : public customCreatureAI
         events.Reset();
         me->SetFaction(35);
         me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
         hasTriggered = false;
         counter = 0;
     }
@@ -1447,14 +1447,14 @@ struct npc_general_temuja : public ScriptedAI
     npc_general_temuja(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap events;
-    std::vector<uint64> minions;
+    std::vector<ObjectGuid> minions;
 
     void Reset() override
     {
         events.Reset();
 
         for (auto&& guid : minions)
-            if (Creature* minion = sObjectAccessor->GetCreature(*me, guid))
+            if (Creature* minion = ObjectAccessor::GetCreature(*me, guid))
                 minion->DespawnOrUnsummon();
         minions.clear();
 
@@ -1473,7 +1473,7 @@ struct npc_general_temuja : public ScriptedAI
     void JustEngagedWith(Unit* who) override
     {
         for (auto&& guid : minions)
-            if (Creature* minion = sObjectAccessor->GetCreature(*me, guid))
+            if (Creature* minion = ObjectAccessor::GetCreature(*me, guid))
                 minion->AI()->AttackStart(who);
     }
 
@@ -1482,7 +1482,7 @@ struct npc_general_temuja : public ScriptedAI
         DoCast(126262);
 
         for (auto&& guid : minions)
-            if (Creature* minion = sObjectAccessor->GetCreature(*me, guid))
+            if (Creature* minion = ObjectAccessor::GetCreature(*me, guid))
                 minion->DespawnOrUnsummon();
         minions.clear();
     }

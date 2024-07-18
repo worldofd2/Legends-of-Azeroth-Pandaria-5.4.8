@@ -141,7 +141,7 @@ class npc_blackrock_burning_spirit : public CreatureScript
         {
             npc_blackrock_burning_spiritAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 targetGUID;
+            ObjectGuid targetGUID;
 
             void IsSummonedBy(Unit* summoner) override
             {

@@ -327,7 +327,7 @@ public:
     void InitialiseStates(bool newBattlePet);
 
     Player* GetOwner() const { return m_owner; }
-    uint64 GetId() const { return m_id; }
+    ObjectGuid GetId() const { return m_id; }
     uint32 GetSpecies() const { return m_species; }
     uint8 GetFamilty() const { return m_family; }
     std::string GetNickname() const { return m_nickname; }
@@ -389,7 +389,7 @@ public:
 
 private:
     Player* m_owner;
-    uint64 m_id;
+    ObjectGuid m_id;
     std::string m_nickname;
     uint32 m_timestamp;
     uint32 m_species;

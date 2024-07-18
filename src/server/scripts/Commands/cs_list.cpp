@@ -449,8 +449,8 @@ public:
             handler->PSendSysMessage(LANG_COMMAND_TARGET_AURADETAIL, aura->GetId(), (handler->GetSession() ? ss_name.str().c_str() : name),
                 aurApp->GetEffectMask(), aura->GetCharges(), aura->GetStackAmount(), aurApp->GetSlot(),
                 aura->GetDuration(), aura->GetMaxDuration(), (aura->IsPassive() ? passiveStr : ""),
-                (talent ? talentStr : ""), IS_PLAYER_GUID(aura->GetCasterGUID()) ? "player" : "creature",
-                GUID_LOPART(aura->GetCasterGUID()));
+                (talent ? talentStr : ""), aura->GetCasterGUID().IsPlayer() ? "player" : "creature",
+                aura->GetCasterGUID().GetCounter());
         }
 
         for (uint16 i = 0; i < TOTAL_AURAS; ++i)
@@ -471,13 +471,13 @@ public:
     static bool HandleListMailCommand(ChatHandler* handler, char const* args)
     {
         Player* target;
-        uint64 targetGuid;
+        ObjectGuid targetGuid;
         std::string targetName;
 
         if (!*args)
             return false;
 
-        uint32 parseGUID = MAKE_NEW_GUID(atol((char*)args), 0, HIGHGUID_PLAYER);
+        ObjectGuid parseGUID(HighGuid::Player, uint32(atol((char*)args)));
 
         if (sObjectMgr->GetPlayerNameByGUID(parseGUID, targetName))
         {
@@ -495,7 +495,7 @@ public:
             Field* fields = result->Fetch();
             uint32 countMail = fields[0].GetUInt64();
             std::string nameLink = handler->playerLink(targetName);
-            handler->PSendSysMessage(LANG_LIST_MAIL_HEADER, countMail, nameLink.c_str(), targetGuid);
+            handler->PSendSysMessage(LANG_LIST_MAIL_HEADER, countMail, nameLink.c_str(), targetGuid.GetCounter());
             handler->PSendSysMessage(LANG_ACCOUNT_LIST_BAR);
             CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_INFO);
             stmt->setUInt32(0, targetGuid);
@@ -608,7 +608,7 @@ public:
             if (!unit)
                 unit = handler->GetSession()->GetPlayer();
 
-            uint32 unitGuid = unit->GetGUIDLow();
+            uint32 unitGuid = unit->GetGUID().GetCounter();
             if (Creature* creature = unit->GetCreature(*unit, unit->GetGUID()))
             {
                 uint32 dbGuid = creature->GetDBTableGUIDLow();
@@ -627,7 +627,7 @@ public:
                 if (!(*itr))
                     break;
                 Unit* attacker = (*itr);
-                uint32 guid = attacker->GetGUIDLow();
+                uint32 guid = attacker->GetGUID().GetCounter();
                 if (attacker->GetTypeId() == TYPEID_PLAYER)
                     handler->PSendSysMessage("guid: |cffffffff%u|r - player - |cffffffff%s|r", guid, attacker->GetName().c_str());
                 else
@@ -661,7 +661,7 @@ public:
             if (!unit)
                 unit = handler->GetSession()->GetPlayer();
 
-            uint32 unitGuid = unit->GetGUIDLow();
+            uint32 unitGuid = unit->GetGUID().GetCounter();
             if (Creature* creature = unit->GetCreature(*unit, unit->GetGUID()))
             {
                 uint32 dbGuid = creature->GetDBTableGUIDLow();
@@ -677,7 +677,7 @@ public:
             for (RefManager<Unit, ThreatManager>::iterator itr = unit->getHostileRefManager().begin(); itr != unit->getHostileRefManager().end(); ++itr)
             {
                 Unit* hostile = itr->GetSource()->GetOwner();
-                uint32 guid = hostile->GetGUIDLow();
+                uint32 guid = hostile->GetGUID().GetCounter();
                 if (hostile->GetTypeId() == TYPEID_PLAYER)
                     handler->PSendSysMessage("guid: |cffffffff%u|r - player - |cffffffff%s|r", guid, hostile->GetName().c_str());
                 else
@@ -711,7 +711,7 @@ public:
             if (!unit)
                 unit = handler->GetSession()->GetPlayer();
 
-            uint32 unitGuid = unit->GetGUIDLow();
+            uint32 unitGuid = unit->GetGUID().GetCounter();
             if (Creature* creature = unit->GetCreature(*unit, unit->GetGUID()))
             {
                 uint32 dbGuid = creature->GetDBTableGUIDLow();
@@ -735,11 +735,11 @@ public:
                     Unit* hostile = ref->getTarget();
                     if (!hostile)
                     {
-                        handler->PSendSysMessage("|cff404040guid: %u - player (%.2f)|r", GUID_LOPART(ref->getUnitGuid()), ref->getThreat());
+                        handler->PSendSysMessage("|cff404040guid: %u - player (%.2f)|r", ref->getUnitGuid().GetCounter(), ref->getThreat());
                         continue;
                     }
 
-                    uint32 guid = hostile->GetGUIDLow();
+                    uint32 guid = hostile->GetGUID().GetCounter();
                     if (hostile->GetTypeId() == TYPEID_PLAYER)
                         handler->PSendSysMessage("%sguid: |cffffffff%u|r%s - player - |cffffffff%s|r%s (%.2f)|r", color, guid, color, hostile->GetName().c_str(), color, ref->getThreat());
                     else

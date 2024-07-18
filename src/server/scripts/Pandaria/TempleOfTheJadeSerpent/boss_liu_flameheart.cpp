@@ -350,7 +350,7 @@ class boss_yu_lon_tjs : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         events.Reset();
 
-                        if (Creature* liu = instance ? Unit::GetCreature(*me, instance->GetData64(DATA_LIU)) : nullptr)
+                        if (Creature* liu = instance ? Unit::GetCreature(*me, instance->GetGuidData(DATA_LIU)) : nullptr)
                         {
                             float x = liu->GetPositionX();
                             float y = liu->GetPositionY();
@@ -382,7 +382,7 @@ class boss_yu_lon_tjs : public CreatureScript
                             events.ScheduleEvent(EVENT_JADE_FIRE, urand(4 * IN_MILLISECONDS, 6 * IN_MILLISECONDS));
                             break;
                         case EVENT_BREATH:
-                            if (Creature* liu = Unit::GetCreature(*me, instance->GetData64(DATA_LIU)))
+                            if (Creature* liu = Unit::GetCreature(*me, instance->GetGuidData(DATA_LIU)))
                             {
                                 me->SetFacingToObject(liu);
                                 liu->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);

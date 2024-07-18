@@ -175,7 +175,7 @@ private:
     void _LoadReClassRoutine();
     void LoadSpells();
 
-    std::list<uint64> _aucGUIDs[2];
+    std::list<ObjectGuid> _aucGUIDs[2];
     ReclassData _reclassData[12];
     static ProfSkill _profs[11];
     std::set<uint32> _classSpells[2][12];

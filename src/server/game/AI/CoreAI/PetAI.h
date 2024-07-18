@@ -63,7 +63,7 @@ class PetAI : public CreatureAI
 
         TimeTracker i_tracker;
         bool inCombat;
-        std::set<uint64> m_AllySet;
+        GuidSet m_AllySet;
         uint32 m_updateAlliesTimer;
 
         Unit* SelectNextTarget(bool allowAutoSelect) const;
@@ -95,11 +95,11 @@ class PetAI : public CreatureAI
             bool MovingToStayPosition = false;
             LastActionType Type = LastActionType::Follow;
             Position StayPosition;
-            uint64 AttackingGuid = 0;
+            ObjectGuid AttackingGuid;
         };
 
         LastAction m_lastAction;
-        uint64 m_delayedSpellTarget = 0;
+        ObjectGuid m_delayedSpellTarget;
         Spell* m_delayedSpell = nullptr;
 };
 #endif

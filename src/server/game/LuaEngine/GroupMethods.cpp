@@ -40,7 +40,7 @@ namespace LuaGroup
 
     int GetLeader(lua_State* L, Group* group)
     {
-        sEluna->Push(L, sObjectAccessor->FindPlayer(group->GetLeaderGUID()));
+        sEluna->Push(L, ObjectAccessor::FindPlayer(group->GetLeaderGUID()));
         return 1;
     }
 
@@ -66,7 +66,7 @@ namespace LuaGroup
         Player* player = sEluna->CHECK_PLAYER(L, 1);
         if (!player)
             if (const char* name = luaL_checkstring(L, 1))
-                player = sObjectAccessor->FindPlayerByName(name);
+                player = ObjectAccessor::FindPlayerByName(name);
         if (!player)
             return 0;
 
@@ -79,7 +79,7 @@ namespace LuaGroup
     {
         WorldPacket* data = sEluna->CHECK_PACKET(L, 1);
         bool ignorePlayersInBg = luaL_checkbool(L, 2);
-        uint64 ignore = sEluna->CHECK_ULONG(L, 3);
+        ObjectGuid ignore(uint64(sEluna->CHECK_ULONG(L, 3)));
 
         if (data)
             group->BroadcastPacket(data, ignorePlayersInBg, -1, ignore);

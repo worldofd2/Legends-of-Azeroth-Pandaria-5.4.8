@@ -76,7 +76,7 @@ KillRewarder::KillRewarder(Player* killer, Unit* victim, bool isBattleGround) :
     if (victim->GetTypeId() == TYPEID_PLAYER)
         _isPvP = true;
     // or if its owned by player and its not a vehicle
-    else if (IS_PLAYER_GUID(victim->GetCharmerOrOwnerGUID()))
+    else if (victim->GetCharmerOrOwnerGUID().IsPlayer())
         _isPvP = !victim->IsVehicle();
 
     InitGroupData();

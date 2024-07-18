@@ -43,7 +43,7 @@ namespace LuaGuild
 
     int GetLeader(lua_State* L, Guild* guild)
     {
-        sEluna->Push(L, sObjectAccessor->FindPlayer(guild->GetLeaderGUID()));
+        sEluna->Push(L, ObjectAccessor::FindPlayer(guild->GetLeaderGUID()));
         return 1;
     }
 

@@ -80,7 +80,7 @@ class boss_romogg_bonecrusher : public CreatureScript
                 _Reset();
                 stage      = 0;
                 HealthPct  = 66.0f;
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 killedEarth = 0;
                 summons.DespawnAll();
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -226,7 +226,7 @@ class boss_romogg_bonecrusher : public CreatureScript
             private:
                 uint8 stage;
                 uint32 killedEarth;
-                uint64 targetGUID;
+                ObjectGuid targetGUID;
                 float HealthPct;
         };
 

@@ -323,7 +323,7 @@ void BlackMarketMgr::UpdateAuction(BlackMarketAuction* auction, uint64 newPrice,
         SendAuctionOutbidded(auction, newBidder, trans);
 
     auction->SetCurrentBid(currentBid);
-    auction->SetCurrentBidder(newBidder->GetGUIDLow());
+    auction->SetCurrentBidder(newBidder->GetGUID().GetCounter());
     auction->SetMinIncrement(minIncrement);
     auction->SetNumBids(auction->GetNumBids() + 1);
 
@@ -359,11 +359,11 @@ std::string BlackMarketAuction::BuildAuctionMailSubject(BMMailAuctionAnswers res
     return strm.str();
 }
 
-std::string BlackMarketAuction::BuildAuctionMailBody(uint32 lowGuid)
+std::string BlackMarketAuction::BuildAuctionMailBody(ObjectGuid::LowType lowGuid)
 {
     std::ostringstream strm;
     strm.width(16);
-    strm << std::right << std::hex << MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER); // HIGHGUID_PLAYER always present, even for empty guids
+    strm << std::right << std::hex << ObjectGuid(HighGuid::Player, lowGuid); // HighGuid::Player always present, even for empty guids
     strm << std::dec << ':' << GetCurrentBid() << ':' << 0;
     strm << ':' << 0 << ':' << 0;
     return strm.str();
@@ -371,8 +371,8 @@ std::string BlackMarketAuction::BuildAuctionMailBody(uint32 lowGuid)
 
 void BlackMarketMgr::SendAuctionOutbidded(BlackMarketAuction* auction, Player* newBidder, CharacterDatabaseTransaction trans)
 {
-    uint64 bidder_guid = MAKE_NEW_GUID(auction->GetCurrentBidder(), 0, HIGHGUID_PLAYER);
-    Player* bidder = ObjectAccessor::FindPlayerInOrOutOfWorld(bidder_guid);
+    ObjectGuid bidder_guid(HighGuid::Player, auction->GetCurrentBidder());
+    Player* bidder = ObjectAccessor::FindPlayer(bidder_guid);
     uint32 oldBidder_accId = sObjectMgr->GetPlayerAccountIdByGUID(bidder_guid);
 
     // old bidder exist
@@ -395,8 +395,8 @@ void BlackMarketMgr::SendAuctionOutbidded(BlackMarketAuction* auction, Player* n
 
 void BlackMarketMgr::SendAuctionWon(BlackMarketAuction* auction, CharacterDatabaseTransaction trans)
 {
-    uint64 bidder_guid = MAKE_NEW_GUID(auction->GetCurrentBidder(), 0, HIGHGUID_PLAYER);
-    Player* bidder = ObjectAccessor::FindPlayerInOrOutOfWorld(bidder_guid);
+    ObjectGuid bidder_guid(HighGuid::Player, auction->GetCurrentBidder());
+    Player* bidder = ObjectAccessor::FindPlayer(bidder_guid);
 
     if (bidder)
     {

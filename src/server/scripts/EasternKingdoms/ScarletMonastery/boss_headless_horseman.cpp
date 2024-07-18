@@ -95,7 +95,7 @@ struct boss_headless_horseman : public ScriptedAI
 {
     boss_headless_horseman(Creature* creature) : ScriptedAI(creature), _summons(me) { }
 
-    void SetGUID(uint64 guid, int32 type) override
+    void SetGUID(ObjectGuid guid, int32 type) override
     {
         if (type == TYPE_STARTER_GUID)
             _starterGUID = guid;
@@ -124,7 +124,7 @@ struct boss_headless_horseman : public ScriptedAI
 
         introCount = 0;
         phase = 0;
-        _starterGUID = 0;
+        _starterGUID = ObjectGuid::Empty;
 
         introTimer = 1*IN_MILLISECONDS;
         laughTimer = 5*IN_MILLISECONDS;
@@ -358,7 +358,7 @@ struct boss_headless_horseman : public ScriptedAI
         uint32 cleaveTimer;
         uint32 summonTimer;
         uint32 conflagTimer;
-        uint64 _starterGUID;
+        ObjectGuid _starterGUID;
 };
 
 struct npc_horseman_head : public ScriptedAI

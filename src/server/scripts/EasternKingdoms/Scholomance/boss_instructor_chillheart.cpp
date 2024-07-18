@@ -149,7 +149,7 @@ class boss_instructor_chillheart : public CreatureScript
                 if (instance)
                     if (GameObject* Idoor = GetClosestGameObjectWithEntry(me, GO_CHILLHEART_INTRO_DOOR, 150.0f))
                     {
-                        instance->HandleGameObject(0, reset, Idoor);
+                        instance->HandleGameObject(ObjectGuid::Empty, reset, Idoor);
                         Idoor->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
                     }
             }
@@ -430,7 +430,7 @@ class npc_ice_wall_stalker : public CreatureScript
                 }
             }
 
-            void CreateTriggerWall(uint64 Main)
+            void CreateTriggerWall(ObjectGuid Main)
             {
                 uint32 mod = 1;
 

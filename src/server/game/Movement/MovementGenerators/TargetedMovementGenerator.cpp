@@ -490,7 +490,7 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(CHASE_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(CHASE_MOTION_TYPE, i_target.getTarget()->GetGUID().GetCounter());
 }
 
 //-----------------------------------------------//
@@ -566,7 +566,7 @@ void FollowMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, i_target.getTarget()->GetGUID().GetCounter());
 }
 
 //-----------------------------------------------//

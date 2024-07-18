@@ -361,14 +361,14 @@ struct npc_seething_flashripper : public ScriptedAI
     npc_seething_flashripper(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap events;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 delay;
 
     void Reset() override
     {
         events.Reset();
         delay      = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -571,14 +571,14 @@ struct npc_longshadow_mushan : public ScriptedAI
     npc_longshadow_mushan(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap events;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 delay;
 
     void Reset() override
     {
         events.Reset();
         delay = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -637,14 +637,14 @@ struct npc_seething_hatred : public ScriptedAI
     npc_seething_hatred(Creature* creature) : ScriptedAI(creature) { }
 
     EventMap events;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
     uint32 delay;
 
     void Reset() override
     {
         events.Reset();
         delay = 0;
-        targetGUID = 0;
+        targetGUID = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -839,7 +839,7 @@ class go_sikthik_cage : public GameObjectScript
             {
                 if (Creature* leng = player->SummonCreature(NPC_RESTLESS_LENG, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
                 {
-                    uint64 playerGuid = player->GetGUID();
+                    ObjectGuid playerGuid = player->GetGUID();
 
                     uint32 delay = 0;
                     leng->m_Events.Schedule(delay += 2000, [leng]()             { leng->AI()->Talk(0); });
@@ -850,7 +850,7 @@ class go_sikthik_cage : public GameObjectScript
                 player->KilledMonsterCredit(NPC_RESTLESS_LENG);
             }
 
-            uint64 goGuid = go->GetGUID();
+            ObjectGuid goGuid = go->GetGUID();
             uint32 delay = 0;
             player->m_Events.Schedule(delay += 8000, [player, goGuid]()
             {
@@ -1042,12 +1042,12 @@ class npc_lin_silentstrike : public CreatureScript
         {
             npc_lin_silentstrikeAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 sunaGUID;
+            ObjectGuid sunaGUID;
             EventMap events;
 
             void Reset() override
             {
-                sunaGUID = 0;
+                sunaGUID = ObjectGuid::Empty;
 
                 events.Reset();
                 events.ScheduleEvent(EVENT_SUNA_KNEEL_TALK, 5000);
@@ -1056,7 +1056,7 @@ class npc_lin_silentstrike : public CreatureScript
                 events.ScheduleEvent(EVENT_SUNA_STAND, 29000);
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 if (auto suna = me->SummonCreature(NPC_SUNA_SILENTSTRIKE, 2659.59f, 3268.618f, 425.33f, 5.56f, TEMPSUMMON_TIMED_DESPAWN, 34000))
                 {
@@ -1140,7 +1140,7 @@ class npc_osul_mist_shaman : public CreatureScript
         {
             npc_osul_mist_shamanAI(Creature* creature) : ScriptedAI(creature) { }
 
-            uint64 TorchGUID;
+            ObjectGuid TorchGUID;
             EventMap events;
 
             void Reset() override
@@ -1423,7 +1423,7 @@ struct npc_townlong_gunpowder_cask : public ScriptedAI
     npc_townlong_gunpowder_cask(Creature* creature) : ScriptedAI(creature) { }
 
     TaskScheduler scheduler;
-    uint64 summonerGUID;
+    ObjectGuid summonerGUID;
 
     void IsSummonedBy(Unit* summoner) override
     {
@@ -1493,7 +1493,7 @@ class cond_burn_mantid_corpse : public ConditionScript
             if (!player)
                 return false;
 
-            Unit* unit = sObjectAccessor->GetUnit(*player, player->GetTarget());
+            Unit* unit = ObjectAccessor::GetUnit(*player, player->GetTarget());
             if (!unit)
                 return false;
 

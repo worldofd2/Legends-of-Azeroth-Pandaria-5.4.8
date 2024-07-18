@@ -244,7 +244,7 @@ class boss_jaomin_ro : public CreatureScript
                     std::list<Player*> playerList;
                     GetPlayerListInGrid(playerList, me, 10.0f);
                     for (auto&& player: playerList)
-                        player->KilledMonsterCredit(me->GetEntry(), 0);
+                        player->KilledMonsterCredit(me->GetEntry(), ObjectGuid::Empty);
 
                     Talk(1);
                     EnterEvadeMode();
@@ -532,7 +532,7 @@ class npc_aysa : public CreatureScript
                     events.ScheduleEvent(EVENT_START, 600); //Begin script
                 inCombat = false;
                 timer = 0;
-                lifeiGUID = 0;
+                lifeiGUID = ObjectGuid::Empty;
                 me->SetReactState(REACT_DEFENSIVE);
                 me->SetFaction(2263);
             }
@@ -540,7 +540,7 @@ class npc_aysa : public CreatureScript
             EventMap events;
             std::vector<Player*> playersInvolved;
 
-            uint64 lifeiGUID;
+            ObjectGuid lifeiGUID;
 
             bool inCombat;
             uint32 timer;
@@ -599,7 +599,7 @@ class npc_aysa : public CreatureScript
                     if (Creature* lifei = GetLifei())
                     {
                         lifei->DespawnOrUnsummon();
-                        lifeiGUID = 0;
+                        lifeiGUID = ObjectGuid::Empty;
                     }
                 }
             }
@@ -663,7 +663,7 @@ class npc_aysa : public CreatureScript
                                     if (i == 6)
                                     {
                                         lifei->DespawnOrUnsummon(500);
-                                        lifeiGUID = 0;
+                                        lifeiGUID = ObjectGuid::Empty;
                                     }
                                     break;
                                 }
@@ -686,7 +686,7 @@ class npc_aysa : public CreatureScript
                             if (Creature* lifei = GetLifei())
                             {
                                 lifei->DespawnOrUnsummon();
-                                lifeiGUID = 0;
+                                lifeiGUID = ObjectGuid::Empty;
                             }
 
                             events.ScheduleEvent(EVENT_START, 10000);
@@ -698,7 +698,7 @@ class npc_aysa : public CreatureScript
                             UpdatePlayerList();
                             for (auto&& player: playersInvolved)
                             {
-                                player->KilledMonsterCredit(NPC_MASTER_LI_FEI, 0);
+                                player->KilledMonsterCredit(NPC_MASTER_LI_FEI, ObjectGuid::Empty);
                                 player->RemoveAura(SPELL_MEDITATION_BAR);
                             }
                             break;
@@ -772,7 +772,7 @@ class boss_li_fei_fight : public CreatureScript
                 {
                     auto unit = hostileRef->getTarget();
                     if (unit && unit->GetTypeId() == TYPEID_PLAYER)
-                        unit->ToPlayer()->KilledMonsterCredit(54734, 0);
+                        unit->ToPlayer()->KilledMonsterCredit(54734, ObjectGuid::Empty);
                 }
 
                 // TODO: it seems that spell 106275 is used to display a text message
@@ -902,7 +902,7 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
         {
             if (player->GetQuestStatus(29423) == QUEST_STATUS_INCOMPLETE)
             {
-                player->KilledMonsterCredit(61128, 0);
+                player->KilledMonsterCredit(61128, ObjectGuid::Empty);
 
                 std::list<Creature*> huoList;
                 GetCreatureListWithEntryInGrid(huoList, player, 54958, 20.0f);
@@ -1057,11 +1057,11 @@ class spell_feet_of_fury : public SpellScriptLoader
         {
             PrepareAuraScript(spell_feet_of_fury_AuraScript)
 
-            uint64 targetGuid;
+            ObjectGuid targetGuid;
 
             bool Load() override
             {
-                targetGuid = 0;
+                targetGuid = ObjectGuid::Empty;
                 return true;
             }
 
@@ -1087,7 +1087,7 @@ class spell_feet_of_fury : public SpellScriptLoader
 
                 if (!target)
                 {
-                    targetGuid = 0;
+                    targetGuid = ObjectGuid::Empty;
                     return;
                 }
 

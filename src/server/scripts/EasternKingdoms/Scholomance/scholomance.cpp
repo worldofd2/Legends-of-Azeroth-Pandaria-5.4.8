@@ -570,11 +570,11 @@ class npc_scholomance_candlestick_mage : public CreatureScript
             npc_scholomance_candlestick_mageAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events, nonCombatEvents;
-            uint64 CandleGUID;
+            ObjectGuid CandleGUID;
 
             void InitializeAI() override
             {
-                CandleGUID = 0;
+                CandleGUID.Clear();
                 nonCombatEvents.ScheduleEvent(EVENT_INIT, 2 * IN_MILLISECONDS);
                 Reset();
             }
@@ -726,7 +726,7 @@ class npc_scholomance_flesh_horror : public CreatureScript
             npc_scholomance_flesh_horrorAI(Creature* creature) : ScriptedAI(creature) { }
 
             EventMap events;
-            std::list<uint64> meat;
+            std::list<ObjectGuid> meat;
             uint32 VehPos;
 
             void Reset() override
@@ -1078,7 +1078,7 @@ class npc_gandling_at_rattlegore : public CreatureScript
                             break;
                         case EVENT_TALK_9:
                             Talk(TALK_12);
-                            if (Unit* TalkingSkull = ObjectAccessor::GetUnit(*me, _instance->GetData64(NPC_TALKING_SKULL)))
+                            if (Unit* TalkingSkull = ObjectAccessor::GetUnit(*me, _instance->GetGuidData(NPC_TALKING_SKULL)))
                                 TalkingSkull->ToCreature()->AI()->Talk(TALK_GANDLING_LEAVE);
 
                             me->SetAnimationTier(UnitAnimationTier::Ground);

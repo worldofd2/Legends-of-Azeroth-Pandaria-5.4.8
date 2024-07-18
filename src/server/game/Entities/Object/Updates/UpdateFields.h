@@ -332,4 +332,10 @@ enum EPlayerDynamicFields
     PLAYER_DYNAMIC_END                          = 0x5
 };
 
+enum ECorpseDynamicFields
+{
+    CORPSE_DYNAMIC_END = OBJECT_DYNAMIC_END + 0x000,
+};
+
+
 #endif // _UPDATEFIELDS_H

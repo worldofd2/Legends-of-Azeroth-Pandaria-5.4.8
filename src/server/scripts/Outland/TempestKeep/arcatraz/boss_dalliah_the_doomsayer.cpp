@@ -60,7 +60,7 @@ class boss_dalliah_the_doomsayer : public CreatureScript
 
             Creature* Soccothrates()
             {
-                if (Creature* sSoccothrates = ObjectAccessor::GetCreature(*me, instance->GetData64(TYPE_SOCCOTHRATES)))
+                if (Creature* sSoccothrates = ObjectAccessor::GetCreature(*me, instance->GetGuidData(TYPE_SOCCOTHRATES)))
                     return sSoccothrates;
 
                 return 0;

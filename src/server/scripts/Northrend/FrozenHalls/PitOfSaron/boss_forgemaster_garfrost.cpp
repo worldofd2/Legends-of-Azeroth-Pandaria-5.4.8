@@ -118,7 +118,7 @@ class boss_garfrost : public CreatureScript
             void JustDied(Unit* /*killer*/) override
             {
                 Talk(SAY_DEATH);
-                if (Creature* tyrannus = me->GetCreature(*me, instance->GetData64(DATA_TYRANNUS)))
+                if (Creature* tyrannus = me->GetCreature(*me, instance->GetGuidData(DATA_TYRANNUS)))
                     tyrannus->AI()->Talk(SAY_TYRANNUS_DEATH);
 
                 instance->SetBossState(DATA_GARFROST, DONE);

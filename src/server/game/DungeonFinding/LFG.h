@@ -127,10 +127,10 @@ struct LfgLockInfoData
 
 typedef std::set<uint32> LfgDungeonSet;
 typedef std::map<uint32, LfgLockInfoData> LfgLockMap;
-typedef std::map<uint64, LfgLockMap> LfgLockPartyMap;
-typedef std::set<uint64> LfgGuidSet;
-typedef std::list<uint64> LfgGuidList;
-typedef std::map<uint64, uint8> LfgRolesMap;
+typedef std::map<ObjectGuid, LfgLockMap> LfgLockPartyMap;
+typedef std::set<ObjectGuid> LfgGuidSet;
+typedef std::list<ObjectGuid> LfgGuidList;
+typedef std::map<ObjectGuid, uint8> LfgRolesMap;
 typedef std::map<uint64, uint64> LfgGroupsMap;
 
 std::string ConcatenateDungeons(LfgDungeonSet const& dungeons);

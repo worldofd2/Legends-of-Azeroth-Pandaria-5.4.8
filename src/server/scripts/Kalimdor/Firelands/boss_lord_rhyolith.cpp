@@ -594,7 +594,7 @@ class npc_lord_rhyolith_rhyolith : public CreatureScript
             {
                 if (instance)
                 {
-                    if (Creature* pRhyolith = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RHYOLITH)))
+                    if (Creature* pRhyolith = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_RHYOLITH)))
                         killer->Kill(pRhyolith);
                     instance->SetBossState(DATA_RHYOLITH, DONE);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BALANCE_BAR);

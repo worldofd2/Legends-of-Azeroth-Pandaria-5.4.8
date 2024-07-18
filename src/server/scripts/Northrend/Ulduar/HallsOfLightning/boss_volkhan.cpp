@@ -87,7 +87,7 @@ class boss_volkhan : public CreatureScript
 
             InstanceScript* instance;
 
-            std::list<uint64> m_lGolemGUIDList;
+            std::list<ObjectGuid> m_lGolemGUIDList;
 
             bool m_bHasTemper;
             bool m_bIsStriking;

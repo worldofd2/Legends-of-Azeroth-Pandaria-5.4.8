@@ -33,7 +33,7 @@ class AreaTrigger_at_mandori : public AreaTriggerScript
            if (player->GetQuestStatus(29792) != QUEST_STATUS_INCOMPLETE)
                return true;
 
-           uint64 playerGuid = player->GetGUID();
+           ObjectGuid playerGuid = player->GetGUID();
 
             auto const aysa = player->SummonCreature(59986, 698.04f, 3601.79f, 142.82f, 3.254830f, TEMPSUMMON_MANUAL_DESPAWN, 0); // Aysa
             auto const ji   = player->SummonCreature(59988, 698.06f, 3599.34f, 142.62f, 2.668790f, TEMPSUMMON_MANUAL_DESPAWN, 0); // Ji
@@ -79,10 +79,10 @@ class npc_mandori_escort : public CreatureScript
             uint8  IntroState;
             uint8  doorEventState;
 
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
 
-            uint64 mandoriDoorGuid;
-            uint64 peiwuDoorGuid;
+            ObjectGuid mandoriDoorGuid;
+            ObjectGuid peiwuDoorGuid;
 
             void Reset() override
             {
@@ -92,14 +92,14 @@ class npc_mandori_escort : public CreatureScript
                 IntroState      = 0;
                 doorEventState  = 0;
 
-                playerGuid      = 0;
-                mandoriDoorGuid = 0;
-                peiwuDoorGuid   = 0;
+                playerGuid = ObjectGuid::Empty;
+                mandoriDoorGuid = ObjectGuid::Empty;
+                peiwuDoorGuid = ObjectGuid::Empty;
 
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 playerGuid = guid;
 
@@ -287,16 +287,16 @@ class npc_ji_forest_escort : public CreatureScript
         {
             npc_ji_forest_escortAI(Creature* creature) : npc_escortAI(creature) { }
 
-            uint64 playerGuid;
+            ObjectGuid playerGuid;
             uint32 IntroTimer;
 
             void Reset() override
             {
-                playerGuid      = 0;
+                playerGuid = ObjectGuid::Empty;
                 IntroTimer      = 2000;
             }
 
-            void SetGUID(uint64 guid, int32 /*type*/) override
+            void SetGUID(ObjectGuid guid, int32 /*type*/) override
             {
                 Talk(0);
                 playerGuid = guid;
@@ -416,7 +416,7 @@ public:
     {
         boss_vordrakaAI(Creature* creature) : ScriptedAI(creature) { }
 
-        uint64 summonerGUID;
+        ObjectGuid summonerGUID;
         bool summonedAllies;
         EventMap _events;
 
@@ -439,7 +439,7 @@ public:
             _events.ScheduleEvent(SPELL_DEEP_SEA_RUPTURE, 12500);
         }
 
-        void SetGUID(uint64 guid, int32 /*type*/) override
+        void SetGUID(ObjectGuid guid, int32 /*type*/) override
         {
             summonerGUID = guid;
         }
@@ -601,9 +601,9 @@ public:
     {
         npc_aysa_gunship_crash_escortAI(Creature* creature) : npc_escortAI(creature) { }
 
-        uint64 playerGuid;
-        uint64 jiGuid;
-        uint64 fireGuid;
+        ObjectGuid playerGuid;
+        ObjectGuid jiGuid;
+        ObjectGuid fireGuid;
 
         uint32 IntroTimer;
         uint32 discussTimer;
@@ -614,9 +614,9 @@ public:
 
         void Reset() override
         {
-            playerGuid      = 0;
-            jiGuid          = 0;
-            fireGuid        = 0;
+            playerGuid = ObjectGuid::Empty;
+            jiGuid = ObjectGuid::Empty;
+            fireGuid = ObjectGuid::Empty;
 
             IntroTimer      = 100;
             discussTimer    = 0;
@@ -626,7 +626,7 @@ public:
             events.Reset();
         }
 
-        void SetGUID(uint64 guid, int32 /*type*/) override
+        void SetGUID(ObjectGuid guid, int32 /*type*/) override
         {
             playerGuid = guid;
 

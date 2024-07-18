@@ -96,7 +96,7 @@ struct theramore_guard_typeAI : public ScriptedAI
     EventMap events, nonCombatEvents;
     bool hasInterrupted, intro;
     uint32 prevSpellId, delay;
-    uint64 targetGUID;
+    ObjectGuid targetGUID;
 
     void DoAction(int32 actionId) override
     {
@@ -183,7 +183,7 @@ struct theramore_guard_typeAI : public ScriptedAI
         return false;
     }
 
-    uint64 GetLowestFriendlyGUID()
+    ObjectGuid GetLowestFriendlyGUID()
     {
         std::list<Creature*> tmpTargets;
 
@@ -194,14 +194,14 @@ struct theramore_guard_typeAI : public ScriptedAI
         GetCreatureListWithEntryInGrid(tmpTargets, me, NPC_KNIGHT_OF_THERAMORE, 80.0f);
 
         if (tmpTargets.empty())
-            return 0;
+            return ObjectGuid::Empty;
 
         tmpTargets.sort(Trinity::HealthPctOrderPred());
 
         if (Creature* lowestTarget = tmpTargets.front())
             return lowestTarget->GetGUID();
 
-        return 0;
+        return ObjectGuid::Empty;
     }
 };
 
@@ -753,7 +753,7 @@ class npc_big_bessa : public CreatureScript
             {
                 events.Reset();
                 summons.DespawnAll();
-                targetGUID = 0;
+                targetGUID = ObjectGuid::Empty;
                 me->GetMap()->SetWorldState(WORLDSTATE_NO_KITE_YOU, 1);
             }
 
@@ -808,7 +808,7 @@ class npc_big_bessa : public CreatureScript
             }
 
             private:
-                uint64 GetNextFixateTarget()
+                ObjectGuid GetNextFixateTarget()
                 {
                     std::list<Player*> pList;
                     GetPlayerListInGrid(pList, me, 150.0f);
@@ -819,7 +819,7 @@ class npc_big_bessa : public CreatureScript
                     if (!pList.empty())
                         return Trinity::Containers::SelectRandomContainerElement(pList)->GetGUID();
 
-                    return 0;
+                    return ObjectGuid::Empty;
                 }
 
         };
@@ -1077,7 +1077,7 @@ class AreaTrigger_at_theramore_songweaver_prison : public AreaTriggerScript
                 if (instance->GetData(DATA_TANKS_FOR_NOTHING) != DONE)
                     return false;
 
-                if (Creature* Talen = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_THALEN_SONGWEAVER)))
+                if (Creature* Talen = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_THALEN_SONGWEAVER)))
                     Talen->AI()->DoAction(ACTION_INTRO_SONGWEAVER);
             }
 
@@ -1095,7 +1095,7 @@ class AreaTrigger_at_captain_drok_ship : public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
             {
-                if (Creature* Drok = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_CAPTAIN_DROK)))
+                if (Creature* Drok = ObjectAccessor::GetCreature(*player, instance->GetGuidData(NPC_CAPTAIN_DROK)))
                     Drok->AI()->DoAction(ACTION_INTRO_SHIP);
             }
 

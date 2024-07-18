@@ -38,9 +38,9 @@ class instance_ramparts : public InstanceMapScript
             void Initialize() override
             {
                 SetBossNumber(EncounterCount);
-                felIronChestGUID   = 0;
+                felIronChestGUID = ObjectGuid::Empty;
                 teamInInstance     = 0;
-                vazrudenHeraldGUID = 0;
+                vazrudenHeraldGUID = ObjectGuid::Empty;
             }
 
             void OnPlayerEnter(Player* player) override
@@ -93,12 +93,12 @@ class instance_ramparts : public InstanceMapScript
                 }
             }
 
-            uint64 GetData64(uint32 type) const override
+            ObjectGuid GetGuidData(uint32 type) const override
             {
                 if (type == NPC_VAZRUDEN_HERALD)
                     return vazrudenHeraldGUID;
 
-                return 0;
+                return ObjectGuid::Empty;
             }
 
             bool SetBossState(uint32 type, EncounterState state) override
@@ -165,8 +165,8 @@ class instance_ramparts : public InstanceMapScript
             }
 
             protected:
-                uint64 felIronChestGUID;
-                uint64 vazrudenHeraldGUID;
+                ObjectGuid felIronChestGUID;
+                ObjectGuid vazrudenHeraldGUID;
                 uint32 teamInInstance;
                 bool spawned;
         };

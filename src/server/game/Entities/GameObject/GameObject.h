@@ -144,9 +144,9 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void RemoveFromWorld() override;
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
-        bool Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit = 0);
+        bool Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit = 0);
         void Update(uint32 p_time) override;
-        static GameObject* GetGameObject(WorldObject& object, uint64 guid);
+        static GameObject* GetGameObject(WorldObject& object, ObjectGuid guid);
         GameObjectTemplate const* GetGOInfo() const { return m_goInfo; }
         GameObjectTemplateAddon const* GetTemplateAddon() const { return m_goTemplateAddon; }
         GameObjectData const* GetGOData() const { return m_goData; }
@@ -175,7 +175,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         bool LoadGameObjectFromDB(uint32 guid, Map* map, bool addToMap = true);
         void DeleteFromDB();
 
-        void SetOwnerGUID(uint64 owner)
+        void SetOwnerGUID(ObjectGuid owner)
         {
             // Owner already found and different than expected owner - remove object from old owner
             if (owner && GetOwnerGUID() && GetOwnerGUID() != owner)
@@ -183,9 +183,9 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
                 ASSERT(false);
             }
             m_spawnedByDefault = false;                     // all object with owner is despawned after delay
-            SetUInt64Value(GAMEOBJECT_FIELD_CREATED_BY, owner);
+            SetGuidValue(GAMEOBJECT_FIELD_CREATED_BY, owner);
         }
-        uint64 GetOwnerGUID() const { return GetUInt64Value(GAMEOBJECT_FIELD_CREATED_BY); }
+        ObjectGuid GetOwnerGUID() const { return GetGuidValue(GAMEOBJECT_FIELD_CREATED_BY); }
         Unit* GetOwner() const;
 
         void SetSpellId(uint32 id)
@@ -376,10 +376,10 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         std::list<uint32> m_SkillupList;
 
         Player* m_ritualOwner;                              // used for GAMEOBJECT_TYPE_SUMMONING_RITUAL where GO is not summoned (no owner)
-        std::set<uint64> m_unique_users;
+        std::set<ObjectGuid> m_unique_users;
         uint32 m_usetimes;
 
-        typedef std::map<uint32, uint64> ChairSlotAndUser;
+        typedef std::map<uint32, ObjectGuid> ChairSlotAndUser;
         ChairSlotAndUser ChairListSlots;
 
         uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
@@ -392,7 +392,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         G3D::Quat m_worldRotation;
         Position m_stationaryPosition;
 
-        uint64 m_lootRecipient;
+        ObjectGuid m_lootRecipient;
         uint32 m_lootRecipientGroup;
         std::set<uint64> m_lootRecipientGroupMembers;
         uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable

@@ -141,7 +141,7 @@ enum Spells
     // spirit of anvilrage
     SPELL_BESTOWAL_OF_ANVILRAGE          = 80874,
     SPELL_SPIRIT_OF_ANVILRAGE            = 80768,
-    SPELL_STORMBOLT                      = 80648, // править
+    SPELL_STORMBOLT                      = 80648, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     // spirit of moltenfist
     SPELL_BESTOWAL_OF_MOLTENFIST         = 80876,
@@ -151,7 +151,7 @@ enum Spells
     // spirit of shadowforge
     SPELL_BESTOWAL_OF_SHADOWFORGE        = 80873,
     SPELL_SPIRIT_OF_SHADOWFORGE          = 80769,
-    SPELL_DWARVEN_CHAIN_LIGHTNING        = 80646, // править
+    SPELL_DWARVEN_CHAIN_LIGHTNING        = 80646, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     // lord victor nefarius
     // omnotron
@@ -1541,7 +1541,7 @@ class npc_lord_victor_nefarius_heroic : public CreatureScript
                             me->DespawnOrUnsummon();
                             break;
                         case EVENT_BLAZING_INFERNO:
-                            if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW)))
+                            if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW)))
                             {
                                 Unit* target;
                                 target = pMagmaw->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, -20.0f);
@@ -1555,7 +1555,7 @@ class npc_lord_victor_nefarius_heroic : public CreatureScript
                             events.ScheduleEvent(EVENT_BLAZING_INFERNO, urand(30000, 35000));
                             break;
                         case EVENT_SHADOW_BREATH:
-                            if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MAGMAW)))
+                            if (Creature* pMagmaw = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_MAGMAW)))
                             {
                                 Unit* target;
                                 target = pMagmaw->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, -20.0f);

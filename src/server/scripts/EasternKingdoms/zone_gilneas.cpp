@@ -745,7 +745,7 @@ struct npc_worgen_runt : public ScriptedAI
         _worgenID = 0;
         _wayPointCounter = 0;
         _jumped = false;
-        _playerGuid = 0;
+        _playerGuid = ObjectGuid::Empty;
     }
 
     void JustEngagedWith(Unit* /*who*/) override
@@ -1502,7 +1502,7 @@ public:
                         if (Unit* passenger = vehicle->GetPassenger(0))
                             if (Player* player = passenger->ToPlayer())
                             {
-                                player->KilledMonsterCredit(NPC_KRENNAN_ARANAS_KILL_CREDIT, 0);
+                                player->KilledMonsterCredit(NPC_KRENNAN_ARANAS_KILL_CREDIT, ObjectGuid::Empty);
 
                                 if (Unit* passenger_2 = vehicle->GetPassenger(1))
                                     if (Creature* aranas = passenger_2->ToCreature())
@@ -1594,7 +1594,7 @@ class npc_gilneas_children : public CreatureScript
             void Reset() override
             {
                 events.Reset();
-                playerGUID = 0;
+                playerGUID = ObjectGuid::Empty;
                 activated = false;
                 me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
 
@@ -1615,7 +1615,7 @@ class npc_gilneas_children : public CreatureScript
                         if (bct)
                             baseText = bct->GetText(loc_idx, player->GetGender());
                             player->Say(baseText, LANG_UNIVERSAL);
-                        player->KilledMonsterCredit(me->GetEntry(), 0);
+                        player->KilledMonsterCredit(me->GetEntry(), ObjectGuid::Empty);
                         me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                         events.ScheduleEvent(EVENT_TALK_TO_PLAYER, 3s + 500ms);
                     }
@@ -1759,7 +1759,7 @@ public:
             Summon = false;
             uiCatchTimer = 1000;
             uiShootTimer = 500;
-            uiPlayerGUID = 0;
+            uiPlayerGUID = ObjectGuid::Empty;
             uiSummonTimer = 1500;
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -2171,7 +2171,7 @@ public:
             {
                 case ACTION_START_WP:
                 {
-                    Start(false, true, 0, NULL, false, false, true);
+                    Start(false, true, ObjectGuid::Empty, NULL, false, false, true);
                     SetDespawnAtEnd(true);
 
                     if (GameObject* gate = me->FindNearestGameObject(GO_FIRST_GATE, 80.0f))

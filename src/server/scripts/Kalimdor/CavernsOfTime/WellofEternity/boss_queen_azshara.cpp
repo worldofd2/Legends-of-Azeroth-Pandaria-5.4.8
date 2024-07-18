@@ -263,10 +263,10 @@ class boss_queen_azshara : public CreatureScript
                             break;
                         case EVENT_END:
                         {    
-                            instance->DoKilledMonsterKredit(QUEST_THE_VAINGLORIOUS, 54853, 0);
+                            instance->DoKilledMonsterKredit(QUEST_THE_VAINGLORIOUS, 54853, ObjectGuid::Empty);
 
                             instance->SetBossState(DATA_AZSHARA, DONE);
-                            instance->DoRespawnGameObject(instance->GetData64(DATA_ROYAL_CACHE), DAY);
+                            instance->DoRespawnGameObject(instance->GetGuidData(DATA_ROYAL_CACHE), DAY);
                             instance->DoModifyPlayerCurrencies(CURRENCY_TYPE_JUSTICE_POINTS, 7000);
                             me->DespawnOrUnsummon();
                             break;
@@ -280,7 +280,7 @@ class boss_queen_azshara : public CreatureScript
         private:
             EventMap events;
             uint8 phase;
-            uint64 addsGUIDs[6];
+            ObjectGuid addsGUIDs[6];
             uint8 addsCount;
         };
 

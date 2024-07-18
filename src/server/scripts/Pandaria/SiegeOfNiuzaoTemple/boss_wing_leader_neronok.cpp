@@ -131,7 +131,7 @@ class boss_wing_leader_neronok : public CreatureScript
                         Talk(EMOTE_WINDS);
                         me->SetReactState(REACT_PASSIVE);
                         me->AttackStop();
-                        me->SetTarget(0);
+                        me->SetTarget(ObjectGuid::Empty);
                         me->SetCanFly(true);
                         me->SendMovementFlagUpdate();
                         me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);

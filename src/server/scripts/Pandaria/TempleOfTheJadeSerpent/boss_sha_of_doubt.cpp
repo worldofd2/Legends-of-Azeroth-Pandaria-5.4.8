@@ -365,7 +365,7 @@ class npc_figment_of_doubt : public CreatureScript
                         summoner->RemoveAura(SPELL_DRAW_DOUBT);
                 }
 
-                if (Creature* sha = Unit::GetCreature(*me, instance->GetData64(DATA_SHA_OF_DOUBT)))
+                if (Creature* sha = Unit::GetCreature(*me, instance->GetGuidData(DATA_SHA_OF_DOUBT)))
                 {
                     if (sha->IsAIEnabled)
                         sha->AI()->DoAction(ACTION_FIGMENT_DIE);

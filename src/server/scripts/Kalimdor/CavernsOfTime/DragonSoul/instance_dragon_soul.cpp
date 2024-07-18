@@ -54,31 +54,31 @@ class instance_dragon_soul : public InstanceMapScript
             {
                 SetBossNumber(MAX_ENCOUNTER);
 
-                uiMorchokGUID = 0;
-                uiKohcromGUID = 0;
-                uiYorsahjGUID = 0;
-                uiZonozzGUID = 0;
-                uiHagaraGUID = 0;
-                uiUltraxionGUID = 0;
-                uiBlackhornGUID = 0;
-                uiAllianceShipGUID = 0;
-                uiAllianceShipFirstGUID =0;
-                uiHordeShipGUID = 0;
-                uiSwayzeGUID = 0;
+                uiMorchokGUID = ObjectGuid::Empty;
+                uiKohcromGUID = ObjectGuid::Empty;
+                uiYorsahjGUID = ObjectGuid::Empty;
+                uiZonozzGUID = ObjectGuid::Empty;
+                uiHagaraGUID = ObjectGuid::Empty;
+                uiUltraxionGUID = ObjectGuid::Empty;
+                uiBlackhornGUID = ObjectGuid::Empty;
+                uiAllianceShipGUID = ObjectGuid::Empty;
+                uiAllianceShipFirstGUID = ObjectGuid::Empty;
+                uiHordeShipGUID = ObjectGuid::Empty;
+                uiSwayzeGUID = ObjectGuid::Empty;
                 // teleports
-                uiWyrmrestBaseFromSummitGUID = 0;
-                uiWyrmrestBaseFromGunshipGUID = 0;
-                uiWyrmrestBaseFromMaelstormGUID = 0;
-                uiWyrmrestSummitGUID = 0;
-                uiEyeofEternityGUID = 0;
-                uiDeckGUID = 0;
-                uiMaelstormGUID = 0;
-                uiDeathwingGUID = 0;
-                uiAlexstraszaDragonGUID = 0;
-                uiNozdormuDragonGUID = 0;
-                uiYseraDragonGUID = 0;
-                uiKalecgosDragonGUID = 0;
-                uiThrall2GUID = 0;
+                uiWyrmrestBaseFromSummitGUID = ObjectGuid::Empty;
+                uiWyrmrestBaseFromGunshipGUID = ObjectGuid::Empty;
+                uiWyrmrestBaseFromMaelstormGUID = ObjectGuid::Empty;
+                uiWyrmrestSummitGUID = ObjectGuid::Empty;
+                uiEyeofEternityGUID = ObjectGuid::Empty;
+                uiDeckGUID = ObjectGuid::Empty;
+                uiMaelstormGUID = ObjectGuid::Empty;
+                uiDeathwingGUID = ObjectGuid::Empty;
+                uiAlexstraszaDragonGUID = ObjectGuid::Empty;
+                uiNozdormuDragonGUID = ObjectGuid::Empty;
+                uiYseraDragonGUID = ObjectGuid::Empty;
+                uiKalecgosDragonGUID = ObjectGuid::Empty;
+                uiThrall2GUID = ObjectGuid::Empty;
 
                 memset(uiLesserCacheofTheAspects, 0, sizeof(uiLesserCacheofTheAspects));
                 memset(uiBackPlates, 0, sizeof(uiBackPlates));
@@ -90,14 +90,14 @@ class instance_dragon_soul : public InstanceMapScript
                 memset(twilightAssaultLanesUsedH, 0, sizeof(twilightAssaultLanesUsedH));
                 memset(twilightAssaultLanesUsedV, 0, sizeof(twilightAssaultLanesUsedV));
 
-                uiNethestraszGUID = 0;
-                uiOpenPortalEvent = 0;
+                uiNethestraszGUID = ObjectGuid::Empty;
+                uiOpenPortalEvent = ObjectGuid::Empty;
                 bHagaraEvent = 0;
-                uiThrallEvent = 0;
+                uiThrallEvent = ObjectGuid::Empty;
                 uiDragonSoulEvent = 0;
                 uiUltraxionTrash = 0;
                 uiDragonsCount = 0;
-                uiDeathwingEvent = 0;
+                uiDeathwingEvent = ObjectGuid::Empty;
                 uiDelayedChestData = 0;
 
                 isLfr = lfr;
@@ -132,7 +132,7 @@ class instance_dragon_soul : public InstanceMapScript
                         SetBossState(DATA_ZONOZZ, DONE);
                         SetBossState(DATA_YORSAHJ, DONE);
                         SetBossState(DATA_HAGARA, DONE);
-                        uiOpenPortalEvent = DONE;
+                        uiOpenPortalEvent = ObjectGuid(uint64(DONE));
                     }
                 }
                 if (GetBossState(DATA_MADNESS) == DONE && player->GetAreaId() == 5893)
@@ -359,25 +359,25 @@ class instance_dragon_soul : public InstanceMapScript
                 switch (creature->GetEntry())
                 {
                     case NPC_ULTRAXION:
-                        uiUltraxionGUID = 0;
+                        uiUltraxionGUID = ObjectGuid::Empty;
                         break;
                     case NPC_BLACKHORN:
-                        uiBlackhornGUID = 0;
+                        uiBlackhornGUID = ObjectGuid::Empty;
                         break;
                     case NPC_DEATHWING:
-                        uiDeathwingGUID = 0;
+                        uiDeathwingGUID = ObjectGuid::Empty;
                         break;
                     case NPC_ALEXSTRASZA_DRAGON:
-                        uiAlexstraszaDragonGUID = 0;
+                        uiAlexstraszaDragonGUID = ObjectGuid::Empty;
                         break;
                     case NPC_NOZDORMU_DRAGON:
-                        uiNozdormuDragonGUID = 0;
+                        uiNozdormuDragonGUID = ObjectGuid::Empty;
                         break;
                     case NPC_YSERA_DRAGON:
-                        uiYseraDragonGUID = 0;
+                        uiYseraDragonGUID = ObjectGuid::Empty;
                         break;
                     case NPC_KALECGOS_DRAGON:
-                        uiKalecgosDragonGUID = 0;
+                        uiKalecgosDragonGUID = ObjectGuid::Empty;
                         break;
                 }
             }
@@ -519,7 +519,7 @@ class instance_dragon_soul : public InstanceMapScript
                 }
             }
 
-            uint64 GetData64(uint32 type) const override
+            ObjectGuid GetGuidData(uint32 type) const override
             {
                 switch (type)
                 {
@@ -556,9 +556,8 @@ class instance_dragon_soul : public InstanceMapScript
                     case DATA_ELEM_FRAGMENT_25H:   return uiElementiumFragment[3];
                     case DATA_DRAGON_SOUL_EVENT:   return uiDeathwingEvent;
                     case DATA_THRALL_MADNESS:      return uiThrall2GUID;
-                    default:                       return 0;
+                    default:                       return ObjectGuid::Empty;
                 }
-                return 0;
             }
 
             void SetData(uint32 type, uint32 data) override
@@ -566,7 +565,7 @@ class instance_dragon_soul : public InstanceMapScript
                 switch (type)
                 {
                     case DATA_OPEN_PORTAL_TO_EYE:
-                        uiOpenPortalEvent = data;
+                        uiOpenPortalEvent = ObjectGuid(uint64(data));
                         if (uiOpenPortalEvent == DONE)
                             if (Creature* EyeofEternityTele = instance->GetCreature(uiEyeofEternityGUID))
                             {
@@ -601,7 +600,7 @@ class instance_dragon_soul : public InstanceMapScript
                         switch (data)
                         {
                         case IN_PROGRESS:
-                            for (std::vector<uint64>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
+                            for (std::vector<ObjectGuid>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
                                 if (Creature* assaulter = instance->GetCreature(*itr))
                                 {
                                     assaulter->SetPhaseMask(1, true);
@@ -609,16 +608,16 @@ class instance_dragon_soul : public InstanceMapScript
                                 }
                             break;
                         case SPECIAL:
-                            for (std::vector<uint64>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
+                            for (std::vector<ObjectGuid>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
                                 if (Creature* assaulter = instance->GetCreature(*itr))
                                     assaulter->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             if (!teleportGUIDs.empty())
-                                for (std::vector<uint64>::const_iterator itr = teleportGUIDs.begin(); itr != teleportGUIDs.end(); ++itr)
+                                for (std::vector<ObjectGuid>::const_iterator itr = teleportGUIDs.begin(); itr != teleportGUIDs.end(); ++itr)
                                     if (Creature* pTeleports = instance->GetCreature((*itr)))
                                         DeactivatePortal(pTeleports);
                             break;
                         case FAIL:
-                            for (std::vector<uint64>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
+                            for (std::vector<ObjectGuid>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
                                 if (Creature* assaulter = instance->GetCreature(*itr))
                                 {
                                     assaulter->SetCanFly(true);
@@ -643,9 +642,9 @@ class instance_dragon_soul : public InstanceMapScript
                         {
                             if (Creature* thrall = instance->GetCreature(uiThrallEvent))
                                 thrall->AI()->DoAction(ACTION_STOP_ASSAULTERS_SPAWN);
-                            if (Creature* Deathwing = instance->GetCreature(GetData64(DATA_DRAGON_SOUL_EVENT)))
+                            if (Creature* Deathwing = instance->GetCreature(GetGuidData(DATA_DRAGON_SOUL_EVENT)))
                                 Deathwing->AI()->DoAction(ACTION_DEATHWING_INTRO);
-                            for (std::vector<uint64>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
+                            for (std::vector<ObjectGuid>::const_iterator itr = assaultersGUIDs.begin(); itr != assaultersGUIDs.end(); ++itr)
                                 if (Creature* assaulters = instance->GetCreature(*itr))
                                 {
                                     assaulters->AI()->DoAction(ACTION_STOP_ASSAULT);
@@ -676,15 +675,15 @@ class instance_dragon_soul : public InstanceMapScript
                     case DATA_SPAWN_GREATER_CHEST:
                         if (uiDelayedChestData)
                         {
-                            if (instance->GetGameObject(GetData64(uiDelayedChestData)))
+                            if (instance->GetGameObject(GetGuidData(uiDelayedChestData)))
                             {
-                                DoRespawnGameObject(GetData64(uiDelayedChestData), DAY);
+                                DoRespawnGameObject(GetGuidData(uiDelayedChestData), DAY);
                                 uiDelayedChestData = 0;
                             }
                         }
-                        else if (instance->GetGameObject(GetData64(data)))
+                        else if (instance->GetGameObject(GetGuidData(data)))
                         {
-                            DoRespawnGameObject(GetData64(data), DAY);
+                            DoRespawnGameObject(GetGuidData(data), DAY);
                             uiDelayedChestData = 0;
                         }
                         else
@@ -727,7 +726,7 @@ class instance_dragon_soul : public InstanceMapScript
 
                 if (type == DATA_MORCHOK && state == DONE)
                     if (!dragonstaxiGUIDs.empty())
-                        for (std::vector<uint64>::const_iterator itr = dragonstaxiGUIDs.begin(); itr != dragonstaxiGUIDs.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = dragonstaxiGUIDs.begin(); itr != dragonstaxiGUIDs.end(); ++itr)
                             if (Creature* dragonstaxi = instance->GetCreature((*itr)))
                                 dragonstaxi->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_SPELLCLICK);
 
@@ -741,7 +740,7 @@ class instance_dragon_soul : public InstanceMapScript
 
                 if (type == DATA_SPINE)
                     if (!maelstormteleGUIDs.empty())
-                        for (std::vector<uint64>::const_iterator itr = maelstormteleGUIDs.begin(); itr != maelstormteleGUIDs.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = maelstormteleGUIDs.begin(); itr != maelstormteleGUIDs.end(); ++itr)
                             if (Creature* Teleports = instance->GetCreature((*itr)))
                                 Teleports->SetVisible(state == DONE ? true : false);
 
@@ -753,7 +752,7 @@ class instance_dragon_soul : public InstanceMapScript
                 if (state == IN_PROGRESS)
                 {
                     if (!teleportGUIDs.empty())
-                        for (std::vector<uint64>::const_iterator itr = teleportGUIDs.begin(); itr != teleportGUIDs.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = teleportGUIDs.begin(); itr != teleportGUIDs.end(); ++itr)
                             if (Creature* Teleports = instance->GetCreature((*itr)))
                                 DeactivatePortal(Teleports);
                 }
@@ -767,7 +766,7 @@ class instance_dragon_soul : public InstanceMapScript
             {
                 if (GetBossState(DATA_MORCHOK) == DONE)
                     if (!startportalsGUIDs.empty())
-                        for (std::vector<uint64>::const_iterator itr = startportalsGUIDs.begin(); itr != startportalsGUIDs.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = startportalsGUIDs.begin(); itr != startportalsGUIDs.end(); ++itr)
                             if (Creature* Teleports = instance->GetCreature((*itr)))
                                 ActivatePortal(Teleports);
                 if ((GetBossState(DATA_YORSAHJ) == DONE) && (GetBossState(DATA_ZONOZZ) == DONE))
@@ -775,7 +774,7 @@ class instance_dragon_soul : public InstanceMapScript
                         ActivatePortal(WyrmrestBaseFromSummitTele);
                 if ((GetBossState(DATA_HAGARA) == DONE) || (GetData(DATA_OPEN_PORTAL_TO_EYE) == DONE))
                     if (!wyrmrestsummitGUIDs.empty())
-                        for (std::vector<uint64>::const_iterator itr = wyrmrestsummitGUIDs.begin(); itr != wyrmrestsummitGUIDs.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = wyrmrestsummitGUIDs.begin(); itr != wyrmrestsummitGUIDs.end(); ++itr)
                             if (Creature* Teleports = instance->GetCreature((*itr)))
                                 ActivatePortal(Teleports);
                 if (GetBossState(DATA_ULTRAXION) == DONE)
@@ -783,7 +782,7 @@ class instance_dragon_soul : public InstanceMapScript
                         ActivatePortal(WyrmrestBaseFromGunship);
                 if (GetBossState(DATA_SPINE) == DONE)
                     if (!maelstormteleGUIDs.empty())
-                        for (std::vector<uint64>::const_iterator itr = maelstormteleGUIDs.begin(); itr != maelstormteleGUIDs.end(); ++itr)
+                        for (std::vector<ObjectGuid>::const_iterator itr = maelstormteleGUIDs.begin(); itr != maelstormteleGUIDs.end(); ++itr)
                             if (Creature* Teleports = instance->GetCreature((*itr)))
                                 ActivatePortal(Teleports);
             }
@@ -833,7 +832,7 @@ class instance_dragon_soul : public InstanceMapScript
                     loadStream >> tmpEvent;
                     if (tmpEvent != DONE) 
                         tmpEvent = NOT_STARTED;
-                    uiOpenPortalEvent = tmpEvent;
+                    uiOpenPortalEvent = ObjectGuid(uint64(tmpEvent));
 
                     loadStream >> tmpEvent;
                     if (tmpEvent != DONE) 
@@ -917,7 +916,7 @@ class instance_dragon_soul : public InstanceMapScript
                             bool inverseDirection = twilightAssaultLanesUsedH[row] == 2;
                             if (inverseDirection && col == 0)
                                 return NULL;
-                            uint64 nextGuid = twilightAssaultStalkerGuidsH[row][inverseDirection ? col-1 : col+1];
+                            ObjectGuid nextGuid = twilightAssaultStalkerGuidsH[row][inverseDirection ? col-1 : col+1];
                             return nextGuid ? instance->GetCreature(nextGuid) : NULL;
                         }
                     }
@@ -936,7 +935,7 @@ class instance_dragon_soul : public InstanceMapScript
                             bool inverseDirection = twilightAssaultLanesUsedV[col] == 2;
                             if (inverseDirection && row == 0)
                                 return NULL;
-                            uint64 nextGuid = twilightAssaultStalkerGuidsV[col][inverseDirection ? row-1 : row+1];
+                            ObjectGuid nextGuid = twilightAssaultStalkerGuidsV[col][inverseDirection ? row-1 : row+1];
                             return nextGuid ? instance->GetCreature(nextGuid) : NULL;
                         }
                     }
@@ -944,7 +943,7 @@ class instance_dragon_soul : public InstanceMapScript
                 return NULL;
             }
 
-            std::optional<Position> GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, uint64& targetGUID) override
+            std::optional<Position> GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, ObjectGuid& targetGUID) override
             {
                 if (horizonal)
                 {
@@ -1094,53 +1093,53 @@ class instance_dragon_soul : public InstanceMapScript
             private:
                 uint32 uiTeamInInstance;
 
-                uint64 uiMorchokGUID;
-                uint64 uiKohcromGUID;
-                uint64 uiYorsahjGUID;
-                uint64 uiZonozzGUID;
-                uint64 uiHagaraGUID;
-                uint64 uiUltraxionGUID;
-                uint64 uiBlackhornGUID;
-                uint64 uiAllianceShipGUID;
-                uint64 uiAllianceShipFirstGUID;
-                uint64 uiHordeShipGUID;
-                uint64 uiSwayzeGUID;
+                ObjectGuid uiMorchokGUID;
+                ObjectGuid uiKohcromGUID;
+                ObjectGuid uiYorsahjGUID;
+                ObjectGuid uiZonozzGUID;
+                ObjectGuid uiHagaraGUID;
+                ObjectGuid uiUltraxionGUID;
+                ObjectGuid uiBlackhornGUID;
+                ObjectGuid uiAllianceShipGUID;
+                ObjectGuid uiAllianceShipFirstGUID;
+                ObjectGuid uiHordeShipGUID;
+                ObjectGuid uiSwayzeGUID;
                 // teleports
-                uint64 uiWyrmrestBaseFromSummitGUID;
-                uint64 uiWyrmrestBaseFromGunshipGUID;
-                uint64 uiWyrmrestBaseFromMaelstormGUID;
-                uint64 uiWyrmrestSummitGUID;
-                uint64 uiEyeofEternityGUID;
-                uint64 uiDeckGUID;
-                uint64 uiMaelstormGUID;
-                uint64 uiDeathwingGUID;
-                uint64 uiAlexstraszaDragonGUID;
-                uint64 uiNozdormuDragonGUID;
-                uint64 uiYseraDragonGUID;
-                uint64 uiKalecgosDragonGUID;
-                uint64 uiThrall2GUID;
+                ObjectGuid uiWyrmrestBaseFromSummitGUID;
+                ObjectGuid uiWyrmrestBaseFromGunshipGUID;
+                ObjectGuid uiWyrmrestBaseFromMaelstormGUID;
+                ObjectGuid uiWyrmrestSummitGUID;
+                ObjectGuid uiEyeofEternityGUID;
+                ObjectGuid uiDeckGUID;
+                ObjectGuid uiMaelstormGUID;
+                ObjectGuid uiDeathwingGUID;
+                ObjectGuid uiAlexstraszaDragonGUID;
+                ObjectGuid uiNozdormuDragonGUID;
+                ObjectGuid uiYseraDragonGUID;
+                ObjectGuid uiKalecgosDragonGUID;
+                ObjectGuid uiThrall2GUID;
 
-                uint64 uiLesserCacheofTheAspects[4];
-                uint64 uiBackPlates[3];
-                uint64 uiGreaterCacheofTheAspects[4];
-                uint64 uiElementiumFragment[4];
+                ObjectGuid uiLesserCacheofTheAspects[4];
+                ObjectGuid uiBackPlates[3];
+                ObjectGuid uiGreaterCacheofTheAspects[4];
+                ObjectGuid uiElementiumFragment[4];
 
-                std::vector<uint64> dragonstaxiGUIDs;
-                std::vector<uint64> assaultersGUIDs;
-                std::vector<uint64> startportalsGUIDs;
-                std::vector<uint64> wyrmrestsummitGUIDs;
-                std::vector<uint64> maelstormteleGUIDs;
-                std::vector<uint64> teleportGUIDs;
+                std::vector<ObjectGuid> dragonstaxiGUIDs;
+                std::vector<ObjectGuid> assaultersGUIDs;
+                std::vector<ObjectGuid> startportalsGUIDs;
+                std::vector<ObjectGuid> wyrmrestsummitGUIDs;
+                std::vector<ObjectGuid> maelstormteleGUIDs;
+                std::vector<ObjectGuid> teleportGUIDs;
 
-                uint64 twilightAssaultStalkerGuidsH[7][8];
-                uint64 twilightAssaultStalkerGuidsV[5][10];
+                ObjectGuid twilightAssaultStalkerGuidsH[7][8];
+                ObjectGuid twilightAssaultStalkerGuidsV[5][10];
                 uint8 twilightAssaultLanesUsedH[7];
                 uint8 twilightAssaultLanesUsedV[5];
 
-                uint64 uiNethestraszGUID;
-                uint64 uiOpenPortalEvent;
-                uint64 uiDeathwingEvent;
-                uint64 uiThrallEvent;
+                ObjectGuid uiNethestraszGUID;
+                ObjectGuid uiOpenPortalEvent;
+                ObjectGuid uiDeathwingEvent;
+                ObjectGuid uiThrallEvent;
                 uint32 bHagaraEvent;
                 uint32 uiDragonSoulEvent;
                 uint32 uiUltraxionTrash;

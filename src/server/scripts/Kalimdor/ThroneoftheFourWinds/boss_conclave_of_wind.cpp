@@ -411,7 +411,7 @@ struct boss_conclave_of_wind : public BossAI
             persistentEvents.Reset();
             _JustDied();
             RemoveSummons();
-            if (Creature* AlAkir = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ALAKIR)))
+            if (Creature* AlAkir = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_ALAKIR)))
             {
                 AlAkir->AI()->Talk(SAY_CONCLAVE_DEFEAT);
                 AlAkir->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
@@ -849,7 +849,7 @@ class boss_rohash : public CreatureScript
             {
                 if (eventId == EVENT_HURRICANE)
                 {
-                    uint64 affectedGuid = Trinity::Containers::SelectRandomContainerElement(affectedByHurricaneGuids);
+                    ObjectGuid affectedGuid = Trinity::Containers::SelectRandomContainerElement(affectedByHurricaneGuids);
                     affectedByHurricaneGuids.remove(affectedGuid);
                     if (Player* affected = ObjectAccessor::GetPlayer(*me, affectedGuid))
                         affected->CastSpell(affected, SPELL_HURRICANE_VEHICLE, true);
@@ -879,7 +879,7 @@ class boss_rohash : public CreatureScript
 
         private:
             uint32 windBlastCount;
-            std::list<uint64> affectedByHurricaneGuids;
+            std::list<ObjectGuid> affectedByHurricaneGuids;
         };
 
         CreatureAI* GetAI(Creature* creature) const override

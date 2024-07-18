@@ -145,13 +145,13 @@ template<class Do>
 void Battleground::BroadcastWorker(Do& _do)
 {
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-        if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
+        if (Player* player = ObjectAccessor::FindPlayer(itr->first))
             _do(player);
 }
 
 Battleground::Battleground()
 {
-    m_Guid              = 0;
+    m_Guid              = ObjectGuid::Empty;
     m_TypeID            = BATTLEGROUND_TYPE_NONE;
     m_RandomTypeID      = BATTLEGROUND_TYPE_NONE;
     m_InstanceID        = 0;
@@ -375,14 +375,14 @@ void Battleground::UpdateAfkReports()
     auto now = TimeValue::Now();
     for (auto itr = m_afkReports.begin(); itr != m_afkReports.end();)
     {
-        uint64 guid = itr->first;
+        ObjectGuid guid = itr->first;
         auto& report = itr->second;
         ++itr;
         if (report.ReportTime != TimeValue::zero())
         {
             if (report.ReportTime + Minutes(1) < now)
             {
-                if (Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(guid))
+                if (Player* player = ObjectAccessor::FindPlayer(guid))
                     m_afkReports.erase(guid);
                 else
                     RemovePlayerAtLeave(guid, true, true);
@@ -492,10 +492,10 @@ void Battleground::ProcessRessurect(uint32 diff)
     {
         if (GetReviveQueueSize())
         {
-            for (std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
+            for (std::map<ObjectGuid, std::vector<ObjectGuid> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
             {
                 Creature* sh = NULL;
-                for (std::vector<uint64>::const_iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
+                for (std::vector<ObjectGuid>::const_iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
                 {
                     Player* player = ObjectAccessor::FindPlayer(*itr2);
                     if (!player)
@@ -526,14 +526,14 @@ void Battleground::ProcessRessurect(uint32 diff)
     }
     else if (m_LastResurrectTime > 500)    // Resurrect players only half a second later, to see spirit heal effect on NPC
     {
-        for (std::vector<uint64>::const_iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end(); ++itr)
+        for (std::vector<ObjectGuid>::const_iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end(); ++itr)
         {
             Player* player = ObjectAccessor::FindPlayer(*itr);
             if (!player)
                 continue;
             player->ResurrectPlayer(1.0f);
             player->CastSpell(player, SPELL_SPIRIT_HEAL_MANA, true);
-            sObjectAccessor->ConvertCorpseForPlayer(*itr);
+            player->SpawnCorpseBones(false);
         }
         m_ResurrectQueue.clear();
     }
@@ -778,7 +778,7 @@ void Battleground::ProcessLeave(uint32 diff)
     }
 }
 
-inline Player* Battleground::_GetPlayer(uint64 guid, bool offlineRemove, char const* context) const
+inline Player* Battleground::_GetPlayer(ObjectGuid guid, bool offlineRemove, char const* context) const
 {
     Player* player = NULL;
     if (!offlineRemove)
@@ -786,7 +786,7 @@ inline Player* Battleground::_GetPlayer(uint64 guid, bool offlineRemove, char co
         player = ObjectAccessor::FindPlayer(guid);
         if (!player)
             TC_LOG_ERROR("bg.battleground", "Battleground::%s: player (GUID: %u) not found for BG (map: %u, instance id: %u)!",
-                context, GUID_LOPART(guid), m_MapId, m_InstanceID);
+                context, guid.GetCounter(), m_MapId, m_InstanceID);
     }
     return player;
 }
@@ -1014,7 +1014,7 @@ void Battleground::EndBattleground(uint32 winner)
                             if (Player* player = ObjectAccessor::FindPlayer(itr->first))
                             {
                                 TC_LOG_DEBUG("bg.arena", "Statistics match Type: %u for %s (GUID: " UI64FMTD ", IP: %s): %u damage, %u healing, %u killing blows",
-                                    m_ArenaType, player->GetName().c_str(), itr->first, player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone,
+                                    m_ArenaType, player->GetName().c_str(), itr->first.GetRawValue(), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone,
                                     itr->second->KillingBlows);
                             }
                     }
@@ -1261,7 +1261,7 @@ void Battleground::EndBattleground(uint32 winner)
             }
             else
             {
-                if (CharacterNameData const* data = sWorld->GetCharacterNameData(GUID_LOPART(it.first)))
+                if (CharacterNameData const* data = sWorld->GetCharacterNameData(it.first))
                     classID = data->m_class;
             }
 
@@ -1287,8 +1287,8 @@ void Battleground::EndBattleground(uint32 winner)
 
             LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ARENA_GAMES);
             int32 index = 1;        // gameid is not known at this time.
-            stmt->setInt64(  index, (at->GetSlot() + 1) * 100000000000LL + GUID_LOPART(it.first));
-            stmt->setInt32(++index, GUID_LOPART(it.first));
+            stmt->setInt64(  index, (at->GetSlot() + 1) * 100000000000LL + it.first.GetCounter());
+            stmt->setInt32(++index, it.first.GetCounter());
             stmt->setInt32(++index, changeType);
             stmt->setInt32(++index, at->GetRatingChanges(it.first));
             stmt->setInt32(++index, rating);
@@ -1331,7 +1331,7 @@ void Battleground::BlockMovement(Player* player)
     player->SetClientControl(player, 0);                          // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave()
 }
 
-void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket)
+void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket)
 {
     uint32 team = GetPlayerTeam(guid);
     bool participant = false;
@@ -1385,6 +1385,11 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
         if (IsSoloQueueMatch())
             player->setFactionForRace(player->GetRace());
+    }
+    else
+    {
+        CharacterDatabaseTransaction trans(nullptr);
+        Player::OfflineResurrect(guid, trans);
     }
 
     RemovePlayer(player, guid, team);                           // BG subclass specific code
@@ -1535,7 +1540,7 @@ void Battleground::AddPlayer(Player* player)
 
     // score struct must be created in inherited class
 
-    uint64 guid = player->GetGUID();
+    ObjectGuid guid = player->GetGUID();
     uint32 team = player->GetBGTeam();
 
     BattlegroundPlayer bp;
@@ -1628,7 +1633,7 @@ void Battleground::AddPlayer(Player* player)
 // this method adds player to his team's bg group, or sets his correct group if player is already in bg group
 void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
 {
-    uint64 playerGuid = player->GetGUID();
+    ObjectGuid playerGuid = player->GetGUID();
     Group* group = GetBgRaid(team);
     if (!group)                                      // first player joined
     {
@@ -1659,9 +1664,9 @@ void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
 // This method should be called when player logs into running battleground
 void Battleground::EventPlayerLoggedIn(Player* player)
 {
-    uint64 guid = player->GetGUID();
+    ObjectGuid guid = player->GetGUID();
     // player is correct pointer
-    for (std::deque<uint64>::iterator itr = m_OfflineQueue.begin(); itr != m_OfflineQueue.end(); ++itr)
+    for (std::deque<ObjectGuid>::iterator itr = m_OfflineQueue.begin(); itr != m_OfflineQueue.end(); ++itr)
     {
         if (*itr == guid)
         {
@@ -1688,7 +1693,7 @@ void Battleground::EventPlayerLoggedIn(Player* player)
 // This method should be called when player logs out from running battleground
 void Battleground::EventPlayerLoggedOut(Player* player)
 {
-    uint64 guid = player->GetGUID();
+    ObjectGuid guid = player->GetGUID();
     if (!IsPlayerInBattleground(guid))  // Check if this player really is in battleground (might be a GM who teleported inside)
         return;
 
@@ -1856,7 +1861,7 @@ void Battleground::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, 
     }
 }
 
-void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid)
+void Battleground::AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid player_guid)
 {
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
@@ -1867,11 +1872,11 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
     player->CastSpell(player, SPELL_WAITING_FOR_RESURRECT, true);
 }
 
-void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
+void Battleground::RemovePlayerFromResurrectQueue(ObjectGuid player_guid)
 {
-    for (std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
+    for (std::map<ObjectGuid, std::vector<ObjectGuid> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
     {
-        for (std::vector<uint64>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
+        for (std::vector<ObjectGuid>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
         {
             if (*itr2 == player_guid)
             {
@@ -1884,14 +1889,14 @@ void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
     }
 }
 
-void Battleground::RelocateDeadPlayers(uint64 queueIndex)
+void Battleground::RelocateDeadPlayers(ObjectGuid queueIndex)
 {
     // Those who are waiting to resurrect at this node are taken to the closest own node's graveyard
-    std::vector<uint64>& ghostList = m_ReviveQueue[queueIndex];
+    std::vector<ObjectGuid>& ghostList = m_ReviveQueue[queueIndex];
     if (!ghostList.empty())
     {
         WorldSafeLocsEntry const* closestGrave = NULL;
-        for (std::vector<uint64>::const_iterator itr = ghostList.begin(); itr != ghostList.end(); ++itr)
+        for (std::vector<ObjectGuid>::const_iterator itr = ghostList.begin(); itr != ghostList.end(); ++itr)
         {
             Player* player = ObjectAccessor::FindPlayer(*itr);
             if (!player)
@@ -1933,7 +1938,7 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
     // So we must create it specific for this instance
     GameObject* go = new GameObject;
-    if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, GetBgMap(), PHASEMASK_NORMAL, x, y, z, o, rotation, 100, goState))
+    if (!go->Create(m_Map->GenerateLowGuid<HighGuid::GameObject>(), entry, GetBgMap(), PHASEMASK_NORMAL, x, y, z, o, rotation, 100, goState))
     {
         TC_LOG_ERROR("sql.sql", "Battleground::AddObject: cannot create gameobject (entry: %u) for BG (map: %u, instance id: %u)!",
                 entry, m_MapId, m_InstanceID);
@@ -1992,7 +1997,7 @@ void Battleground::DoorClose(uint32 type)
     }
     else
         TC_LOG_ERROR("bg.battleground", "Battleground::DoorClose: door gameobject (type: %u, GUID: %u) not found for BG (map: %u, instance id: %u)!",
-            type, GUID_LOPART(BgObjects[type]), m_MapId, m_InstanceID);
+            type, BgObjects[type].GetCounter(), m_MapId, m_InstanceID);
 }
 
 void Battleground::DoorOpen(uint32 type)
@@ -2004,7 +2009,7 @@ void Battleground::DoorOpen(uint32 type)
     }
     else
         TC_LOG_ERROR("bg.battleground", "Battleground::DoorOpen: door gameobject (type: %u, GUID: %u) not found for BG (map: %u, instance id: %u)!",
-            type, GUID_LOPART(BgObjects[type]), m_MapId, m_InstanceID);
+            type, BgObjects[type].GetCounter(), m_MapId, m_InstanceID);
 }
 
 GameObject* Battleground::GetBGObject(uint32 type)
@@ -2012,7 +2017,7 @@ GameObject* Battleground::GetBGObject(uint32 type)
     GameObject* obj = GetBgMap()->GetGameObject(BgObjects[type]);
     if (!obj)
         TC_LOG_ERROR("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, GUID: %u) not found for BG (map: %u, instance id: %u)!",
-            type, GUID_LOPART(BgObjects[type]), m_MapId, m_InstanceID);
+            type, BgObjects[type].GetCounter(), m_MapId, m_InstanceID);
     return obj;
 }
 
@@ -2021,7 +2026,7 @@ Creature* Battleground::GetBGCreature(uint32 type)
     Creature* creature = GetBgMap()->GetCreature(BgCreatures[type]);
     if (!creature)
         TC_LOG_ERROR("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, GUID: %u) not found for BG (map: %u, instance id: %u)!",
-            type, GUID_LOPART(BgCreatures[type]), m_MapId, m_InstanceID);
+            type, BgCreatures[type].GetCounter(), m_MapId, m_InstanceID);
     return creature;
 }
 
@@ -2062,7 +2067,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
     }
 
     Creature* creature = new Creature;
-    if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, PHASEMASK_NORMAL, entry, 0, teamval, x, y, z, o))
+    if (!creature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL, entry, 0, teamval, x, y, z, o))
     {
         TC_LOG_ERROR("bg.battleground", "Battleground::AddCreature: cannot create creature (entry: %u) for BG (map: %u, instance id: %u)!",
             entry, m_MapId, m_InstanceID);
@@ -2109,13 +2114,13 @@ bool Battleground::DelCreature(uint32 type)
     if (Creature* creature = GetBgMap()->GetCreature(BgCreatures[type]))
     {
         creature->AddObjectToRemoveList();
-        BgCreatures[type] = 0;
+        BgCreatures[type].Clear();
         return true;
     }
 
     TC_LOG_ERROR("bg.battleground", "Battleground::DelCreature: creature (type: %u, GUID: %u) not found for BG (map: %u, instance id: %u)!",
-        type, GUID_LOPART(BgCreatures[type]), m_MapId, m_InstanceID);
-    BgCreatures[type] = 0;
+        type, BgCreatures[type].GetCounter(), m_MapId, m_InstanceID);
+    BgCreatures[type].Clear();
     return false;
 }
 
@@ -2129,17 +2134,17 @@ bool Battleground::DelObject(uint32 type)
         if (obj->GetGoType() == GAMEOBJECT_TYPE_TRANSPORT)
         {
             obj->AddObjectToRemoveList();
-            BgObjects[type] = 0;
+            BgObjects[type].Clear();
             return true;
         }
         obj->SetRespawnTime(0);                                 // not save respawn time
         obj->Delete();
-        BgObjects[type] = 0;
+        BgObjects[type].Clear();
         return true;
     }
     TC_LOG_ERROR("bg.battleground", "Battleground::DelObject: gameobject (type: %u, GUID: %u) not found for BG (map: %u, instance id: %u)!",
-        type, GUID_LOPART(BgObjects[type]), m_MapId, m_InstanceID);
-    BgObjects[type] = 0;
+        type, BgObjects[type].GetCounter(), m_MapId, m_InstanceID);
+    BgObjects[type].Clear();
     return false;
 }
 
@@ -2229,7 +2234,7 @@ void Battleground::SendMessage2ToAll(int32 entry, ChatMsg type, Player const* so
     BroadcastWorker(bg_do);
 }
 
-void Battleground::ReportAfk(uint64 target, Player* reporter)
+void Battleground::ReportAfk(ObjectGuid target, Player* reporter)
 {
     if (m_Players.find(target) == m_Players.end())
         return;
@@ -2391,7 +2396,7 @@ void Battleground::RewardSolo()
 
     for (auto&& itr : losers)
     {
-        Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(itr->Guid);
+        Player* player = ObjectAccessor::FindPlayer(itr->Guid);
 
         if (res != RoundResult::Normal)
         {
@@ -2443,7 +2448,7 @@ char const* Battleground::GetTrinityString(int32 entry)
 // IMPORTANT NOTICE:
 // buffs aren't spawned/despawned when players captures anything
 // buffs are in their positions when battleground starts
-void Battleground::HandleTriggerBuff(uint64 go_guid)
+void Battleground::HandleTriggerBuff(ObjectGuid go_guid)
 {
     GameObject* obj = GetBgMap()->GetGameObject(go_guid);
     if (!obj || obj->GetGoType() != GAMEOBJECT_TYPE_TRAP || !obj->isSpawned())
@@ -2456,7 +2461,7 @@ void Battleground::HandleTriggerBuff(uint64 go_guid)
     if (index < 0)
     {
         TC_LOG_ERROR("bg.battleground", "Battleground::HandleTriggerBuff: cannot find buff gameobject (GUID: %u, entry: %u, type: %u) in internal data for BG (map: %u, instance id: %u)!",
-            GUID_LOPART(go_guid), obj->GetEntry(), obj->GetGoType(), m_MapId, m_InstanceID);
+            go_guid.GetCounter(), obj->GetEntry(), obj->GetGoType(), m_MapId, m_InstanceID);
         return;
     }
 
@@ -2516,7 +2521,7 @@ void Battleground::HandleKillPlayer(Player* victim, Player* killer)
 
 // Return the player's team based on battlegroundplayer info
 // Used in same faction arena matches mainly
-uint32 Battleground::GetPlayerTeam(uint64 guid) const
+uint32 Battleground::GetPlayerTeam(ObjectGuid guid) const
 {
     BattlegroundPlayerMap::const_iterator itr = m_Players.find(guid);
     if (itr != m_Players.end())
@@ -2529,7 +2534,7 @@ uint32 Battleground::GetOtherTeam(uint32 teamId) const
     return teamId ? ((teamId == ALLIANCE) ? HORDE : ALLIANCE) : 0;
 }
 
-bool Battleground::IsPlayerInBattleground(uint64 guid) const
+bool Battleground::IsPlayerInBattleground(ObjectGuid guid) const
 {
     BattlegroundPlayerMap::const_iterator itr = m_Players.find(guid);
     if (itr != m_Players.end())
@@ -2574,13 +2579,13 @@ void Battleground::SetHoliday(bool is_holiday)
     m_HonorMode = is_holiday ? BG_HOLIDAY : BG_NORMAL;
 }
 
-int32 Battleground::GetObjectType(uint64 guid)
+int32 Battleground::GetObjectType(ObjectGuid guid)
 {
     for (uint32 i = 0; i < BgObjects.size(); ++i)
         if (BgObjects[i] == guid)
             return i;
     TC_LOG_ERROR("bg.battleground", "Battleground::GetObjectType: player used gameobject (GUID: %u) which is not in internal data for BG (map: %u, instance id: %u), cheating?",
-        GUID_LOPART(guid), m_MapId, m_InstanceID);
+        guid.GetCounter(), m_MapId, m_InstanceID);
     return -1;
 }
 
@@ -2662,13 +2667,13 @@ bool Battleground::CheckAchievementCriteriaMeet(uint32 criteriaId, Player const*
 
 void Battleground::SendFlagsPositions()
 {
-    std::list<uint64> players;
+    std::list<ObjectGuid> players;
 
     if (m_MapId != 998)
     {
-        if (uint64 guid = GetFlagPickerGUID(TEAM_ALLIANCE))
+        if (ObjectGuid guid = GetFlagPickerGUID(TEAM_ALLIANCE))
             players.push_back(guid);
-        if (uint64 guid = GetFlagPickerGUID(TEAM_HORDE))
+        if (ObjectGuid guid = GetFlagPickerGUID(TEAM_HORDE))
             players.push_back(guid);
     }
     else if (BattlegroundTOK* tok = dynamic_cast<BattlegroundTOK*>(this))
@@ -2691,15 +2696,28 @@ void Battleground::SendFlagsPositions()
 
         ObjectGuid guid = player->GetGUID();
 
-        data.WriteGuidMask(guid, 1, 5, 0, 4, 6, 3, 7, 2);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[2]);
 
-        dataBuffer.WriteGuidBytes(guid, 0, 3, 7);
+        dataBuffer.WriteByteSeq(guid[0]);
+        dataBuffer.WriteByteSeq(guid[3]);
+        dataBuffer.WriteByteSeq(guid[7]);
         dataBuffer << uint8(player->GetBGTeam() == ALLIANCE ? 1 : 2); // team
         dataBuffer << float(player->GetPositionY());
-        dataBuffer.WriteGuidBytes(guid, 4, 2, 1, 5);
+        dataBuffer.WriteByteSeq(guid[4]);
+        dataBuffer.WriteByteSeq(guid[2]);
+        dataBuffer.WriteByteSeq(guid[1]);
+        dataBuffer.WriteByteSeq(guid[5]);
+
         dataBuffer << float(player->GetPositionX());
         dataBuffer << uint8(player->GetBGTeam() == ALLIANCE ? 3 : 2); // icon ( team 1 - 3 or 4, team 2 - 2 or 5)
-        dataBuffer.WriteGuidBytes(guid, 6);
+        dataBuffer.WriteByteSeq(guid[6]);
     }
 
     data.FlushBits();
@@ -2717,7 +2735,7 @@ void Battleground::SendClearFlagsPositions()
     SendPacketToAll(&data);
 }
 
-void Battleground::RemovePlayer(Player* player, uint64 guid, uint32 team)
+void Battleground::RemovePlayer(Player* player, ObjectGuid guid, uint32 team)
 {
     if (!player)
         return;
@@ -2745,11 +2763,24 @@ uint32 Battleground::BuildArenaPrepOpponentSpecPacket(WorldPacket* data, uint32 
 
         ObjectGuid guid = player->GetGUID();
 
-        data->WriteGuidMask(guid, 7, 1, 2, 0, 6, 5, 4, 3);
+        data->WriteBit(guid[7]);
+        data->WriteBit(guid[1]);
+        data->WriteBit(guid[2]);
+        data->WriteBit(guid[0]);
+        data->WriteBit(guid[6]);
+        data->WriteBit(guid[5]);
+        data->WriteBit(guid[4]);
+        data->WriteBit(guid[3]);
 
-        buffer.WriteGuidBytes(guid, 0, 7);
+        buffer.WriteByteSeq(guid[0]);
+        buffer.WriteByteSeq(guid[7]);
         buffer << uint32(player->GetTalentSpecialization(player->GetActiveSpec()));
-        buffer.WriteGuidBytes(guid, 2, 5, 3, 6, 1, 4);
+        buffer.WriteByteSeq(guid[2]);
+        buffer.WriteByteSeq(guid[5]);
+        buffer.WriteByteSeq(guid[3]);
+        buffer.WriteByteSeq(guid[6]);
+        buffer.WriteByteSeq(guid[1]);
+        buffer.WriteByteSeq(guid[4]);
 
         count++;
     }

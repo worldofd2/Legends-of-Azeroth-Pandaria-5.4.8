@@ -109,7 +109,7 @@ class boss_svala : public CreatureScript
 
         struct boss_svalaAI : public ScriptedAI
         {
-            uint64 uiDoodadMirror;
+            ObjectGuid uiDoodadMirror;
         
             boss_svalaAI(Creature* creature) : ScriptedAI(creature)
             {
@@ -120,8 +120,8 @@ class boss_svala : public CreatureScript
 
             uint8 uiIntroPhase;
 
-            uint64 uiSvalaGuid;
-            uint64 uiArthas;
+            ObjectGuid uiSvalaGuid;
+            ObjectGuid uiArthas;
 
             IntroPhase Phase;
 
@@ -132,17 +132,17 @@ class boss_svala : public CreatureScript
                 Phase = IDLE;
                 uiIntroTimer = 1 * IN_MILLISECONDS;
                 uiIntroPhase = 0;
-                uiArthas = 0;
+                uiArthas = ObjectGuid::Empty;
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
 
                 if (instance)
                     if (instance->GetData(DATA_SVALA_SORROWGRAVE_EVENT) != DONE)
                         instance->SetData(DATA_SVALA_SORROWGRAVE_EVENT, NOT_STARTED);
-                    else 
+                    else
                         Phase = FINISHED;
 
-                uiDoodadMirror = instance? instance->GetData64(DATA_DOODAD_UTGARDE_MIRROR_FX01) : 0;
+                uiDoodadMirror = instance? instance->GetGuidData(DATA_DOODAD_UTGARDE_MIRROR_FX01) : ObjectGuid::Empty;
             }
 
             void MoveInLineOfSight(Unit* who) override
@@ -300,17 +300,17 @@ class boss_svala_sorrowgrave : public CreatureScript
         
             bool bFlames;
             bool bMove;
-        
-            uint64 uiFlameBrazier_1;
-            uint64 uiFlameBrazier_2;
+
+            ObjectGuid uiFlameBrazier_1;
+            ObjectGuid uiFlameBrazier_2;
             uint32 uiSinsterStrikeTimer;
             uint32 uiCallFlamesTimer;
             uint8 uiFlamesCount;
             uint32 uiSacrificeTimer;
             uint32 uiMoveTimer;
             uint32 uiHealthAmountModifier;
-        
-            uint64 uiDoodadMirror;
+
+            ObjectGuid uiDoodadMirror;
 
             CombatPhase Phase;
 
@@ -323,9 +323,9 @@ class boss_svala_sorrowgrave : public CreatureScript
                 me->CastStop();
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED);
-                uiFlameBrazier_1 = instance? instance->GetData64(DATA_FLAME_BRAZIER_1) : 0;
-                uiFlameBrazier_2 = instance? instance->GetData64(DATA_FLAME_BRAZIER_2) : 0;
-                uiDoodadMirror   = instance? instance->GetData64(DATA_DOODAD_UTGARDE_MIRROR_FX01) : 0;
+                uiFlameBrazier_1 = instance? instance->GetGuidData(DATA_FLAME_BRAZIER_1) : ObjectGuid::Empty;
+                uiFlameBrazier_2 = instance? instance->GetGuidData(DATA_FLAME_BRAZIER_2) : ObjectGuid::Empty;
+                uiDoodadMirror   = instance? instance->GetGuidData(DATA_DOODAD_UTGARDE_MIRROR_FX01) : ObjectGuid::Empty;
                 uiSinsterStrikeTimer = 7 * IN_MILLISECONDS;
                 uiCallFlamesTimer = 10 * IN_MILLISECONDS;
                 uiSacrificeTimer = 2 * IN_MILLISECONDS;
@@ -484,7 +484,7 @@ class boss_svala_sorrowgrave : public CreatureScript
             {
                 if (instance)
                 {
-                    Creature* pSvala = Unit::GetCreature(*me, instance->GetData64(DATA_SVALA));
+                    Creature* pSvala = Unit::GetCreature(*me, instance->GetGuidData(DATA_SVALA));
                     if (pSvala && pSvala->IsAlive())
                         killer->Kill(pSvala);
 

@@ -457,7 +457,7 @@ class npc_krikthik_bombarder : public CreatureScript
             {
                 if (bombTimer <= diff)
                 {
-                    if (Unit* stalker = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_BOMB_STALKER)))
+                    if (Unit* stalker = pInstance->instance->GetCreature(pInstance->GetGuidData(DATA_RANDOM_BOMB_STALKER)))
                         if (!stalker->HasAura(SPELL_BOMB_AURA))
                             me->CastSpell(stalker, SPELL_BOMB_CAST_VISUAL, true);
 
@@ -510,13 +510,13 @@ class go_setting_sun_brasier : public GameObjectScript
                         }
                     }
 
-                    if (Creature* rimok = Unit::GetCreature(*go, instance->GetData64(DATA_RIMOK)))
+                    if (Creature* rimok = Unit::GetCreature(*go, instance->GetGuidData(DATA_RIMOK)))
                     {
                         rimok->SetVisible(true);
                         rimok->AI()->Talk(2);
                     }
 
-                    if (GameObject* signalFire = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_SIGNAL_FIRE)))
+                    if (GameObject* signalFire = ObjectAccessor::GetGameObject(*go, instance->GetGuidData(DATA_SIGNAL_FIRE)))
                         signalFire->SetGoState(GO_STATE_ACTIVE);
 
                     for (uint8 i = 0; i < 4; ++i)
@@ -556,10 +556,10 @@ class go_setting_sun_brasier : public GameObjectScript
                     {
                         go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
-                        if (GameObject* signalFire = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_SIGNAL_FIRE)))
+                        if (GameObject* signalFire = ObjectAccessor::GetGameObject(*go, instance->GetGuidData(DATA_SIGNAL_FIRE)))
                             signalFire->SetGoState(GO_STATE_ACTIVE);
 
-                        if (Creature* rimok = Unit::GetCreature(*go, instance->GetData64(DATA_RIMOK)))
+                        if (Creature* rimok = Unit::GetCreature(*go, instance->GetGuidData(DATA_RIMOK)))
                             rimok->SetVisible(true);
 
                         if (instance->GetBossState(DATA_RIMOK) != DONE)
@@ -1429,7 +1429,7 @@ class AreaTrigger_at_destroy_corner_a : public AreaTriggerScript
             {
                 if (instance->GetData(DATA_CORNER_A) != DONE)
                 {
-                    if (Creature* cornerA = Unit::GetCreature(*player, instance->GetData64(DATA_CORNER_A)))
+                    if (Creature* cornerA = Unit::GetCreature(*player, instance->GetGuidData(DATA_CORNER_A)))
                         if (cornerA->IsAIEnabled)
                             cornerA->AI()->DoAction(1);
 
@@ -1452,7 +1452,7 @@ class AreaTrigger_at_destroy_corner_b: public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
                 if (instance->GetData(DATA_CORNER_B) != DONE)
-                    if (Creature* cornerB = Unit::GetCreature(*player, instance->GetData64(DATA_CORNER_B)))
+                    if (Creature* cornerB = Unit::GetCreature(*player, instance->GetGuidData(DATA_CORNER_B)))
                         if (cornerB->IsAIEnabled)
                             cornerB->AI()->DoAction(2);
 
@@ -1470,15 +1470,15 @@ class AreaTrigger_at_before_gadok : public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
             {
-                if (Creature* defenderA = Unit::GetCreature(*player, instance->GetData64(DATA_DEFENDER_A)))
+                if (Creature* defenderA = Unit::GetCreature(*player, instance->GetGuidData(DATA_DEFENDER_A)))
                     if (defenderA->IsAIEnabled)
                         defenderA->AI()->DoAction(1);
 
-                if (Creature* defenderB = Unit::GetCreature(*player, instance->GetData64(DATA_DEFENDER_B)))
+                if (Creature* defenderB = Unit::GetCreature(*player, instance->GetGuidData(DATA_DEFENDER_B)))
                     if (defenderB->IsAIEnabled)
                         defenderB->AI()->DoAction(1);
 
-                if (Creature* trainee = Unit::GetCreature(*player, instance->GetData64(DATA_TRAINEE)))
+                if (Creature* trainee = Unit::GetCreature(*player, instance->GetGuidData(DATA_TRAINEE)))
                     if (trainee->IsAIEnabled)
                         trainee->AI()->DoAction(1);
 
@@ -1486,7 +1486,7 @@ class AreaTrigger_at_before_gadok : public AreaTriggerScript
                 {
                     if (instance->GetData(DATA_CORNER_C) != DONE)
                     {
-                        if (Creature* cornerC = Unit::GetCreature(*player, instance->GetData64(DATA_CORNER_C)))
+                        if (Creature* cornerC = Unit::GetCreature(*player, instance->GetGuidData(DATA_CORNER_C)))
                             if (cornerC->IsAIEnabled)
                             {
                                 cornerC->AI()->DoAction(3);
@@ -1508,7 +1508,7 @@ class AreaTrigger_at_intro_gadok : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/) override
         {
                 if (InstanceScript* instance = player->GetInstanceScript())
-                    if (Creature* gadok = Unit::GetCreature(*player, instance->GetData64(DATA_GADOK)))
+                    if (Creature* gadok = Unit::GetCreature(*player, instance->GetGuidData(DATA_GADOK)))
                         if (gadok->IsAIEnabled)
                             gadok->AI()->DoAction(1);
 

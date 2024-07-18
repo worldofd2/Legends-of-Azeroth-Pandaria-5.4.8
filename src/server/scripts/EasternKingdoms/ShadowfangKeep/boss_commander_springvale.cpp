@@ -275,7 +275,7 @@ class npc_springvale_wailing_guardsman : public CreatureScript
                             events.ScheduleEvent(EVENT_SCREAMS_OF_THE_PAST, urand(15000, 20000));
                             break;
                         case EVENT_UNHOLY_EMPOWERMENT:
-                            if (Creature* springvale = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SPRINGVALE)))
+                            if (Creature* springvale = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SPRINGVALE)))
                                 DoCast(springvale, SPELL_UNHOLY_EMPOWERMENT);
                             events.ScheduleEvent(EVENT_UNHOLY_EMPOWERMENT, 15000);
                             break;
@@ -336,10 +336,10 @@ class npc_springvale_tormented_officer : public CreatureScript
                             DoCast(SPELL_SHIELD_WALL);
                             break;
                         case EVENT_FORSAKEN_ABILITY:
-                            //todo: реализовать спелл
+                            //todo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
                             break;
                         case EVENT_UNHOLY_EMPOWERMENT:
-                            if (Creature* springvale = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SPRINGVALE)))
+                            if (Creature* springvale = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_SPRINGVALE)))
                                 DoCast(springvale, SPELL_UNHOLY_EMPOWERMENT);
                             events.ScheduleEvent(EVENT_UNHOLY_EMPOWERMENT, 15000);
                             break;

@@ -78,12 +78,12 @@ class boss_erekem : public CreatureScript
                         instance->SetData(DATA_2ND_BOSS_EVENT, NOT_STARTED);
                 }
 
-                if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
+                if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_1) : ObjectGuid::Empty))
                 {
                     if (!pGuard1->IsAlive())
                         pGuard1->Respawn();
                 }
-                if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
+                if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_2) : ObjectGuid::Empty))
                 {
                     if (!pGuard2->IsAlive())
                         pGuard2->Respawn();
@@ -102,13 +102,13 @@ class boss_erekem : public CreatureScript
                     who->SetInCombatWith(me);
                     DoStartMovement(who);
 
-                    if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
+                    if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_1) : ObjectGuid::Empty))
                     {
                         pGuard1->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
                         if (!pGuard1->GetVictim() && pGuard1->AI())
                             pGuard1->AI()->AttackStart(who);
                     }
-                    if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
+                    if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_2) : ObjectGuid::Empty))
                     {
                         pGuard2->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
                         if (!pGuard2->GetVictim() && pGuard2->AI())
@@ -124,7 +124,7 @@ class boss_erekem : public CreatureScript
 
                 if (instance)
                 {
-                    if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_EREKEM_CELL)))
+                    if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetGuidData(DATA_EREKEM_CELL)))
                         if (pDoor->GetGoState() == GO_STATE_READY)
                         {
                             EnterEvadeMode();
@@ -155,9 +155,9 @@ class boss_erekem : public CreatureScript
                 // spam stormstrike in hc mode if spawns are dead
                 if (IsHeroic())
                 {
-                    if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
+                    if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_1) : ObjectGuid::Empty))
                     {
-                        if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
+                        if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_2) : ObjectGuid::Empty))
                         {
                             if (!pGuard1->IsAlive() && !pGuard2->IsAlive())
                                 DoCast(me->GetVictim(), SPELL_STORMSTRIKE);
@@ -176,14 +176,14 @@ class boss_erekem : public CreatureScript
 
                 if (uiChainHealTimer <= diff)
                 {
-                    if (uint64 TargetGUID = GetChainHealTargetGUID())
+                    if (ObjectGuid TargetGUID = GetChainHealTargetGUID())
                     {
                         if (Creature* target = Unit::GetCreature(*me, TargetGUID))
                             DoCast(target, DUNGEON_MODE(SPELL_CHAIN_HEAL, SPELL_CHAIN_HEAL_H));
 
                         // If one of the adds is dead spawn heals faster
-                        Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0);
-                        Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0);
+                        Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_1) : ObjectGuid::Empty);
+                        Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_2) : ObjectGuid::Empty);
                         uiChainHealTimer = ((pGuard1 && !pGuard1->IsAlive()) || (pGuard2 && !pGuard2->IsAlive()) ? 3000 : 8000) + rand() % 3000 + 6000;
                     }
                 } else uiChainHealTimer -= diff;
@@ -260,20 +260,20 @@ class boss_erekem : public CreatureScript
                 Talk(SAY_SLAY);
             }
 
-            uint64 GetChainHealTargetGUID()
+            ObjectGuid GetChainHealTargetGUID()
             {
                 if (HealthBelowPct(85))
                     return me->GetGUID();
 
-                Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0);
+                Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_1) : ObjectGuid::Empty);
                 if (pGuard1 && pGuard1->IsAlive() && !pGuard1->HealthAbovePct(75))
                     return pGuard1->GetGUID();
 
-                Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0);
+                Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetGuidData(DATA_EREKEM_GUARD_2) : ObjectGuid::Empty);
                 if (pGuard2 && pGuard2->IsAlive() && !pGuard2->HealthAbovePct(75))
                     return pGuard2->GetGUID();
 
-                return 0;
+                return ObjectGuid::Empty;
             }
         };
 

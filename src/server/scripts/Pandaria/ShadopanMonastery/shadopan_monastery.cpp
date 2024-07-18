@@ -618,7 +618,7 @@ class npc_destroying_sha : public CreatureScript
                 if (me->GetDBTableGUIDLow())
                     return;
 
-                if (Creature* shaOfViolence = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetData64(NPC_SHA_VIOLENCE) : 0))
+                if (Creature* shaOfViolence = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(NPC_SHA_VIOLENCE) : ObjectGuid::Empty))
                     shaOfViolence->AI()->SetData(TYPE_OBVIOUS_SOLUTION, 1);
             }
 
@@ -708,13 +708,13 @@ class npc_shadopan_archery : public CreatureScript
                 }
             }
 
-            uint64 ArcheryTarget()
+            ObjectGuid ArcheryTarget()
             {
                 std::list<Creature*> ArcheryTargets;
                 GetCreatureListWithEntryInGrid(ArcheryTargets, me, NPC_ARCHERY_TARGET, 200.0f);
 
                 if (ArcheryTargets.empty())
-                    return 0;
+                    return ObjectGuid::Empty;
 
                 return Trinity::Containers::SelectRandomContainerElement(ArcheryTargets)->GetGUID();
             }
