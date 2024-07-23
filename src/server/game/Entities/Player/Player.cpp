@@ -1162,7 +1162,7 @@ void Player::Update(uint32 p_time)
 
     // Update cinematic location, if 500ms have passed and we're doing a cinematic now.
     _cinematicMgr->m_cinematicDiff += p_time;
-    if (_cinematicMgr->m_cinematicCamera && _cinematicMgr->m_activeCinematicCameraId && GetMSTimeDiffToNow(_cinematicMgr->m_lastCinematicCheck) > CINEMATIC_UPDATEDIFF)
+    if (_cinematicMgr->m_cinematicCamera && _cinematicMgr->m_activeCinematic && GetMSTimeDiffToNow(_cinematicMgr->m_lastCinematicCheck) > CINEMATIC_UPDATEDIFF)
     {
         _cinematicMgr->m_lastCinematicCheck = GameTime::GetGameTimeMS();
         _cinematicMgr->UpdateCinematicLocation(p_time);
@@ -1188,7 +1188,7 @@ void Player::Update(uint32 p_time)
     Unit::Update(p_time);
     SetCanDelayTeleport(false);
 
-    time_t now = time(NULL);
+    time_t now = GameTime::GetGameTime();
 
     UpdatePvPFlag(now);
 
@@ -6779,6 +6779,8 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
     SendDirectMessage(&data);
+    if (CinematicSequencesEntry const* sequence = sCinematicSequencesStore.LookupEntry(CinematicSequenceId))
+        _cinematicMgr->BeginCinematic(sequence);
 }
 
 void Player::SendMovieStart(uint32 MovieId)
@@ -24699,9 +24701,9 @@ WorldLocation Player::GetStartPosition() const
     return WorldLocation(mapId, x, y, z, 0);
 }
 
-bool Player::IsNeverVisible() const
+bool Player::IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects) const
 {
-    if (Unit::IsNeverVisible())
+    if (Unit::IsNeverVisibleFor(seer, allowServersideObjects))
         return true;
 
     if (GetSession()->PlayerLogout() || GetSession()->PlayerLoading())
@@ -24716,7 +24718,8 @@ bool Player::CanAlwaysSee(WorldObject const* obj) const
     if (m_mover == obj)
         return true;
 
-    if (uint64 guid = GetUInt64Value(PLAYER_FIELD_FARSIGHT_OBJECT))
+    ObjectGuid guid = GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT);
+    if (!guid.IsEmpty())
         if (obj->GetGUID() == guid)
             return true;
 
@@ -24796,23 +24799,26 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     {
         if (!CanSeeOrDetect(target, false, true))
         {
-            if (Unit* unit = target->ToUnit())
+            switch (target->GetTypeId())
             {
-                if (Creature* vehicle = unit->GetVehicleCreatureBase())
-                {
-                    if (HaveAtClient(vehicle))
-                    {
-                        UpdateVisibilityOf(vehicle);
-                        if (HaveAtClient(vehicle))
-                            return;
-                    }
-                }
+                case TYPEID_UNIT:
+                    BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
+                    break;
+                case TYPEID_PLAYER:
+                    BeforeVisibilityDestroy<Player>(target->ToPlayer(), this);
+                    break;
+                case TYPEID_GAMEOBJECT:
+                    BeforeVisibilityDestroy<GameObject>(target->ToGameObject(), this);
+                    break;
+                default:
+                    break;
             }
 
-            if (target->GetTypeId() == TYPEID_UNIT)
-                BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
+            if (!target->IsDestroyedObject())
+                target->SendOutOfRangeForPlayer(this);
+            else
+                target->DestroyForPlayer(this);
 
-            target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
             m_VignetteMgr.OnWorldObjectDisappear(target);
 
@@ -24825,19 +24831,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     {
         if (CanSeeOrDetect(target, false, true))
         {
-            if (Unit* unit = target->ToUnit())
-            {
-                if (Creature* vehicle = unit->GetVehicleCreatureBase())
-                {
-                    if (!HaveAtClient(vehicle))
-                    {
-                        UpdateVisibilityOf(vehicle);
-                        if (!HaveAtClient(vehicle))
-                            return;
-                    }
-                }
-            }
-
             target->SendUpdateToPlayer(this);
             m_clientGUIDs.insert(target->GetGUID());
             m_VignetteMgr.OnWorldObjectAppear(target);
@@ -24848,8 +24841,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
 
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
-            if (target->isType(TYPEMASK_UNIT))
-                SendInitialVisiblePackets((Unit*)target);
+            SendInitialVisiblePackets((Unit*)target);
         }
     }
 }
@@ -26777,8 +26769,11 @@ void Player::ResurrectUsingRequestData()
     SpawnCorpseBones();
 }
 
-void Player::SetClientControl(Unit* target, uint8 allowMove)
+void Player::SetClientControl(Unit* target, bool allowMove)
 {
+    // a player can never client control nothing
+    ASSERT(target);
+
     ObjectGuid guid = target->GetGUID();
 
     WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, 9 + 1);
@@ -26802,9 +26797,12 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
     data.WriteByteSeq(guid[0]);
     GetSession()->SendPacket(&data);
 
-    if (target == this && allowMove == 1)
+    if (this != target)
+        SetViewpoint(target, allowMove);
+
+    if (allowMove)
         SetMover(this);
-    if (!allowMove)
+    else
         m_clientMoverGuid = 0;
 }
 
@@ -27160,13 +27158,10 @@ bool ItemPosCount::isContainedIn(ItemPosCountVec const& vec) const
 
 void Player::StopCastingBindSight()
 {
-    if (WorldObject* target = GetViewpoint())
+    if (Unit* target = Object::ToUnit(GetViewpoint()))
     {
-        if (target->isType(TYPEMASK_UNIT))
-        {
-            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_BIND_SIGHT, GetGUID());
-            ((Unit*)target)->RemoveAurasByType(SPELL_AURA_MOD_POSSESS, GetGUID());
-        }
+        target->RemoveAurasByType(SPELL_AURA_BIND_SIGHT, GetGUID());
+        target->RemoveAurasByType(SPELL_AURA_MOD_POSSESS, GetGUID());
     }
 }
 
@@ -27176,18 +27171,18 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
     {
         TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player %s create seer %u (TypeId: %u).", GetName().c_str(), target->GetEntry(), target->GetTypeId());
 
-        SetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT, target->GetGUID());
-        //if (!SetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT, target->GetGUID()))
-//        {
-//            TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player %s cannot add new viewpoint!", GetName().c_str());
-//            return;
-//        }
+        if (!AddGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT, target->GetGUID()))
+        {
+            TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player %s cannot add new viewpoint!", GetName().c_str());
+            return;
+        }
 
         // farsight dynobj or puppet may be very far away
         UpdateVisibilityOf(target);
 
-        if (target->isType(TYPEMASK_UNIT) && !IsOnVehicle((Unit*)target))
-            ((Unit*)target)->AddPlayerToVision(this);
+        if (Unit* targetUnit = target->ToUnit(); targetUnit && targetUnit != GetVehicleBase())
+            targetUnit->AddPlayerToVision(this);
+        SetSeer(target);
     }
     else
     {
@@ -27199,11 +27194,11 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
             return;
         }
 
-        if (target->isType(TYPEMASK_UNIT) && !IsOnVehicle((Unit*)target))
-            ((Unit*)target)->RemovePlayerFromVision(this);
+        if (Unit* targetUnit = target->ToUnit(); targetUnit && targetUnit != GetVehicleBase())
+            targetUnit->RemovePlayerFromVision(this);
 
         //must immediately set seer back otherwise may crash
-        m_seer = this;
+        SetSeer(this);
 
         //WorldPacket data(SMSG_CLEAR_FAR_SIGHT_IMMEDIATE, 0);
         //GetSession()->SendPacket(&data);
@@ -27212,8 +27207,9 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
 
 WorldObject* Player::GetViewpoint() const
 {
-    if (ObjectGuid guid = GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT))
-        return (WorldObject*)ObjectAccessor::GetObjectByTypeMask(*this, guid, TYPEMASK_SEER);
+    ObjectGuid guid = GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT);
+    if (!guid.IsEmpty())
+        return static_cast<WorldObject*>(ObjectAccessor::GetObjectByTypeMask(*this, guid, TYPEMASK_SEER));
     return nullptr;
 }
 

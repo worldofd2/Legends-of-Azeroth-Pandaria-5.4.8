@@ -2774,7 +2774,7 @@ public:
 
     bool IsKnowHowFlyIn(uint32 mapid, uint32 zone) const;
 
-    void SetClientControl(Unit* target, uint8 allowMove);
+    void SetClientControl(Unit* target, bool allowMove);
 
     void SetMover(Unit* target);
 
@@ -2825,7 +2825,7 @@ public:
     {
         return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end();
     }
-    bool IsNeverVisible() const;
+    bool IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects = false) const override;
 
     bool IsVisibleGloballyFor(Player const* player) const;
 
