@@ -39,8 +39,8 @@
 #    LOAD SETTINGS
 #
 ###################################################################################################
-Battleground.PremadeGroupWaitForMatch = 1800000
-Battleground.PrematureFinishTimer = 300000
+Respawn.GuidWarnLevel = 12000000
+Respawn.GuidAlertLevel = 16000000
 mmap.AllowReuseOfPreviousPathSegments = 1
 AuthServer.Process =
 AuthServer.Command =
