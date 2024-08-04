@@ -95,6 +95,12 @@ void Pet::RemoveFromWorld()
     ///- Remove the pet from the accessor
     if (IsInWorld())
     {
+        if (IsTemporary()) // hackfix, need remove in future
+        {
+            ASSERT(FindMap() == GetOwner()->FindMap());
+            GetOwner()->SetMinion(this, false);
+            GetOwner()->RemoveSummon(this);
+        }
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
         GetMap()->GetObjectsStore().Remove<Pet>(GetGUID());
@@ -564,7 +570,15 @@ void Pet::Update(uint32 diff)
                     m_duration -= diff;
                 else
                 {
-                    Remove(PET_REMOVE_DISMISS);
+                    if (getPetType() != SUMMON_PET)
+                    {
+                        Remove(PET_REMOVE_DISMISS);
+                    }
+                    else
+                    {
+                       Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RESET_CURRENT); 
+                    }
+                    
                     return;
                 }
             }
@@ -577,10 +591,7 @@ void Pet::Update(uint32 diff)
 
 void Pet::Remove(PetRemoveMode mode, int32 flags)
 {
-    if (IsTemporary())
-        UnSummon();
-    else
-        GetOwner()->RemovePet(mode, flags);
+    GetOwner()->RemovePet(mode, flags);
 }
 
 bool Pet::IsAutoCastEnabled(uint32 spellId) const

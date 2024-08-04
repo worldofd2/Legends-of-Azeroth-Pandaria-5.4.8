@@ -13785,6 +13785,9 @@ void Unit::RemoveFromWorld()
         GetMotionMaster()->Clear(false);                    // Do it here, because MovementInform may provoke casts.
 
         m_duringRemoveFromWorld = true;
+        if (UnitAI* ai = GetAI())
+            ai->OnDespawn();
+                    
         if (IsVehicle())
             RemoveVehicleKit(true);
 
@@ -13814,16 +13817,6 @@ void Unit::RemoveFromWorld()
             {
                 TC_LOG_FATAL("entities.unit", "Unit %u is in controlled list of %u when removed from world", GetEntry(), owner->GetEntry());
                 ASSERT(false);
-            }
-        }
-
-        if (GetTypeId() == TYPEID_PLAYER)
-        {
-            while (!m_summons.empty())
-            {
-                auto summon = m_summons.front();
-                m_summons.pop_front();
-                summon->UnSummon();
             }
         }
 
