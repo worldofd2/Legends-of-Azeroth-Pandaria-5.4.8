@@ -139,6 +139,8 @@ class AuctionHouseObject
         std::wstring const& searchedname, uint32 listfrom, uint8 levelmin, uint8 levelmax, uint8 usable,
         uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
         uint32& count, uint32& totalcount, bool getAll = false);
+    void BuildReplicate(WorldPackets::AuctionHouse::AuctionReplicateResponse& auctionReplicateResult, Player* player,
+            uint32 global, uint32 cursor, uint32 tombstone, uint32 count);
 
   private:
     AuctionEntryMap AuctionsMap;
