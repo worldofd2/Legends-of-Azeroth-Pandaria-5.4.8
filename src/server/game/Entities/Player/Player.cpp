@@ -265,7 +265,9 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
 
     m_cinematic = 0;
 
-    PlayerTalkClass = new PlayerMenu(GetSession());
+    m_movie = 0;
+
+    PlayerTalkClass = std::make_unique<PlayerMenu>(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
 
     m_DailyQuestChanged = false;
@@ -407,7 +409,7 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
     m_reputationMgr = new ReputationMgr(this);
     m_battlePetMgr = new BattlePetMgr(this);
 
-    _cinematicMgr = new CinematicMgr(this);
+    _cinematicMgr = std::make_unique<CinematicMgr>(this);
 
     transcendence_spirit = nullptr;
 
@@ -435,8 +437,6 @@ Player::~Player()
     for (ItemMap::iterator iter = mMitems.begin(); iter != mMitems.end(); ++iter)
         delete iter->second;                                //if item is duplicated... then server may crash ... but that item should be deallocated
 
-    delete PlayerTalkClass;
-
     for (size_t x = 0; x < ItemSetEff.size(); x++)
         delete ItemSetEff[x];
 
@@ -444,7 +444,6 @@ Player::~Player()
     delete m_runes;
     delete m_reputationMgr;
     delete m_battlePetMgr;
-    delete _cinematicMgr;
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
@@ -6785,11 +6784,12 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
         _cinematicMgr->BeginCinematic(sequence);
 }
 
-void Player::SendMovieStart(uint32 MovieId)
+void Player::SendMovieStart(uint32 movieId)
 {
-    WorldPacket data(SMSG_TRIGGER_MOVIE, 4);
-    data << uint32(MovieId);
-    SendDirectMessage(&data);
+    SetMovie(movieId);
+    WorldPackets::Misc::TriggerMovie packet;
+    packet.MovieID = movieId;
+    SendDirectMessage(packet.Write());    
 }
 
 void Player::CheckAreaExploreAndOutdoor()
@@ -15463,10 +15463,8 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
 
 void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool showQuests /*= false*/)
 {
-    PlayerMenu* menu = PlayerTalkClass;
-    menu->ClearMenus();
-
-    menu->GetGossipMenu().SetMenuId(menuId);
+    PlayerTalkClass->ClearMenus();
+    PlayerTalkClass->GetGossipMenu().SetMenuId(menuId);
 
     GossipMenuItemsMapBounds menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuId);
 
@@ -15559,7 +15557,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_TRAINER:
                     if (GetClass() != creature->GetCreatureTemplate()->trainer_class && creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS)
                         TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) request wrong gossip menu: %u with wrong class: %u at Creature: %s (Entry: %u, Trainer Class: %u)",
-                        GetName().c_str(), GetGUID().GetCounter(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
+                        GetName().c_str(), GetGUID().GetCounter(), PlayerTalkClass->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
                     // no break;
                 case GOSSIP_OPTION_GOSSIP:
                 case GOSSIP_OPTION_SPIRITGUIDE:
@@ -15627,8 +15625,8 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 }
             }
 
-            menu->GetGossipMenu().AddMenuItem(itr->second.OptionID, itr->second.OptionIcon, strOptionText, 0, itr->second.OptionType, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
-            menu->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionID, itr->second.ActionMenuID, itr->second.ActionPoiID);
+            PlayerTalkClass->GetGossipMenu().AddMenuItem(itr->second.OptionID, itr->second.OptionIcon, strOptionText, 0, itr->second.OptionType, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+            PlayerTalkClass->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionID, itr->second.ActionMenuID, itr->second.ActionPoiID);
         }
     }
 }
