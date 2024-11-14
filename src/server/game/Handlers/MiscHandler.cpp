@@ -634,20 +634,32 @@ void WorldSession::HandleLogoutCancelOpcode(WorldPacket& /*recvData*/)
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_LOGOUT_CANCEL_ACK Message");
 }
 
-void WorldSession::HandleSetPvP(WorldPacket& recvData)
+void WorldSession::HandleSetPvP(WorldPackets::Misc::SetPvP& packet)
 {
-    if (recvData.ReadBit())
+    if (packet.EnablePVP) // TODO missing PVP timer
+    {
         GetPlayer()->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
+    }
     else
+    {
         GetPlayer()->RemoveFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
+    }
 
     GetPlayer()->UpdatePvP(GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP));
 }
 
-void WorldSession::HandleTogglePvP(WorldPacket& recvData)
+void WorldSession::HandleTogglePvP(WorldPackets::Misc::TogglePvP& togglePvP)
 {
-    GetPlayer()->ToggleFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
-
+    // this opcode can be used in two ways: Either set explicit new status or toggle old status
+    if (togglePvP.Enable) // TODO missing PVP timer
+    {
+        GetPlayer()->ApplyModFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, *togglePvP.Enable);
+    }
+    else
+    {
+        GetPlayer()->ToggleFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
+    }
+    
     GetPlayer()->UpdatePvP(GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP));
 }
 
@@ -1198,6 +1210,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
                         }
                     }
 
+                    if (quest->HasFlag(QUEST_FLAGS_COMPLETION_AREA_TRIGGER))
+                        player->AreaExploredOrEventHappens(questId);
+
                     if (player->CanCompleteQuest(questId))
                         player->CompleteQuest(questId);
                 }
@@ -1425,24 +1440,27 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
         GetPlayer()->AddActionButton(slotId, button->id, button->type);
 }
 
-void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)
+void WorldSession::HandleCompleteCinematic(WorldPackets::Misc::CompleteCinematic& /*packet*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
     // If player has sight bound to visual waypoint NPC we should remove it
     GetPlayer()->GetCinematicMgr()->EndCinematic();    
 }
 
-void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
+void WorldSession::HandleNextCinematicCamera(WorldPackets::Misc::NextCinematicCamera& /*packet*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
     // Sent by client when cinematic actually begun. So we begin the server side process
     GetPlayer()->GetCinematicMgr()->NextCinematicCamera();
 }
 
-void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
+void WorldSession::HandleCompleteMovie(WorldPackets::Misc::CompleteMovie& /*packet*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_MOVIE");
+    uint32 movie = _player->GetMovie();
+    if (!movie)
+        return;
 
+    _player->SetMovie(0);
+    //sScriptMgr->OnMovieComplete(_player, movie);
     if (_player)
         if (InstanceScript* instance = _player->GetInstanceScript())
             instance->OnMovieEnded(_player);
@@ -2129,9 +2147,9 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& /*recvData*/)
     // empty opcode
     TC_LOG_DEBUG("network", "WORLD: CMSG_WORLD_STATE_UI_TIMER_UPDATE");
 
-    WorldPacket data(SMSG_WORLD_STATE_UI_TIMER_UPDATE, 4);
-    data << uint32(time(NULL));
-    SendPacket(&data);
+    WorldPackets::Misc::UITime response;
+    response.Time = GameTime::GetGameTime();
+    SendPacket(response.Write());
 }
 
 void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recvData*/)
@@ -2516,7 +2534,7 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
     recvPacket.ReadByteSeq(guid[4]);
 
     WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
-    TC_LOG_ERROR("network", "Object update failed for object %s (%s) for player %s (%u)", guid.ToString().c_str(), obj ? obj->GetName().c_str() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
+        TC_LOG_ERROR("network", "Object update failed for object %s (%s) for player %s (%u)", guid.ToString().c_str(), obj ? obj->GetName().c_str() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
 
     // If create object failed for current player then client will be stuck on loading screen
     if (_player->GetGUID() == guid)
@@ -2656,6 +2674,14 @@ void WorldSession::SendLoadCUFProfiles()
     data.FlushBits();
     data.append(byteBuffer);
     SendPacket(&data);
+}
+
+void WorldSession::SendStreamingMovie()
+{
+    WorldPackets::Misc::StreamingMovies packet;
+
+    // To-do: implement
+    SendPacket(packet.Write());
 }
 
 #define JOIN_THE_ALLIANCE 1
@@ -2819,7 +2845,7 @@ void WorldSession::HandleShowTradeSkill(WorldPacket& recvData)
     recvData.ReadByteSeq(guid[1]);
     recvData.ReadByteSeq(guid[6]);
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    Player* player = ObjectAccessor::FindConnectedPlayer(guid);
     if (!player)
         return;
 

@@ -16,45 +16,44 @@
 */
 
 #include "Object.h"
-#include "ObjectDefines.h"
-#include "Common.h"
-#include "CinematicMgr.h"
-#include "SharedDefines.h"
-#include "WorldPacket.h"
-#include "Opcodes.h"
-#include "Log.h"
-#include "World.h"
-#include "Creature.h"
-#include "Player.h"
-#include "Vehicle.h"
-#include "ObjectMgr.h"
-#include "UpdateData.h"
-#include "UpdateMask.h"
-#include "Util.h"
-#include "MapManager.h"
-#include "ObjectAccessor.h"
-#include "Log.h"
-#include "Transport.h"
-#include "TargetedMovementGenerator.h"
-#include "WaypointMovementGenerator.h"
-#include "VMapFactory.h"
-#include "CellImpl.h"
-#include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
-#include "SpellAuraEffects.h"
-#include "UpdateFieldFlags.h"
-#include "TemporarySummon.h"
-#include "Totem.h"
-#include "OutdoorPvPMgr.h"
-#include "MovementPacketBuilder.h"
-#include "DynamicTree.h"
-#include "Unit.h"
-#include "Group.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "CellImpl.h"
 #include "Chat.h"
+#include "CinematicMgr.h"
+#include "Common.h"
+#include "Creature.h"
+#include "DynamicTree.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "Group.h"
+#include "Log.h"
+#include "MapManager.h"
+#include "MiscPackets.h"
+#include "MovementPacketBuilder.h"
+#include "ObjectAccessor.h"
+#include "ObjectDefines.h"
+#include "ObjectMgr.h"
+#include "Opcodes.h"
+#include "OutdoorPvPMgr.h"
+#include "Player.h"
+#include "SharedDefines.h"
+#include "SpellAuraEffects.h"
+#include "TargetedMovementGenerator.h"
+#include "TemporarySummon.h"
+#include "Totem.h"
 #include "Transport.h"
+#include "Unit.h"
+#include "UpdateData.h"
+#include "UpdateFieldFlags.h"
+#include "UpdateMask.h"
+#include "Util.h"
+#include "Vehicle.h"
+#include "VMapFactory.h"
 #include "VMapManager2.h"
+#include "WaypointMovementGenerator.h"
+#include "World.h"
+#include "WorldPacket.h"
 
 #define STEALTH_VISIBILITY_UPDATE_TIMER 500
 
@@ -2417,8 +2416,8 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     // Hack for Subterfuge. When rogue opens and Subterfuge triggered - player is still invisible and mob just goes to evade.
     if (Player const* player = obj->ToPlayer())
         if (GetTypeId() == TYPEID_UNIT && player->IsInCombat() && player->HasAura(115192))
-            if (const_cast<Unit*>(unit)->getThreatManager().getThreatList().size() == 1)
-                if (const_cast<Unit*>(unit)->getThreatManager().getThreat(const_cast<Player*>(player)) > 0.0f)
+            if (const_cast<Unit*>(unit)->GetThreatManager().getThreatList().size() == 1)
+                if (const_cast<Unit*>(unit)->GetThreatManager().getThreat(const_cast<Player*>(player)) > 0.0f)
                     return true;
 
     if (!HasInArc(M_PI, obj))
@@ -2460,34 +2459,6 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     }
 
     return true;
-}
-
-void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
-{
-    ObjectGuid guid = GetGUID();
-
-    WorldPacket data(SMSG_PLAY_SOUND, 4 + 9);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[1]);
-    data << uint32(Sound);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
-    if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
-        this->ToPlayer()->GetSession()->SendPacket(&data);
-    else
-        SendMessageToSet(&data, true); // ToSelf ignored in this case
 }
 
 void Object::ForceValuesUpdateAtIndex(uint32 i)
@@ -2549,19 +2520,19 @@ namespace Trinity
     };
 }                                                           // namespace Trinity
 
-void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
+void WorldObject::SendMessageToSet(WorldPacket const* data, bool self) const
 {
     if (IsInWorld())
         SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self);
 }
 
-void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*self*/)
+void WorldObject::SendMessageToSetInRange(WorldPacket const* data, float dist, bool /*self*/) const
 {
     Trinity::MessageDistDeliverer notifier(this, data, dist);
     VisitNearbyWorldObject(dist, notifier, false, true);
 }
 
-void WorldObject::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
+void WorldObject::SendMessageToSet(WorldPacket const* data, Player const* skipped_rcvr) const
 {
     Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, false, skipped_rcvr);
     VisitNearbyWorldObject(GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, notifier, false, true);
@@ -3706,89 +3677,36 @@ void WorldObject::ClearWorldMapSwap(bool update)
         UpdateObjectVisibility();
 }
 
-void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= NULL*/)
+void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= nullptr*/)
 {
-    ObjectGuid guid1 = GetGUID();
-    ObjectGuid guid2 = GetGUID();
-
-    WorldPacket data(SMSG_PLAY_OBJECT_SOUND, 4 + 9);
-    data.WriteBit(guid2[5]);
-    data.WriteBit(guid1[7]);
-    data.WriteBit(guid1[0]);
-    data.WriteBit(guid1[3]);
-    data.WriteBit(guid2[1]);
-    data.WriteBit(guid1[4]);
-    data.WriteBit(guid2[7]);
-    data.WriteBit(guid2[2]);
-    data.WriteBit(guid2[4]);
-    data.WriteBit(guid2[3]);
-    data.WriteBit(guid1[5]);
-    data.WriteBit(guid1[1]);
-    data.WriteBit(guid1[6]);
-    data.WriteBit(guid1[2]);
-    data.WriteBit(guid2[6]);
-    data.WriteBit(guid2[0]);
-
-    data.WriteByteSeq(guid1[6]);
-    data.WriteByteSeq(guid1[2]);
-    data.WriteByteSeq(guid2[2]);
-    data.WriteByteSeq(guid2[5]);
-    data.WriteByteSeq(guid1[7]);
-    data.WriteByteSeq(guid1[5]);
-    data.WriteByteSeq(guid1[3]);
-    data.WriteByteSeq(guid1[1]);
-    data.WriteByteSeq(guid2[3]);
-    data.WriteByteSeq(guid2[1]);
-    data << uint32(sound_id);
-    data.WriteByteSeq(guid1[4]);
-    data.WriteByteSeq(guid2[4]);
-    data.WriteByteSeq(guid2[7]);
-    data.WriteByteSeq(guid2[0]);
-    data.WriteByteSeq(guid2[6]);
-    data.WriteByteSeq(guid1[0]);
+    WorldPackets::Misc::PlayObjectSound packet;
+    packet.SoundKitID = sound_id;
+    packet.SourceObjectGUID = GetGUID();
+    packet.TargetObjectGUID = target ? target->GetGUID() : GetGUID();
 
     if (target)
-        target->SendDirectMessage(&data);
+        target->SendDirectMessage(packet.Write());
     else
-        SendMessageToSet(&data, true);
+        SendMessageToSet(packet.Write(), true);
 }
 
-void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
+void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= nullptr*/)
 {
-    ObjectGuid guid = target ? target->GetGUID() : ObjectGuid::Empty;
-
-    WorldPacket data(SMSG_PLAY_SOUND, 4);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[1]);
-    data << uint32(sound_id);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
+    WorldPackets::Misc::PlaySound packet;
+    packet.SourceObjectGUID = GetGUID();
+    packet.SoundKitID = sound_id;
     if (target)
-        target->SendDirectMessage(&data);
+        target->SendDirectMessage(packet.Write());
     else
-        SendMessageToSet(&data, true);
+        SendMessageToSet(packet.Write(), true);
 }
 
-void WorldObject::PlayDirectMusic(uint32 music_id, Player* target /*= NULL*/)
+void WorldObject::PlayDirectMusic(uint32 musicId, Player* target /*= nullptr*/)
 {
-    WorldPacket data(SMSG_PLAY_MUSIC, 4);
-    data << uint32(music_id);
     if (target)
-        target->SendDirectMessage(&data);
+        target->SendDirectMessage(WorldPackets::Misc::PlayMusic(musicId).Write());
     else
-        SendMessageToSet(&data, true);
+        SendMessageToSet(WorldPackets::Misc::PlayMusic(musicId).Write(), true);
 }
 
 void WorldObject::DestroyForNearbyPlayers()

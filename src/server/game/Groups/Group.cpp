@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
+#include "PartyPackets.h"
 #include "WorldSession.h"
 #include "Player.h"
 #include "World.h"
@@ -579,7 +580,7 @@ bool Group::RemoveMember(ObjectGuid guid, const RemoveMethod& method /*= GROUP_R
     // remove member and change leader (if need) only if strong more 2 members _before_ member remove (BG/BF allow 1 member group)
     if (GetMembersCount() > ((isBGGroup() || isLFGGroup() || isBFGroup()) ? 1u : 2u))
     {
-        Player* player = ObjectAccessor::FindPlayer(guid);
+        Player* player = ObjectAccessor::FindConnectedPlayer(guid);
         if (player)
         {
             // Don't homebind if player was removed from the original group but still has instance group
@@ -778,7 +779,7 @@ void Group::Disband(bool hideDestroy /* = false */)
     {
         sGroupMgr->UnbindGroupFromPlayer(citr->guid, this);
 
-        player = ObjectAccessor::FindPlayer(citr->guid);
+        player = ObjectAccessor::FindConnectedPlayer(citr->guid);
         if (!player)
             continue;
 
@@ -1878,100 +1879,18 @@ void Group::SetTargetIcon(uint8 symbol, ObjectGuid whoGuid, ObjectGuid targetGui
     BroadcastPacket(&data, true);
 }
 
-void Group::SendTargetIconList(WorldSession* session)
+void Group::SendTargetIconList(WorldSession* session, int8 partyIndex)
 {
     if (!session)
         return;
 
-    /*uint8 Index = 0;
-    WorldPacket data(SMSG_RAID_TARGET_UPDATE_ALL, (1 + TARGETICONCOUNT * 9));
-    data.WriteBits(0, 25);
+    WorldPackets::Party::SendRaidTargetUpdateAll updateAll;
+    updateAll.PartyIndex = partyIndex;
+    for (uint8 i = 0; i < TARGETICONCOUNT; i++)
+        if (m_targetIcons[i] != ObjectGuid::Empty)
+            updateAll.TargetIcons.insert(std::pair<uint8, ObjectGuid>(i, m_targetIcons[i]));
 
-    for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
-    {
-        if (m_targetIcons[i] == 0)
-            continue;
-
-        ObjectGuid guid = m_targetIcons[i];
-
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[5]);
-
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[3]);
-        data << uint8(i);
-        data.WriteByteSeq(guid[2]);
-    }
-
-    data << uint8(Index);
-
-    session->SendPacket(&data);*/
-
-    //-- SMSG_RAID_TARGET_UPDATE_ALL : packed wrong so we use workaround
-    ObjectGuid whoGuid = GetLeaderGUID();
-
-    for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
-    {
-        if (m_targetIcons[i] == 0)
-            continue;
-
-        ObjectGuid targetGuid = m_targetIcons[i];
-
-        WorldPacket data(SMSG_RAID_TARGET_UPDATE_SINGLE, 8 + 1 + 8 + 1);
-
-        data.WriteBit(whoGuid[6]);
-        data.WriteBit(targetGuid[4]);
-        data.WriteBit(whoGuid[0]);
-        data.WriteBit(whoGuid[7]);
-        data.WriteBit(targetGuid[6]);
-        data.WriteBit(whoGuid[5]);
-        data.WriteBit(whoGuid[3]);
-        data.WriteBit(whoGuid[4]);
-        data.WriteBit(targetGuid[7]);
-        data.WriteBit(targetGuid[2]);
-        data.WriteBit(targetGuid[5]);
-        data.WriteBit(targetGuid[1]);
-        data.WriteBit(whoGuid[2]);
-        data.WriteBit(whoGuid[1]);
-        data.WriteBit(targetGuid[0]);
-        data.WriteBit(targetGuid[3]);
-
-        data.WriteByteSeq(targetGuid[1]);
-
-        data << uint8(0);
-
-        data.WriteByteSeq(whoGuid[0]);
-        data.WriteByteSeq(whoGuid[5]);
-        data.WriteByteSeq(whoGuid[3]);
-        data.WriteByteSeq(targetGuid[7]);
-        data.WriteByteSeq(targetGuid[6]);
-        data.WriteByteSeq(whoGuid[1]);
-        data.WriteByteSeq(targetGuid[2]);
-        data.WriteByteSeq(targetGuid[4]);
-        data.WriteByteSeq(targetGuid[0]);
-        data.WriteByteSeq(targetGuid[3]);
-        data.WriteByteSeq(targetGuid[5]);
-        data.WriteByteSeq(whoGuid[6]);
-
-        data << uint8(i);
-
-        data.WriteByteSeq(whoGuid[4]);
-        data.WriteByteSeq(whoGuid[2]);
-        data.WriteByteSeq(whoGuid[7]);
-
-        BroadcastPacket(&data, true);
-    }
+    session->SendPacket(updateAll.Write());
 }
 
 void Group::SendUpdate()
@@ -1984,7 +1903,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot const* slot)
 {
     ASSERT(slot);
 
-    Player* player = ObjectAccessor::FindPlayer(playerGUID);
+    Player* player = ObjectAccessor::FindConnectedPlayer(playerGUID);
 
     if (!player)
         return;
@@ -2216,7 +2135,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID)
 
 void Group::SendGroupRemoved(ObjectGuid playerGUID)
 {
-    Player* player = ObjectAccessor::FindPlayer(playerGUID);
+    Player* player = ObjectAccessor::FindConnectedPlayer(playerGUID);
 
     if (!player)
         return;
@@ -3725,7 +3644,7 @@ char const* Group::GetPlayerName(ObjectGuid guid) const
         if (member.guid == guid)
             return member.name.c_str();
 
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindConnectedPlayer(guid))
         return player->GetName().c_str();
 
     return "<offline>";

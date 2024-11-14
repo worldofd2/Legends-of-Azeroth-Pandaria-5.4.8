@@ -35,6 +35,7 @@
 #include "InstanceScript.h"
 #include "Log.h"
 #include "MapManager.h"
+#include "MiscPackets.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
@@ -393,7 +394,7 @@ void Unit::Update(uint32 p_time)
     // Having this would prevent spells from being proced, so let's crash
     ASSERT(!m_procDeep);
 
-    if (CanHaveThreatList() && getThreatManager().isNeedUpdateToClient(p_time))
+    if (CanHaveThreatList() && GetThreatManager().isNeedUpdateToClient(p_time))
         SendThreatListUpdate();
 
     // update combat timer only for players and pets (only pets with PetAI)
@@ -4085,7 +4086,7 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
         if (!caster)
         {
             TC_LOG_ERROR("shitlog", "Unit::RemoveOwnedAura !caster aura: %u, owner: " UI64FMTD " (entry: %u)\n", aura->GetId(), GetGUID().GetRawValue(), GetEntry());
-            caster = ObjectAccessor::FindPlayer(aura->GetCasterGUID());
+            caster = ObjectAccessor::FindConnectedPlayer(aura->GetCasterGUID());
             if (!caster)
                 TC_LOG_ERROR("shitlog", "Unit::RemoveOwnedAura !caster and !caster aura: %u, owner: " UI64FMTD " (entry: %u)\n", aura->GetId(), GetGUID().GetRawValue(), GetEntry());
         }
@@ -11525,28 +11526,9 @@ void Unit::Dismount()
     if (Player* thisPlayer = ToPlayer())
         thisPlayer->SendMovementSetCollisionHeight(thisPlayer->GetCollisionHeight());
 
-    ObjectGuid guid = GetGUID();
-    WorldPacket data(SMSG_DISMOUNT, 8);
-
-    data.WriteBit(guid [6]);
-    data.WriteBit(guid [3]);
-    data.WriteBit(guid [0]);
-    data.WriteBit(guid [7]);
-    data.WriteBit(guid [1]);
-    data.WriteBit(guid [2]);
-    data.WriteBit(guid [5]);
-    data.WriteBit(guid [4]);
-
-    data.WriteByteSeq(guid [3]);
-    data.WriteByteSeq(guid [6]);
-    data.WriteByteSeq(guid [7]);
-    data.WriteByteSeq(guid [5]);
-    data.WriteByteSeq(guid [1]);
-    data.WriteByteSeq(guid [4]);
-    data.WriteByteSeq(guid [2]);
-    data.WriteByteSeq(guid [0]);
-
-    SendMessageToSet(&data, true);
+    WorldPackets::Misc::Dismount packet;
+    packet.Guid = GetGUID();
+    SendMessageToSet(packet.Write(), IsPlayer());
 
     // dismount as a vehicle
     if (GetTypeId() == TYPEID_PLAYER && GetVehicleKit())
@@ -17344,8 +17326,8 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
             // modify threat lists for new phasemask
             if (GetTypeId() != TYPEID_PLAYER)
             {
-                std::list<HostileReference*> threatList = getThreatManager().getThreatList();
-                std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+                std::list<HostileReference*> threatList = GetThreatManager().getThreatList();
+                std::list<HostileReference*> offlineThreatList = GetThreatManager().getOfflineThreatList();
 
                 // merge expects sorted lists
                 threatList.sort();
@@ -17408,8 +17390,8 @@ bool Unit::SetPhased(uint32 id, bool update, bool apply)
         // modify threat lists for new phasemask
         if (GetTypeId() != TYPEID_PLAYER)
         {
-            std::list<HostileReference*> threatList = getThreatManager().getThreatList();
-            std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+            std::list<HostileReference*> threatList = GetThreatManager().getThreatList();
+            std::list<HostileReference*> offlineThreatList = GetThreatManager().getOfflineThreatList();
 
             // merge expects sorted lists
             threatList.sort();
@@ -18251,7 +18233,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
         creature->AI()->OnSpellClick(clicker, result);
 
     if (result)
-        clicker->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_USE);
+        clicker->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LOOTING);
 
     return result;
 }
@@ -18460,7 +18442,7 @@ void Unit::WriteMovementInfo(WorldPacket& data, Movement::ExtraMovementStatusEle
     bool hasMountDisplayId = GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID) != 0;
     bool hasMovementFlags = GetUnitMovementFlags() != 0;
     bool hasMovementFlags2 = GetExtraUnitMovementFlags() != 0;
-    bool hasTimestamp = true;
+    bool hasTimestamp = mi.time;
     bool hasOrientation = !G3D::fuzzyEq(GetOrientation(), 0.0f);
     bool hasTransportData = GetTransGUID() != 0;
     bool hasSpline = IsSplineEnabled();
@@ -18592,7 +18574,7 @@ void Unit::WriteMovementInfo(WorldPacket& data, Movement::ExtraMovementStatusEle
                 break;
             case MSETimestamp:
                 if (hasTimestamp)
-                    data << getMSTime();
+                    data << mi.time;
                 break;
             case MSEPositionX:
                 if (data.GetOpcode() == SMSG_MOVE_TELEPORT && hasTransportData)
@@ -18812,9 +18794,9 @@ void Unit::UpdateHeight(float newZ)
 
 void Unit::SendThreatListUpdate()
 {
-    if (!getThreatManager().isThreatListEmpty())
+    if (!GetThreatManager().isThreatListEmpty())
     {
-        uint32 count = getThreatManager().getThreatList().size();
+        uint32 count = GetThreatManager().getThreatList().size();
 
         TC_LOG_DEBUG("entities.unit", "WORLD: Send SMSG_THREAT_UPDATE Message");
 
@@ -18830,7 +18812,7 @@ void Unit::SendThreatListUpdate()
         data.WriteBit(Guid[4]);
         data.WriteBits(count, 21);
 
-        ThreatContainer::StorageType const &tlist = getThreatManager().getThreatList();
+        ThreatContainer::StorageType const &tlist = GetThreatManager().getThreatList();
         for (ThreatContainer::StorageType::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
             ObjectGuid unitGuid = (*itr)->getUnitGuid();
@@ -18877,9 +18859,9 @@ void Unit::SendThreatListUpdate()
 
 void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
 {
-    if (!getThreatManager().isThreatListEmpty())
+    if (!GetThreatManager().isThreatListEmpty())
     {
-        uint32 count = getThreatManager().getThreatList().size();
+        uint32 count = GetThreatManager().getThreatList().size();
 
         TC_LOG_DEBUG("entities.unit", "WORLD: Send SMSG_HIGHEST_THREAT_UPDATE Message");
         ObjectGuid unitGuid = pHostileReference->getUnitGuid();
@@ -18901,7 +18883,7 @@ void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
         data.WriteBit(guid[4]);
         data.WriteBits(count, 21);
 
-        ThreatContainer::StorageType const &tlist = getThreatManager().getThreatList();
+        ThreatContainer::StorageType const &tlist = GetThreatManager().getThreatList();
         for (ThreatContainer::StorageType::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
             ObjectGuid UnitGuid = (*itr)->getUnitGuid();
@@ -20180,7 +20162,7 @@ float Unit::GetScallingDamageMod() const
     // calculate celestials scalling mod
     if (GetEntry() == 71955 || GetEntry() == 71953 || GetEntry() == 71952 || GetEntry() == 71954)
     {
-        auto threatList = const_cast<Unit*>(this)->getThreatManager().getThreatList();
+        auto threatList = const_cast<Unit*>(this)->GetThreatManager().getThreatList();
         for (auto&& itr : threatList)
             if (Unit* unit = ObjectAccessor::GetUnit(*this, itr->getUnitGuid()))
                 if (unit->GetTypeId() == TYPEID_PLAYER && unit->IsWithinDist(this, 100.0f))

@@ -61,6 +61,19 @@ struct ItemTemplate;
 struct MovementInfo;
 struct PetBattleRequest;
 
+namespace WorldPackets
+{
+    namespace Misc
+    {
+        class CompleteCinematic;
+        class CompleteMovie;
+        class NextCinematicCamera;
+        class OpeningCinematic;
+        class TogglePvP;
+        class SetPvP;
+    }
+}
+
 namespace lfg
 {
 struct LfgJoinResultData;
@@ -443,6 +456,7 @@ class TC_GAME_API WorldSession
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
+        void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
 
         std::atomic<time_t> m_timeOutTime;
         void UpdateTimeOutTime(uint32 diff)
@@ -495,7 +509,7 @@ class TC_GAME_API WorldSession
         void HandleCharFactionOrRaceChange(WorldPacket& recvData);
         void HandleRandomizeCharNameOpcode(WorldPacket& recvData);
         void HandleReorderCharacters(WorldPacket& recvData);
-        void HandleOpeningCinematic(WorldPacket& recvData);
+        void HandleOpeningCinematic(WorldPackets::Misc::OpeningCinematic& packet);
 
         // played time
         void HandlePlayedTime(WorldPacket& recvPacket);
@@ -565,8 +579,8 @@ class TC_GAME_API WorldSession
         // Gm Bug Ticket
         void HandleSubmitBugOpcode(WorldPacket& recvPacket);
 
-        void HandleTogglePvP(WorldPacket& recvPacket);
-        void HandleSetPvP(WorldPacket& recvPacket);
+        void HandleTogglePvP(WorldPackets::Misc::TogglePvP& togglePvP);
+        void HandleSetPvP(WorldPackets::Misc::SetPvP& setPvP);
 
         void HandleZoneUpdateOpcode(WorldPacket& recvPacket);
         void HandleSetSelectionOpcode(WorldPacket& recvPacket);
@@ -759,6 +773,7 @@ class TC_GAME_API WorldSession
         void HandleAuctionListOwnerItems(WorldPacket& recvData);
         void HandleAuctionPlaceBid(WorldPacket& recvData);
         void HandleAuctionListPendingSales(WorldPacket& recvData);
+        void HandleReplicateItems(WorldPackets::AuctionHouse::AuctionReplicateItems& packet);
 
         void HandleGetMailList(WorldPacket& recvData);
         void HandleSendMail(WorldPacket& recvData);
@@ -869,9 +884,9 @@ class TC_GAME_API WorldSession
         //void HandleGetChannelMemberCount(WorldPacket& recvPacket);
         void HandleSetChannelWatch(WorldPacket& recvPacket);
 
-        void HandleCompleteCinematic(WorldPacket& recvPacket);
-        void HandleCompleteMovie(WorldPacket& recvPacket);
-        void HandleNextCinematicCamera(WorldPacket& recvPacket);
+        void HandleCompleteCinematic(WorldPackets::Misc::CompleteCinematic& packet);
+        void HandleCompleteMovie(WorldPackets::Misc::CompleteMovie& packet);    
+        void HandleNextCinematicCamera(WorldPackets::Misc::NextCinematicCamera& packet);
 
         void HandlePageTextQueryOpcode(WorldPacket& recvPacket);
 
@@ -1090,6 +1105,7 @@ class TC_GAME_API WorldSession
         void HandleDiscardedTimeSyncAcks(WorldPacket & recvData);
         void HandleLogStreamingError(WorldPacket & recvData);
         void HandleShowTradeSkill(WorldPacket& recvData);
+        void SendStreamingMovie();
 
         void SendBroadcastTextDb2Reply(uint32 entry, ByteBuffer& buffer);
         void SendItemDb2Reply(uint32 entry, ByteBuffer& buffer);
@@ -1259,6 +1275,7 @@ class TC_GAME_API WorldSession
         LocaleConstant m_sessionDbcLocale;
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
+        uint32 m_clientTimeDelay;
         uint32 m_flags;
         TimeValue m_firstCancelModSpeedNoContorlAurasPacket;
         TimeValue m_lastCancelModSpeedNoContorlAurasPacket;

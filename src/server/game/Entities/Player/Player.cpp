@@ -76,6 +76,7 @@
 #include "SpellAuraEffects.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
+#include "SpellPackets.h"
 #include "Transport.h"
 #include "TradeData.h"
 #include "UpdateData.h"
@@ -264,7 +265,9 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
 
     m_cinematic = 0;
 
-    PlayerTalkClass = new PlayerMenu(GetSession());
+    m_movie = 0;
+
+    PlayerTalkClass = std::make_unique<PlayerMenu>(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
 
     m_DailyQuestChanged = false;
@@ -406,7 +409,7 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
     m_reputationMgr = new ReputationMgr(this);
     m_battlePetMgr = new BattlePetMgr(this);
 
-    _cinematicMgr = new CinematicMgr(this);
+    _cinematicMgr = std::make_unique<CinematicMgr>(this);
 
     transcendence_spirit = nullptr;
 
@@ -434,8 +437,6 @@ Player::~Player()
     for (ItemMap::iterator iter = mMitems.begin(); iter != mMitems.end(); ++iter)
         delete iter->second;                                //if item is duplicated... then server may crash ... but that item should be deallocated
 
-    delete PlayerTalkClass;
-
     for (size_t x = 0; x < ItemSetEff.size(); x++)
         delete ItemSetEff[x];
 
@@ -443,7 +444,6 @@ Player::~Player()
     delete m_runes;
     delete m_reputationMgr;
     delete m_battlePetMgr;
-    delete _cinematicMgr;
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
@@ -6740,28 +6740,28 @@ void Player::SaveRecallPosition()
     m_recallO = GetOrientation();
 }
 
-void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
+void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self) const
 {
     if (self)
-        GetSession()->SendPacket(data);
+        SendDirectMessage(data);
 
     Trinity::MessageDistDeliverer notifier(this, data, dist);
     VisitNearbyWorldObject(dist, notifier, false, true);
 }
 
-void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
+void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool own_team_only, bool required3dDist /*= false*/) const
 {
     if (self)
-        GetSession()->SendPacket(data);
+        SendDirectMessage(data);
 
     Trinity::MessageDistDeliverer notifier(this, data, dist, own_team_only);
     VisitNearbyWorldObject(dist, notifier, false, true);
 }
 
-void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
+void Player::SendMessageToSet(WorldPacket const* data, Player const* skipped_rcvr) const
 {
     if (skipped_rcvr != this)
-        GetSession()->SendPacket(data);
+        SendDirectMessage(data);
 
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
@@ -6776,18 +6776,20 @@ void Player::SendDirectMessage(WorldPacket const* data) const
 
 void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
-    WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
-    data << uint32(CinematicSequenceId);
-    SendDirectMessage(&data);
+    WorldPackets::Misc::TriggerCinematic packet;
+    packet.CinematicID = CinematicSequenceId;
+    SendDirectMessage(packet.Write());
+
     if (CinematicSequencesEntry const* sequence = sCinematicSequencesStore.LookupEntry(CinematicSequenceId))
         _cinematicMgr->BeginCinematic(sequence);
 }
 
-void Player::SendMovieStart(uint32 MovieId)
+void Player::SendMovieStart(uint32 movieId)
 {
-    WorldPacket data(SMSG_TRIGGER_MOVIE, 4);
-    data << uint32(MovieId);
-    SendDirectMessage(&data);
+    SetMovie(movieId);
+    WorldPackets::Misc::TriggerMovie packet;
+    packet.MovieID = movieId;
+    SendDirectMessage(packet.Write());    
 }
 
 void Player::CheckAreaExploreAndOutdoor()
@@ -7955,11 +7957,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         // Let there be light! :3
         if (m_zoneUpdateId == 876 || newZone == 876) // GM Island
         {
-            WorldPacket data(SMSG_OVERRIDE_LIGHT, 12);
-            data << uint32(newZone == 876 ? 500 : 0);
-            data << uint32(2488);
-            data << uint32(1);
-            SendDirectMessage(&data);
+            GetMap()->SetZoneOverrideLight(876, newZone == 876 ? 500 : 0, 2488, 1s);
         }
     }
 
@@ -7977,19 +7975,10 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     if (!zone)
         return;
 
-    if (sWorld->getBoolConfig(CONFIG_WEATHER) && !HasAuraType(SPELL_AURA_FORCE_WEATHER))
-    {
-        if (Weather* weather = WeatherMgr::FindWeather(zone->ID))
-            weather->SendWeatherUpdateToPlayer(this);
-        else
-        {
-            if (!WeatherMgr::AddWeather(zone->ID))
-            {
-                // send fine weather packet to remove old zone's weather
-                WeatherMgr::SendFineWeatherUpdateToPlayer(this);
-            }
-        }
-    }
+    if (sWorld->getBoolConfig(CONFIG_WEATHER))
+        GetMap()->GetOrGenerateZoneDefaultWeather(newZone);
+
+    GetMap()->SendZoneDynamicInfo(newZone, this);
 
     sScriptMgr->OnPlayerUpdateZone(this, newZone, newArea);
 
@@ -10610,26 +10599,8 @@ uint32 Player::GetXPRestBonus(uint32 xp)
 
 void Player::SetBindPoint(ObjectGuid guid)
 {
-    WorldPacket data(SMSG_BINDER_CONFIRM, 9);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[7]);
-    data.FlushBits();
-
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[3]);
-    GetSession()->SendPacket(&data);
+    WorldPackets::Misc::BinderConfirm packet(guid);
+    SendDirectMessage(packet.Write());
 }
 
 void Player::SendTalentWipeConfirm(ObjectGuid guid, bool resetType)
@@ -11049,7 +11020,7 @@ uint32 Player::GetItemCountWithLimitCategory(uint32 limitCategory, Item* skipIte
     return count;
 }
 
-Item* Player::GetItemByGuid(uint64 guid) const
+Item* Player::GetItemByGuid(ObjectGuid guid) const
 {
     for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
@@ -15461,10 +15432,8 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
 
 void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool showQuests /*= false*/)
 {
-    PlayerMenu* menu = PlayerTalkClass;
-    menu->ClearMenus();
-
-    menu->GetGossipMenu().SetMenuId(menuId);
+    PlayerTalkClass->ClearMenus();
+    PlayerTalkClass->GetGossipMenu().SetMenuId(menuId);
 
     GossipMenuItemsMapBounds menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuId);
 
@@ -15557,7 +15526,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_TRAINER:
                     if (GetClass() != creature->GetCreatureTemplate()->trainer_class && creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS)
                         TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) request wrong gossip menu: %u with wrong class: %u at Creature: %s (Entry: %u, Trainer Class: %u)",
-                        GetName().c_str(), GetGUID().GetCounter(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
+                        GetName().c_str(), GetGUID().GetCounter(), PlayerTalkClass->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
                     // no break;
                 case GOSSIP_OPTION_GOSSIP:
                 case GOSSIP_OPTION_SPIRITGUIDE:
@@ -15625,8 +15594,8 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 }
             }
 
-            menu->GetGossipMenu().AddMenuItem(itr->second.OptionID, itr->second.OptionIcon, strOptionText, 0, itr->second.OptionType, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
-            menu->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionID, itr->second.ActionMenuID, itr->second.ActionPoiID);
+            PlayerTalkClass->GetGossipMenu().AddMenuItem(itr->second.OptionID, itr->second.OptionIcon, strOptionText, 0, itr->second.OptionType, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+            PlayerTalkClass->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionID, itr->second.ActionMenuID, itr->second.ActionPoiID);
         }
     }
 }
@@ -17689,13 +17658,18 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
         {
             QuestStatusData& q_status = m_QuestStatus[questId];
 
-            if (!q_status.Explored)
+            // Dont complete failed quest
+            if (!q_status.Explored && q_status.Status != QUEST_STATUS_FAILED)
             {
                 q_status.Explored = true;
                 m_QuestStatusSave[questId] = true;
+                SetQuestSlotState(log_slot, QUEST_STATE_COMPLETE);
+                // m_QuestStatusSave[questId] = QUEST_DEFAULT_SAVE_TYPE;
+                // Todo 
+
+                SendQuestComplete(questId);
             }
         }
-
         if (CanCompleteQuest(questId))
             CompleteQuest(questId);
     }
@@ -18159,6 +18133,16 @@ void Player::SendQuestComplete(Quest const* quest)
     }
 }
 
+void Player::SendQuestComplete(uint32 questId) const
+{
+    if (questId)
+    {
+        WorldPackets::Quest::QuestUpdateComplete data;
+        data.QuestID = questId;
+        SendDirectMessage(data.Write());
+    }
+}
+
 void Player::SendQuestReward(Quest const* quest, uint32 XP)
 {
     uint32 questId = quest->GetQuestId();
@@ -18527,6 +18511,15 @@ void Player::SetHomebind(WorldLocation const& loc, uint32 areaId)
     stmt->setFloat (4, m_homebindZ);
     stmt->setUInt32(5, GetGUID().GetCounter());
     CharacterDatabase.Execute(stmt);
+}
+
+void Player::SendBindPointUpdate()
+{
+    WorldPackets::Misc::BindPointUpdate packet;
+    packet.BindPosition = Position(m_homebindX, m_homebindY, m_homebindZ);
+    packet.BindMapID = m_homebindMapId;
+    packet.BindAreaID = m_homebindAreaId;
+    SendDirectMessage(packet.Write());
 }
 
 uint32 Player::GetUInt32ValueFromArray(Tokenizer const& data, uint16 index)
@@ -20763,7 +20756,7 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         Player* leader = this;
         ObjectGuid leaderGuid = GetGroup() ? GetGroup()->GetLeaderGUID() : GetGUID();
         if (leaderGuid != GetGUID())
-            leader = ObjectAccessor::FindPlayer(leaderGuid);
+            leader = ObjectAccessor::FindConnectedPlayer(leaderGuid);
 
         if (ar->achievement)
             if (!leader || !leader->HasAchieved(ar->achievement))
@@ -25244,13 +25237,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // guild bank list wtf?
 
     // Homebind
-    WorldPacket data(SMSG_BINDPOINTUPDATE, 4 + 4 + 4 + 4 + 4);
-    data << m_homebindX;
-    data << m_homebindZ;
-    data << m_homebindY;
-    data << (uint32) m_homebindAreaId;
-    data << (uint32) m_homebindMapId;
-    GetSession()->SendPacket(&data);
+    SendBindPointUpdate();
 
     SendTalentsInfoData(); // SMSG_TALENTS_INFO
     SendInitialSpells();   // SMSG_INITIAL_SPELLS
@@ -25263,7 +25250,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     SendEquipmentSetList();
 
-    data.Initialize(SMSG_LOGIN_SETTIMESPEED, 20);
+    WorldPacket data(SMSG_LOGIN_SETTIMESPEED, 20);
     data << uint32(0);
     data.AppendPackedTime(sWorld->GetGameTime());
     data << uint32(0);

@@ -90,7 +90,6 @@ enum WorldTimers
 {
     WUPDATE_AUCTIONS,
     WUPDATE_AUCTIONS_PENDING,
-    WUPDATE_WEATHERS,
     WUPDATE_UPTIME,
     WUPDATE_CORPSES,
     WUPDATE_EVENTS,
@@ -1008,8 +1007,8 @@ class TC_GAME_API World
         void SendWorldText(int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession* self);
         void SendGMText(int32 string_id, ...);
-        void SendGlobalMessage(WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
-        void SendGlobalMessage(WorldPacket* packet, AccountTypes security, WorldSession* self = 0, uint32 team = 0);
+        void SendGlobalMessage(WorldPacket const* packet, WorldSession* self = 0, uint32 team = 0);
+        void SendGlobalMessage(WorldPacket const* packet, AccountTypes security, WorldSession* self = 0, uint32 team = 0);
         void SendGlobalGMMessage(WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
         bool SendZoneMessage(uint32 zone, WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession* self = 0, uint32 team = 0);

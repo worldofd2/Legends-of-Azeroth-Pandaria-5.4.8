@@ -215,7 +215,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recvData)
         // If any player in group in challenge dungeon leader must not allowed to invite any players
         for (auto itr = group->GetMemberSlots().begin(); itr != group->GetMemberSlots().end(); itr++)
         {
-            if (Player* plr = ObjectAccessor::FindPlayer(itr->guid))
+            if (Player* plr = ObjectAccessor::FindConnectedPlayer(itr->guid))
                 if (InstanceScript* instance = plr->GetInstanceScript())
                     if (instance->instance->IsChallengeDungeon() && instance->IsChallengeModeStarted())
                     {
@@ -781,7 +781,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
         return;
 
     uint8 PartyIndex, Symbol;
-    recvData >> PartyIndex >> Symbol; // PartyIndex always 0 ?
+    recvData >> PartyIndex >> Symbol;
 
     /** error handling **/
     /********************/
@@ -1626,15 +1626,15 @@ void WorldSession::HandleGroupRequestJoinUpdates(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_REQUEST_JOIN_UPDATES");
 
-    uint8 unk;
-    recvData >> unk; // PartyIndex
+    uint8 PartyIndex;
+    recvData >> PartyIndex;
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
         return;
 
     group->SendUpdate();
-    group->SendTargetIconList(this);
+    group->SendTargetIconList(this, PartyIndex);
 }
 
 void WorldSession::HandleClearRaidMarkerOpcode(WorldPacket& recvData)

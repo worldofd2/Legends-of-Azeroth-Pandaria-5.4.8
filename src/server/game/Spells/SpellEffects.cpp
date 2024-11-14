@@ -14,62 +14,63 @@
 * You should have received a copy of the GNU General Public License along
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include "Common.h"
-#include "DatabaseEnv.h"
-#include "WorldPacket.h"
-#include "Opcodes.h"
-#include "Log.h"
-#include "UpdateMask.h"
-#include "World.h"
-#include "ObjectMgr.h"
-#include "SpellMgr.h"
-#include "Player.h"
-#include "SkillExtraItems.h"
-#include "Unit.h"
-#include "Spell.h"
-#include "DynamicObject.h"
-#include "SpellAuras.h"
-#include "SpellAuraEffects.h"
-#include "Group.h"
-#include "UpdateData.h"
-#include "MapManager.h"
-#include "ObjectAccessor.h"
-#include "SharedDefines.h"
-#include "Pet.h"
-#include "GameObject.h"
-#include "GossipDef.h"
-#include "Creature.h"
-#include "Totem.h"
-#include "CreatureAI.h"
-#include "BattlegroundMgr.h"
+#include "AccountMgr.h"
+#include "AreaTrigger.h"
 #include "Battleground.h"
-#include "OutdoorPvPMgr.h"
-#include "Language.h"
-#include "SocialMgr.h"
-#include "Util.h"
-#include "VMapFactory.h"
-#include "TemporarySummon.h"
+#include "BattlegroundMgr.h"
+#include "BattlePetMgr.h"
+#include "Common.h"
 #include "CellImpl.h"
+#include "Creature.h"
+#include "CreatureAI.h"
+#include "DatabaseEnv.h"
+#include "DynamicObject.h"
+#include "Formulas.h"
+#include "GameObject.h"
+#include "GameObjectAI.h"
+#include "GossipDef.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "SkillDiscovery.h"
-#include "Formulas.h"
-#include "Vehicle.h"
-#include "Random.h"
-#include "ScriptMgr.h"
-#include "GameObjectAI.h"
-#include "AccountMgr.h"
-#include "InstanceScript.h"
-#include "PathGenerator.h"
+#include "Group.h"
 #include "Guild.h"
 #include "GuildMgr.h"
-#include "ReputationMgr.h"
-#include "AreaTrigger.h"
-#include "BattlePetMgr.h"
+#include "InstanceScript.h"
+#include "Log.h"
+#include "Language.h"
+#include "MapManager.h"
+#include "MiscPackets.h"
+#include "ObjectAccessor.h"
+#include "ObjectMgr.h"
+#include "Opcodes.h"
+#include "OutdoorPvPMgr.h"
+#include "PathGenerator.h"
+#include "Pet.h"
 #include "PetBattle.h"
-#include "UpdateFieldFlags.h"
+#include "Player.h"
+#include "Random.h"
+#include "ReputationMgr.h"
+#include "ScriptMgr.h"
 #include "ServiceMgr.h"
+#include "SharedDefines.h"
+#include "SkillExtraItems.h"
+#include "SkillDiscovery.h"
+#include "Spell.h"
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
+#include "SpellMgr.h"
+#include "SpellPackets.h"
+#include "SocialMgr.h"
+#include "TemporarySummon.h"
+#include "Totem.h"
+#include "Unit.h"
+#include "UpdateData.h"
+#include "UpdateFieldFlags.h"
+#include "UpdateMask.h"
+#include "Util.h"
+#include "Vehicle.h"
+#include "VMapFactory.h"
+#include "World.h"
+#include "WorldPacket.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -940,7 +941,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         if (spellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) && (m_spellInfo->Effects[effIndex].GetProvidedTargetMask() & TARGET_FLAG_UNIT_MASK))
             return;
 
-        if (spellInfo->GetExplicitTargetMask() & TARGET_FLAG_DEST_LOCATION)
+        if (spellInfo->GetExplicitTargetMask() & TARGET_FLAG_DEST_LOCATION && m_targets.HasDst())
             targets.SetDst(m_targets);
 
         targets.SetUnitTarget(m_caster);
@@ -2196,7 +2197,7 @@ void Spell::SendLoot(ObjectGuid guid, LootType loottype)
         if (sScriptMgr->OnGossipHello(player, gameObjTarget))
             return;
 
-        if (gameObjTarget->AI()->OnGossipHello(player))
+        if (gameObjTarget->AI()->OnGossipHello(player, true))
             return;
 
         switch (gameObjTarget->GetGoType())
@@ -3560,7 +3561,7 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
     Player* player = m_caster->ToPlayer();
     if (player && player->GetRoleForGroup() == ROLES_TANK)
     {
-        if (auto currentVictim = unitTarget->getThreatManager().getCurrentVictim())
+        if (auto currentVictim = unitTarget->GetThreatManager().getCurrentVictim())
         {
             const uint32 spellVengeance = 132365;
 
@@ -3579,18 +3580,18 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
     }
 
     // Also use this effect to set the taunter's threat to the taunted creature's highest value
-    if (unitTarget->getThreatManager().getCurrentVictim())
+    if (unitTarget->GetThreatManager().getCurrentVictim())
     {
-        float myThreat = unitTarget->getThreatManager().getThreat(m_caster);
-        float itsThreat = unitTarget->getThreatManager().getCurrentVictim()->getThreat();
+        float myThreat = unitTarget->GetThreatManager().getThreat(m_caster);
+        float itsThreat = unitTarget->GetThreatManager().getCurrentVictim()->getThreat();
         if (itsThreat > myThreat)
-            unitTarget->getThreatManager().addThreat(m_caster, itsThreat - myThreat);
+            unitTarget->GetThreatManager().addThreat(m_caster, itsThreat - myThreat);
     }
 
     //Set aggro victim to caster
-    if (!unitTarget->getThreatManager().getOnlineContainer().empty())
-        if (HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
-            unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
+    if (!unitTarget->GetThreatManager().getOnlineContainer().empty())
+        if (HostileReference* forcedVictim = unitTarget->GetThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
+            unitTarget->GetThreatManager().setCurrentVictim(forcedVictim);
 
     if ((unitTarget->ToCreature()->IsAIEnabled && !unitTarget->ToCreature()->HasReactState(REACT_PASSIVE)) || (unitTarget->IsPetGuardianStuff() && unitTarget->GetCharmerOrOwnerGUID().IsPlayer()))
         unitTarget->ToCreature()->AI()->AttackStart(m_caster);
@@ -5356,6 +5357,10 @@ void Spell::EffectForceDeselect(SpellEffIndex /*effIndex*/)
     // SMSG_BREAK_TAREGT not SMSG_CLEAR_TARGET
     GetCaster()->SendClearTarget();
 
+    WorldPackets::Spells::ClearTarget clearTarget;
+    clearTarget.Guid = m_caster->GetGUID();
+    m_caster->SendMessageToSet(clearTarget.Write(), true);
+
     UnitList targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), GetCaster()->GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
@@ -5842,7 +5847,7 @@ void Spell::EffectModifyThreatPercent(SpellEffIndex /*effIndex*/)
     if (!unitTarget)
         return;
 
-    unitTarget->getThreatManager().modifyThreatPercent(m_caster, damage);
+    unitTarget->GetThreatManager().modifyThreatPercent(m_caster, damage);
 }
 
 void Spell::EffectTransmitted(SpellEffIndex effIndex)
@@ -6672,9 +6677,7 @@ void Spell::EffectPlayMusic(SpellEffIndex effIndex)
         return;
     }
 
-    WorldPacket data(SMSG_PLAY_MUSIC, 4);
-    data << uint32(soundid);
-    unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
+    unitTarget->ToPlayer()->SendDirectMessage(WorldPackets::Misc::PlayMusic(soundid).Write());
 }
 
 void Spell::EffectSpecCount(SpellEffIndex /*effIndex*/)
@@ -6704,13 +6707,17 @@ void Spell::EffectPlaySound(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+    if (!unitTarget)
+        return;
+
+    Player* player = unitTarget->ToPlayer();
+    if (!player)
         return;
 
     switch (m_spellInfo->Id)
     {
         case 91604: // Restricted Flight Area
-            unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+            player->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
             break;
         default:
             break;
@@ -6724,27 +6731,7 @@ void Spell::EffectPlaySound(SpellEffIndex effIndex)
         return;
     }
 
-    ObjectGuid guid = m_caster->GetGUID();
-
-    WorldPacket data(SMSG_PLAY_SOUND, 4 + 9);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[1]);
-    data << uint32(soundId);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
-    unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
+    player->PlayDirectSound(soundId, player);
 }
 
 void Spell::EffectRemoveAura(SpellEffIndex effIndex)
@@ -6895,16 +6882,7 @@ void Spell::EffectBind(SpellEffIndex effIndex)
     }
 
     player->SetHomebind(homeLoc, areaId);
-
-    // binding
-    WorldPacket data(SMSG_BINDPOINTUPDATE, 4 + 4 + 4 + 4 + 4);
-    data << float(homeLoc.GetPositionX());
-    data << float(homeLoc.GetPositionY());
-    data << float(homeLoc.GetPositionZ());
-    data << uint32(areaId);
-    data << uint32(homeLoc.GetMapId());
-
-    player->SendDirectMessage(&data);
+    player->SendBindPointUpdate();
 
     TC_LOG_DEBUG("spells", "EffectBind: New homebind X: %f, Y: %f, Z: %f, MapId: %u, AreaId: %u",
         homeLoc.GetPositionX(), homeLoc.GetPositionY(), homeLoc.GetPositionZ(), homeLoc.GetMapId(), areaId);
@@ -6912,7 +6890,7 @@ void Spell::EffectBind(SpellEffIndex effIndex)
     ObjectGuid guid = m_caster->GetGUID();
 
     // zone update
-    data.Initialize(SMSG_PLAYERBOUND, 1 + 8 + 4);
+    WorldPacket data(SMSG_PLAYERBOUND, 1 + 8 + 4);
     data.WriteBit(guid[2]);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[0]);
@@ -6965,7 +6943,7 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 
     Player* target = unitTarget ? unitTarget->ToPlayer() : nullptr;
     if (!unitTarget && corpseTarget)
-        target = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID());
+        target = ObjectAccessor::FindConnectedPlayer(corpseTarget->GetOwnerGUID());
 
     if (!target)
         return;
@@ -6978,8 +6956,8 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     // Shitty workaround but still better than unsafe access
 //     TaskMgr::Default()->ScheduleInvocation([playerGuid, casterGuid, effectValue, spellInfo, effIndex]
 //     {
-//         Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid);
-//         Player* caster = ObjectAccessor::FindPlayerInOrOutOfWorld(casterGuid);
+//         Player* player = ObjectAccessor::FindConnectedPlayer(playerGuid);
+//         Player* caster = ObjectAccessor::FindConnectedPlayer(casterGuid);
 //         if (!player || !caster)
 //             return;
 
@@ -7002,8 +6980,8 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 // #pragma warning(pop)
 //     });
 
-        Player* player = ObjectAccessor::FindPlayer(playerGuid);
-        Player* caster = ObjectAccessor::FindPlayer(casterGuid);
+        Player* player = ObjectAccessor::FindConnectedPlayer(playerGuid);
+        Player* caster = ObjectAccessor::FindConnectedPlayer(casterGuid);
         if (!player || !caster)
             return;
 

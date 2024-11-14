@@ -214,7 +214,7 @@ m_PlayerDamageReq(0), m_lootRecipient(), m_lootRecipientGroup(0), m_corpseRemove
 m_respawnDelay(300), m_corpseDelay(60), m_wanderDistance(0.0f), m_WalkMode(0.0f), m_reactState(REACT_AGGRESSIVE),
 m_defaultMovementType(IDLE_MOTION_TYPE), m_spawnId(0), m_equipmentId(0), m_originalEquipmentId(0), m_AlreadyCallAssistance(false),
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
-m_creatureInfo(nullptr), m_creatureData(nullptr), m_path_id(0), m_formation(nullptr), m_triggerJustAppeared(true), m_respawnDelayMax(0), dynamicHealthPlayersCount(0)
+m_creatureInfo(nullptr), m_creatureData(nullptr), m_path_id(0), m_formation(nullptr), m_triggerJustAppeared(false), m_respawnDelayMax(0), dynamicHealthPlayersCount(0)
 {
     m_regenTimer = 0;
     m_valuesCount = UNIT_END;
@@ -310,21 +310,6 @@ void Creature::SearchFormation()
     CreatureGroupInfoType::iterator frmdata = sFormationMgr->CreatureGroupMap.find(lowguid);
     if (frmdata != sFormationMgr->CreatureGroupMap.end())
         sFormationMgr->AddCreatureToGroup(frmdata->second.leaderGUID, this);
-}
-
-void Creature::PlayMusic(uint32 MusicID)
-{
-    uint32 areaId = GetAreaId();
-    Map::PlayerList const& pList = GetMap()->GetPlayers();
-    for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-    {
-        if (itr->GetSource()->GetAreaId() == areaId)
-        {
-            WorldPacket data(SMSG_PLAY_MUSIC, 4);
-            data << uint32(MusicID);
-            (itr->GetSource())->GetSession()->SendPacket(&data);
-        }
-    }
 }
 
 void Creature::RemoveCorpse(bool setSpawnTime)
@@ -1066,11 +1051,8 @@ void Creature::SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask)
 {
     // update in loaded data
     if (!m_spawnId)
-    {
-        QueryResult result = WorldDatabase.Query("SELECT MAX(guid) + 1 FROM creature");
-        ASSERT(result);
-        m_spawnId = (*result)[0].GetUInt32();
-    }
+        m_spawnId = sObjectMgr->GenerateCreatureSpawnId();
+
     CreatureData& data = sObjectMgr->NewOrExistCreatureData(m_spawnId);
 
     uint32 displayId = GetNativeDisplayId();
@@ -1781,9 +1763,6 @@ void Creature::Respawn(bool force)
         uint32 poolid = GetDBTableGUIDLow() ? sPoolMgr->IsPartOfAPool<Creature>(GetDBTableGUIDLow()) : 0;
         if (poolid)
             sPoolMgr->UpdatePool<Creature>(GetMap()->GetPoolData(), poolid, GetDBTableGUIDLow());
-
-        //Re-initialize reactstate that could be altered by movementgenerators
-        InitializeReactState();
     }
 
     UpdateObjectVisibility();
@@ -2499,8 +2478,8 @@ void Creature::FixateOnTarget(ObjectGuid targetGUID, uint32 timer)
 {
     if (Unit* target = ObjectAccessor::GetUnit(*this, targetGUID))
     {
-        getThreatManager().clearReferences();
-        getThreatManager().addThreat(target, std::numeric_limits<float>::max());
+        GetThreatManager().clearReferences();
+        GetThreatManager().addThreat(target, std::numeric_limits<float>::max());
 
         if (AI())
             AI()->AttackStart(target);

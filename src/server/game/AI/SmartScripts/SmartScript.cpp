@@ -213,7 +213,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (IsUnit(*itr))
                     {
-                        (*itr)->SendPlaySound(e.action.sound.sound, e.action.sound.onlySelf > 0);
+                        if (e.action.sound.distance == 1)
+                            (*itr)->PlayDistanceSound(e.action.sound.sound, e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr);
+                        else
+                            (*itr)->PlayDirectSound(e.action.sound.sound, e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr);
+
                         TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
                             (*itr)->GetName().c_str(), (*itr)->GetGUID().GetCounter(), e.action.sound.sound, e.action.sound.onlySelf);
                     }
@@ -398,12 +402,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!me)
                 break;
 
-            ThreatContainer::StorageType threatList = me->getThreatManager().getThreatList();
+            ThreatContainer::StorageType threatList = me->GetThreatManager().getThreatList();
             for (ThreatContainer::StorageType::const_iterator i = threatList.begin(); i != threatList.end(); ++i)
             {
                 if (Unit* target = Unit::GetUnit(*me, (*i)->getUnitGuid()))
                 {
-                    me->getThreatManager().modifyThreatPercent(target, e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                    me->GetThreatManager().modifyThreatPercent(target, e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_THREAT_ALL_PCT: Creature guidLow %u modify threat for unit %u, value %i",
                         me->GetGUID().GetCounter(), target->GetGUID().GetCounter(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                 }
@@ -423,7 +427,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (IsUnit(*itr))
                 {
-                    me->getThreatManager().modifyThreatPercent((*itr)->ToUnit(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                    me->GetThreatManager().modifyThreatPercent((*itr)->ToUnit(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_THREAT_SINGLE_PCT: Creature guidLow %u modify threat for unit %u, value %i",
                         me->GetGUID().GetCounter(), (*itr)->GetGUID().GetCounter(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                 }
@@ -2260,7 +2264,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (IsUnit(obj))
                     {
                         uint32 sound = Trinity::Containers::SelectRandomContainerElement(sounds);
-                        obj->PlayDirectSound(sound, onlySelf ? obj->ToPlayer() : nullptr);
+                        if (e.action.randomSound.distance == 1)
+                            obj->PlayDistanceSound(sound, onlySelf ? obj->ToPlayer() : nullptr);
+                        else
+                            obj->PlayDirectSound(sound, onlySelf ? obj->ToPlayer() : nullptr);
+
                         TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_RANDOM_SOUND: target: %s (" UI64FMTD "), sound: %u, onlyself: %s",
                             obj->GetName().c_str(), obj->GetGUID().GetRawValue(), sound, onlySelf ? "true" : "false");
                     }
@@ -2903,7 +2911,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         {
             if (me)
             {
-                ThreatContainer::StorageType threatList = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType threatList = me->GetThreatManager().getThreatList();
                 for (ThreatContainer::StorageType::const_iterator i = threatList.begin(); i != threatList.end(); ++i)
                     if (Unit* temp = Unit::GetUnit(*me, (*i)->getUnitGuid()))
                         l->push_back(temp);

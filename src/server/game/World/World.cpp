@@ -2284,7 +2284,6 @@ void World::SetInitialWorldSettings()
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision) VALUES(%u, %u, 0, '%s')",
                             realm.Id.Realm, uint32(m_startTime), GitRevision::GetFullVersion());       // One-time query
 
-    m_timers[WUPDATE_WEATHERS].SetInterval(1*IN_MILLISECONDS);
     m_timers[WUPDATE_AUCTIONS].SetInterval(MINUTE*IN_MILLISECONDS);
     m_timers[WUPDATE_AUCTIONS_PENDING].SetInterval(250);
     m_timers[WUPDATE_BLACK_MARKET].SetInterval(MINUTE*IN_MILLISECONDS);
@@ -2625,13 +2624,6 @@ void World::Update(uint32 diff)
     UpdateSessions(diff);
     RecordTimeDiff("UpdateSessions");
 
-    /// <li> Handle weather updates when the timer has passed
-    if (m_timers[WUPDATE_WEATHERS].Passed())
-    {
-        m_timers[WUPDATE_WEATHERS].Reset();
-        WeatherMgr::Update(uint32(m_timers[WUPDATE_WEATHERS].GetInterval()));
-    }
-
     /// <li> Update uptime table
     if (m_timers[WUPDATE_UPTIME].Passed())
     {
@@ -2793,12 +2785,12 @@ void World::ForceGameEventUpdate()
 }
 
 /// Send a packet to all players (except self if mentioned)
-void World::SendGlobalMessage(WorldPacket* packet, WorldSession* self, uint32 team)
+void World::SendGlobalMessage(WorldPacket const* packet, WorldSession* self, uint32 team)
 {
     SendGlobalMessage(packet, SEC_PLAYER, self, team);
 }
 
-void World::SendGlobalMessage(WorldPacket* packet, AccountTypes security, WorldSession* self, uint32 team)
+void World::SendGlobalMessage(WorldPacket const* packet, AccountTypes security, WorldSession* self, uint32 team)
 {
     SessionMap::iterator itr;
     for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)

@@ -18,10 +18,12 @@
 #ifndef AllPackets_h__
 #define AllPackets_h__
 
+#include "AuctionHousePackets.h"
 #include "AuthenticationPackets.h"
 #include "CharacterPackets.h"
 #include "MiscPackets.h"
 #include "QueryPackets.h"
 #include "QuestPackets.h"
+#include "SpellPackets.h"
 
 #endif // AllPackets_h__
